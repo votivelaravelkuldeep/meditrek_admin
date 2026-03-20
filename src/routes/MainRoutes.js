@@ -6,6 +6,7 @@ import Loadable from 'component/Loadable';
 import ManageUser from '../views/AllPage/ManageUser';
 import Managecontent from 'views/AllPage/ManageContent';
 import Managebroadcast from 'views/AllPage/ManageBroadcast';
+import AdminLanguage from 'views/AllPage/AdminLanguage';
 import ManageCategory from 'views/AllPage/ManageCategory';
 import ManageContact from 'views/AllPage/ManageContact';
 import Reply from 'views/AllPage/SendReply';
@@ -36,6 +37,8 @@ import BulkUploadMedicineCategory from 'views/AllPage/BulkUploadMedicineCategory
 import ManageCompliance from 'views/AllPage/ManageCompliance';
 import ManageFaq from 'views/AllPage/ManageFaq';
 import DeleteDoctor from 'views/AllPage/DeleteDoctor';
+// import AdminAnalytics from 'views/AllPage/AdminAnalytics';
+import NewInsights from 'views/AllPage/NewInsights';
 
 const DashboardDefault = Loadable(lazy(() => import('../views/Dashboard')));
 const UtilsTypography = Loadable(lazy(() => import('../views/Utils/Typography')));
@@ -120,12 +123,16 @@ const MainRoutes = {
     /** Analytical Reports */
     { path: 'analytic-report/user-ana-report', element: <UserAnaReport /> },
     { path: 'analytic-report/doctor-ana-report', element: <DoctorAnaReport /> },
+    // {  path: 'analytic-report/admin-analytics', element: <AdminAnalytics /> },
+    {  path: 'insights/new-insights',  element: <NewInsights /> },
 
     /** Bulk Upload */
     { path: 'bulk-upload-symptom', element: <BulkUploadSymptom /> },
     { path: 'bulk-upload-desease', element: <BulkUploadDesease /> },
     { path: 'bulk_upload_medicine', element: <BulkUploadMadicine /> },
-    { path: 'bulk_upload_category', element: <BulkUploadMedicineCategory /> }
+    { path: 'bulk_upload_category', element: <BulkUploadMedicineCategory /> },
+
+    { path: '/admin/languages', element: <AdminLanguage /> }
   ]
 };
 

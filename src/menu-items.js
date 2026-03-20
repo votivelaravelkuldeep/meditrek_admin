@@ -234,6 +234,13 @@ export default {
           icon: icons['BroadcastOnHomeIcon'],
           url: APP_PREFIX_PATH + '/manage-broadcast'
         },
+        {
+          id: 'languageSettings',
+          title: 'Language Settings',
+          type: 'item',
+          icon: icons['LanguageIcon'],
+          url: APP_PREFIX_PATH + '/admin/languages'
+        },
 
         {
           id: 'tabularReport',
@@ -312,7 +319,21 @@ export default {
               icon: icons['MedicationIcon'],
               url: APP_PREFIX_PATH + '/analytic-report/doctor-ana-report'
             },
+          //  {
+          //   id: 'adminAnalytics',
+          //   title: 'Admin Analytics',
+          //   type: 'item',
+          //   icon: icons['MedicationIcon'],
+          //   url: APP_PREFIX_PATH + '/analytic-report/admin-analytics'
+          // },
           ]
+        },
+       {
+          id: 'newInsights',
+          title: 'New Insights',
+          type: 'item',
+          icon: icons['LightbulbIcon'], // ya koi bhi icon
+          url: APP_PREFIX_PATH + '/insights/new-insights'
         }
       ]
     }
