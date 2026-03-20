@@ -211,6 +211,47 @@ function ManageDoctors() {
       }
     });
   };
+  const handleDeleteDoctor = async (doctor_id) => {
+  Swal.fire({
+    title: "Are you sure?",
+    text: "You want to delete this doctor?",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#d33",
+    cancelButtonColor: "#3085d6",
+    confirmButtonText: "Yes, delete it!"
+  }).then(async (result) => {
+
+    if (result.isConfirmed) {
+      try {
+
+        const response = await axios.post(`${API_URL}delete_doctor`, {
+          doctor_id: doctor_id
+        });
+
+        if (response.data.success) {
+
+          Swal.fire({
+            title: "Deleted!",
+            text: "Doctor deleted successfully",
+            icon: "success",
+            timer: 2000
+          });
+
+          // setTriggerFetch(!triggerFetch); // table refresh
+          getDoctors();
+
+        } else {
+          Swal.fire("Error", response.data.msg, "error");
+        }
+
+      } catch (error) {
+        console.error("Delete error", error);
+      }
+    }
+
+  });
+};
 
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
@@ -470,7 +511,17 @@ function ManageDoctors() {
                                 Activate/Deactivate
                               </button>
                             </li>
+
                           )}
+                           <li>
+                            <button
+                              className="dropdown-item"
+                              onClick={() => handleDeleteDoctor(doctor.doctor_id)}
+                              style={{ color: "red" }}
+                            >
+                              🗑 Delete
+                            </button>
+                          </li>
                         </ul>
                       </div>
                     </td>

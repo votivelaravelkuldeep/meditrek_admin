@@ -205,6 +205,7 @@ function ManageMedicine() {
                 <tr>
                   <th style={{ textAlign: 'center', fontWeight: '500' }}> S. No</th>
                   <th style={{ textAlign: 'center', fontWeight: '500' }}>Action</th>
+                  <th style={{ textAlign: 'center', fontWeight: '500' }}>Patient Name</th>
                   <th style={{ textAlign: 'center', fontWeight: '500' }}>Medicine Name</th>
                   <th style={{ textAlign: 'center', fontWeight: '500' }}>Description</th>
                   <th style={{ textAlign: 'center', fontWeight: '500' }}>Create Date & Time</th>
@@ -237,6 +238,7 @@ function ManageMedicine() {
                         </ul>
                       </div>
                     </td>
+                  <td style={{ textAlign: 'center' }}>{medicine.patient_name || '-'}</td>
                     <td style={{ textAlign: 'center' }}>{medicine.medicine_name || '-'}</td>
                     <td style={{ textAlign: 'center' }}>{medicine.medicine_description || "NA"}</td>
                     <td style={{ textAlign: 'center' }}>{medicine.createtime || '-'}</td>

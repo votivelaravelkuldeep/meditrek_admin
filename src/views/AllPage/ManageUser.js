@@ -70,6 +70,44 @@ function ManageUser() {
       });
     }
   };
+  const handleDeleteUser = async (user_id) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You want to delete this user?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!"
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+
+          const response = await axios.post(`${API_URL}delete_user`, {
+            user_id: user_id
+          });
+
+          if (response.data.success) {
+
+            Swal.fire({
+              title: "Deleted!",
+              text: "User deleted successfully",
+              icon: "success",
+              timer: 2000
+            });
+
+            setTriggerFetch(!triggerFetch); // table refresh
+
+          } else {
+            Swal.fire("Error", response.data.msg, "error");
+          }
+
+        } catch (error) {
+          console.error("Delete error", error);
+        }
+      }
+    });
+  };
 
   const handlePageChange = (event, value) => {
     setCurrentPage(value);
@@ -188,6 +226,15 @@ function ManageUser() {
                                   <ToggleOnIcon style={{ marginRight: '8px' }} />
                                 )}
                                 Activate/Deactivate
+                              </Link>
+                            </li>
+                            <li key="delete">
+                              <Link
+                                className="dropdown-item"
+                                onClick={() => handleDeleteUser(user.user_id)}
+                                style={{ color: "red" }}
+                              >
+                                🗑 Delete
                               </Link>
                             </li>
                           </ul>
