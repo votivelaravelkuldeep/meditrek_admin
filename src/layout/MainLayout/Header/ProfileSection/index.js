@@ -109,6 +109,7 @@ const ProfileSection = () => {
           src={userDetails.image ? `${IMAGE_PATH}${userDetails.image}?${new Date().getTime()}` : `${IMAGE_PATH}placeholder.jpg`}
           onClick={handleToggle}
           ref={anchorRef}
+          sx={{ width: 36, height: 36 }}
         />
       </ListItemAvatar>
       <Popper
@@ -135,8 +136,14 @@ const ProfileSection = () => {
       >
         {({ TransitionProps }) => (
           <Fade {...TransitionProps}>
-            <Paper>
+            <Paper  elevation={0}
+              sx={{
+                width: 260,
+                borderRadius: "12px",
+                border: "1px solid #e9ecef"
+              }}>
               <ClickAwayListener onClickAway={handleClose}>
+                
                 <List
                   sx={{
                     width: '100%',
