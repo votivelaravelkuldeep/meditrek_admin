@@ -19,6 +19,7 @@ import {
   FormControlLabel
 } from '@mui/material';
 import axios from 'axios';
+import { API_URL } from 'config/constant';
 
 const NewInsights = () => {
     const [anchorEl, setAnchorEl] = useState(null);
@@ -39,7 +40,7 @@ const NewInsights = () => {
   // ================= FETCH =================
   const fetchPosts = async () => {
     const res = await axios.get(
-      'http://localhost:3001/meditrek/server/adminAPI/get-all-insights-posts'
+      `${API_URL}get-all-insights-posts`
     );
     if (res.data.success) setPosts(res.data.data);
   };
@@ -88,7 +89,7 @@ const NewInsights = () => {
     }
 
     const res = await axios.post(
-      `http://localhost:3001/meditrek/server/adminAPI/${api}`,
+      `${API_URL}${api}`,
       formData
     );
 
@@ -104,7 +105,7 @@ const NewInsights = () => {
     if (!window.confirm('Delete this post?')) return;
 
     const res = await axios.post(
-      'http://localhost:3001/meditrek/server/adminAPI/delete-insights-post',
+      `${API_URL}delete-insights-post`,
       { id }
     );
 
