@@ -73,8 +73,15 @@ React.useEffect(() => {
 
   return (
     <Box sx={{ display: 'flex', width: '100%' }}>
-      <AppBar position="fixed" sx={{ zIndex: 1200 }}>
-        <Toolbar sx={{ background: 'linear-gradient(to right, gray, white)', }}>
+      <AppBar position="fixed"  elevation={0}  sx={{
+          background: "#fff",
+          borderBottom: "1px solid #e9ecef",
+          zIndex: 1201
+        }}>
+        <Toolbar 
+        // sx={{ background: 'linear-gradient(to right, gray, white)', }}
+        sx={{ minHeight: "64px !important", px: 3 }}
+        >
           <Header drawerOpen={drawerOpen} drawerToggle={handleDrawerToggle} />
         </Toolbar>
       </AppBar>
