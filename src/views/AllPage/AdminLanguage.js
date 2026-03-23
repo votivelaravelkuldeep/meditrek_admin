@@ -12,6 +12,7 @@ import {
   Button
 } from '@mui/material';
 import axios from 'axios';
+import { API_URL } from 'config/constant';
 
 const AdminLanguage = () => {
   const [languages, setLanguages] = useState([]);
@@ -43,8 +44,8 @@ const AdminLanguage = () => {
   const fetchLanguages = async () => {
   try {
     const res = await axios.get(
-      'http://localhost:3001/meditrek/server/adminAPI/languages',
-      { params: { admin_id } } // 👈 ye add kar
+      `${API_URL}languages`,
+      { params: { admin_id } }
     );
 
     if (res.data.success) {
@@ -85,7 +86,7 @@ const AdminLanguage = () => {
   const handleSave = async () => {
     try {
       const res = await axios.post(
-        'http://localhost:3001/meditrek/server/adminAPI/admin-save-languages',
+        `${API_URL}admin-save-languages`,
         {
           admin_id,
           languages: selectedLanguages

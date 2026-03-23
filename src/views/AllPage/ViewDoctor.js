@@ -11,6 +11,7 @@ import { API_URL, IMAGE_PATH } from 'config/constant';
 function ViewDoctor() {
   const [doctor_data, setDoctorData] = React.useState({});
   const [doctor_report_data, setDoctorReportData] = React.useState([]);
+  // eslint-disable-next-line no-unused-vars
   const [currentPage, setCurrentPage] = React.useState(1);
   const [searchQuery, setSearchQuery] = React.useState('');
 
@@ -19,7 +20,7 @@ function ViewDoctor() {
  /* const handlePageChange = (event, value) => {
     setCurrentPage(value);
   }; */
-
+// eslint-disable-next-line no-unused-vars
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
   };
@@ -88,7 +89,9 @@ function ViewDoctor() {
   // Pagination logic
   const indexOfLastDoctor = currentPage * doctorsPerPage;
   const indexOfFirstDoctor = indexOfLastDoctor - doctorsPerPage;
+  // eslint-disable-next-line no-unused-vars
   const currentDoctors = filteredUsers.slice(indexOfFirstDoctor, indexOfLastDoctor);
+  // eslint-disable-next-line no-unused-vars
   const totalPages = Math.ceil(filteredUsers.length / doctorsPerPage);
 
   return (
