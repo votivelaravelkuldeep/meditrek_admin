@@ -103,7 +103,7 @@ import { useTheme, styled } from '@mui/material/styles';
 import { useMediaQuery, Divider, Drawer, Grid, Box } from '@mui/material';
 
 // third party
-import PerfectScrollbar from 'react-perfect-scrollbar';
+// import PerfectScrollbar from 'react-perfect-scrollbar';
 
 // project import
 import MenuList from './MenuList';
@@ -152,10 +152,15 @@ const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
         </Grid>
       </Box>
       <Divider />
-      <PerfectScrollbar style={{ height: 'calc(100vh - 65px)', padding: '10px' }}>
-        <MenuList />
-        {/* <NavCard /> */}
-      </PerfectScrollbar>
+      <Box
+  sx={{
+    height: "calc(100vh - 64px)",
+    overflowY: "auto",
+    px: 1
+  }}
+>
+  <MenuList />
+</Box>
     </>
   );
 
@@ -174,6 +179,7 @@ const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
           width: matchUpMd ? (drawerOpen ? drawerWidth : collapsedWidth) : drawerWidth,
           transition: "width 0.25s ease",
           overflowX: "hidden",
+          overflowY: "auto",
           borderRight: "1px solid #e9ecef",
           top: { md: 64, xs: 0 },
           boxShadow: matchUpMd ? 'none' : '0 0.15rem 1.75rem 0 rgba(33, 40, 50, 0.15)'
