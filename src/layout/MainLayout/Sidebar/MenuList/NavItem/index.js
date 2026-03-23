@@ -108,7 +108,7 @@ const NavItem = ({ item, level, collapsed }) => {
         secondary={
           item.caption && (
             <Typography variant="caption" 
-            sx={{ ...theme.typography.subMenuCaption, pl: 0, }} display="block" gutterBottom>
+            sx={{ ...theme.typography.subMenuCaption, pl: 0 }} display="block" gutterBottom>
               {item.caption}
             </Typography>
           )
