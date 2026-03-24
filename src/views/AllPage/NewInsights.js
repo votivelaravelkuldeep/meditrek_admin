@@ -145,7 +145,7 @@ const NewInsights = () => {
                 <tr style={{ background: '#f5f6fa' }}>
                     <th style={th}>S.No</th>
                     <th style={th}>Title</th>
-                    <th style={th}>Visible</th>
+                    <th style={th}>Status</th>
                     <th style={th}>Action</th> {/* Image column hata di */}
                 </tr>
                 </thead>
@@ -251,7 +251,7 @@ const NewInsights = () => {
                 onChange={(e) => setIsVisible(e.target.checked)}
               />
             }
-            label="Visible"
+            label="Status"
             sx={{ mt: 2 }}
           />
         </DialogContent>
