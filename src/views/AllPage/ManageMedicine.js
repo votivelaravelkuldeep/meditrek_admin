@@ -28,7 +28,67 @@ function ManageMedicine() {
   const [searchQuery, setSearchQuery] = useState('');
   const [editingVideo, setEditingVideo] = useState({});
 
+  const [selectedMedicines, setSelectedMedicines] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
+
   const medicinesPerPage = 50;
+  // single checkbox
+  const handleSelectMedicine = (medicine_id) => {
+    setSelectedMedicines((prev) =>
+      prev.includes(medicine_id)
+        ? prev.filter((id) => id !== medicine_id)
+        : [...prev, medicine_id]
+    );
+  };
+
+  // select all checkbox
+  const handleSelectAll = () => {
+    if (selectAll) {
+      setSelectedMedicines([]);
+    } else {
+      const allIds = currentmedicines.map((m) => m.medicine_id);
+      setSelectedMedicines(allIds);
+    }
+    setSelectAll(!selectAll);
+  };
+
+    const deleteSelectedMedicines = () => {
+    if (selectedMedicines.length === 0) {
+      Swal.fire("Please select at least one medicine");
+      return;
+    }
+
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You want to delete selected medicines?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, delete!"
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const response = await axios.post(`${API_URL}delete_medicine_bulk`, {
+            medicine_ids: selectedMedicines
+          });
+          // const response = await axios.post("http://localhost:3001/meditrek/server/adminAPI/delete_medicine_bulk", {
+          //   medicine_ids: selectedMedicines
+          // });
+
+          if (response.data.success) {
+            Swal.fire("Deleted!", response.data.msg, "success");
+            setSelectedMedicines([]);
+            setSelectAll(false);
+            fetchData();
+          } else {
+            Swal.fire("Error", response.data.msg, "error");
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      }
+    });
+  };
+
 
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
@@ -185,6 +245,14 @@ function ManageMedicine() {
               <Button className="btn btn-primary mt-2 mb-2" onClick={() => { navigate(APP_PREFIX_PATH + '/bulk_upload_medicine') }}>
                 <CloudUploadIcon style={{ marginRight: '2px', fontWeight: '500' }} /> Bulk Upload
               </Button>
+              <Button
+                className="btn btn-danger mt-2 mb-2"
+                style={{ marginLeft: '10px' }}
+                onClick={deleteSelectedMedicines}
+              >
+                <DeleteIcon style={{ marginRight: '5px' }} />
+                Delete Selected
+              </Button>
             </div>
             <div>
               <label htmlFor="search-input" style={{ marginRight: '5px' }}>Search</label>
@@ -203,6 +271,7 @@ function ManageMedicine() {
             <Table hover className="fixed-header-table">
               <thead>
                 <tr>
+                  <th style={{ textAlign: 'center' }}><input type="checkbox" checked={selectAll} onChange={handleSelectAll} /> </th>
                   <th style={{ textAlign: 'center', fontWeight: '500' }}> S. No</th>
                   <th style={{ textAlign: 'center', fontWeight: '500' }}>Action</th>
                   <th style={{ textAlign: 'center', fontWeight: '500' }}>Patient Name</th>
@@ -214,6 +283,13 @@ function ManageMedicine() {
               <tbody>
                 {currentmedicines.map((medicine, index) => (
                   <tr key={index}>
+                    <td style={{ textAlign: 'center' }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedMedicines.includes(medicine.medicine_id)}
+                        onChange={() => handleSelectMedicine(medicine.medicine_id)}
+                      />
+                    </td>
                     <th scope="row" style={{ textAlign: 'center' }}>{indexOfFirstmedicine + index + 1}</th>
                     <td>
                       <div className="dropdown text-center">
