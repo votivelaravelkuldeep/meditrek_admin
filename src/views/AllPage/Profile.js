@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Col, Card, Form, Button } from 'react-bootstrap';
+import { Card, Form, Button } from 'react-bootstrap';
 // import 'bootstrap/dist/css/bootstrap.min.css';
 import './managecontent.css';
 import { Formik } from 'formik';
@@ -11,26 +11,24 @@ import {
   // APP_PREFIX_PATH 
 } from 'config/constant';
 import {
-  FormHelperText,
-  FormControl,
-  InputLabel,
-  OutlinedInput,
-  InputAdornment,
   IconButton
 } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
+// import { useTheme } from '@mui/material/styles';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import { FadeLoader } from 'react-spinners';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const Profile = () => {
-  const theme = useTheme();
+  // const theme = useTheme();
   const [content, setContent] = useState(0);
   const [activeButton, setActiveButton] = useState('profile');
   const [userDetails, setUserDetails] = useState([]);
-  const [preview, setPreview] = useState(userDetails.image ? `${IMAGE_PATH}${userDetails.image}?${new Date().getTime()}` : `${IMAGE_PATH}placeholder.jpg`);
+  const [preview, setPreview] = useState(`${IMAGE_PATH}placeholder.jpg`);
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const handleClickShowOldPassword = () => {
     setShowOldPassword(!showOldPassword);
@@ -48,8 +46,6 @@ const Profile = () => {
     event.preventDefault();
   };
 
-
-
   const contentTypes = {
     profile: 0,
     password: 1
@@ -60,8 +56,8 @@ const Profile = () => {
     setActiveButton(contentType);
   };
 
-
   const fetchUserDetails = async () => {
+    setLoading(true);
     try {
       let response;
       response = await axios.get(`${API_URL}get_admin_data`,);
@@ -69,18 +65,19 @@ const Profile = () => {
 
       if (response.data.success) {
         setUserDetails(response.data.info[0]);
-
+        setPreview(response.data.info[0]?.image ? `${IMAGE_PATH}${response.data.info[0].image}?${new Date().getTime()}` : `${IMAGE_PATH}placeholder.jpg`);
       } else {
         console.log("Profile Details fetch Error")
       }
     } catch (error) {
       console.error('Error updating profile', error);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchUserDetails();
-    setPreview(userDetails.image ? `${IMAGE_PATH}${userDetails.image}?${new Date().getTime()}` : `${IMAGE_PATH}placeholder.jpg`);
   }, []);
 
   const handleImageUpload = (event, setFieldValue) => {
@@ -120,7 +117,6 @@ const Profile = () => {
       ),
   });
 
-
   const passwordValidationSchema = Yup.object().shape({
     oldPassword: Yup.string().required('Please enter Current password'),
     newPassword: Yup.string().required('Please enter New password'),
@@ -138,18 +134,19 @@ const Profile = () => {
     return Yup.object();
   };
 
-
-  const handleSubmit = async (values) => {
-
+  const handleSubmit = async (values, { resetForm }) => {
     try {
       let response;
       console.log(values.image);
       if (content === 0) {
-        response = await axios.post(`${API_URL}edit_admin_profile`, {
-          name: values.name,
-          email: values.email,
-          image: values.image
-        }, {
+        const formData = new FormData();
+        formData.append('name', values.name);
+        formData.append('email', values.email);
+        if (values.image) {
+          formData.append('image', values.image);
+        }
+
+        response = await axios.post(`${API_URL}edit_admin_profile`, formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           }
@@ -158,7 +155,7 @@ const Profile = () => {
         response = await axios.post(`${API_URL}update_password`, {
           oldpassword: values.oldPassword,
           newPassword: values.newPassword
-        },);
+        });
       }
 
       if (response.data.success) {
@@ -169,6 +166,7 @@ const Profile = () => {
             icon: 'success',
             timer: 2000
           });
+          await fetchUserDetails();
         } else if (content === 1) {
           Swal.fire({
             title: '',
@@ -176,13 +174,15 @@ const Profile = () => {
             icon: 'success',
             timer: 2000
           });
+          resetForm({
+            values: {
+              ...values,
+              oldPassword: '',
+              newPassword: '',
+              confirmPassword: ''
+            }
+          });
         }
-        values.oldPassword = "";
-        values.newPassword = "";
-        values.confirmPassword = "";
-        values.name = "";
-        fetchUserDetails()
-
       } else {
         console.log('Profile update failed', response.data.msg);
         Swal.fire({
@@ -194,78 +194,259 @@ const Profile = () => {
       }
     } catch (error) {
       console.error('Error updating profile', error);
+      Swal.fire({
+        title: 'Error',
+        text: 'An error occurred while updating',
+        icon: 'error',
+        timer: 2000
+      });
     }
   };
 
+  const deleteProfileImage = async () => {
+    const adminId = userDetails.id; // Assuming id is available
+
+    try {
+      const result = await Swal.fire({
+        title: 'Are you sure?',
+        text: 'You want to delete your profile image?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!'
+      });
+
+      if (result.isConfirmed) {
+        // Adjust API endpoint as per your backend
+        const response = await axios.post(
+          `${API_URL}delete_admin_image`,
+          {
+            admin_id: adminId
+          }
+        );
+
+        if (response.data.success) {
+          Swal.fire('Deleted!', 'Your profile image has been deleted.', 'success');
+          setPreview(`${IMAGE_PATH}placeholder.jpg`);
+          fetchUserDetails();
+        } else {
+          Swal.fire('Error!', response.data.msg || 'Failed to delete image', 'error');
+        }
+      }
+    } catch (error) {
+      console.error('Error deleting image:', error);
+      Swal.fire('Error!', 'Failed to delete image', 'error');
+    }
+  };
+
+  // const handleDeleteAccount = async () => {
+  //   const adminId = userDetails.id;
+
+  //   try {
+  //     const { value: reason } = await Swal.fire({
+  //       title: 'Delete Your Account?',
+  //       html: `
+  //         <p>This action cannot be undone. All your data will be permanently deleted.</p>
+  //         <textarea 
+  //           id="deleteReason" 
+  //           class="swal2-textarea" 
+  //           placeholder="Please tell us why you're leaving..." 
+  //           style="width: 80%; margin-top: 10px; padding: 5px;"
+  //           required
+  //         ></textarea>
+  //       `,
+  //       icon: 'warning',
+  //       showCancelButton: true,
+  //       confirmButtonColor: '#d33',
+  //       cancelButtonColor: '#3085d6',
+  //       confirmButtonText: 'Yes, delete my account',
+  //       cancelButtonText: 'Cancel',
+  //       reverseButtons: true,
+  //       focusConfirm: false,
+  //       preConfirm: () => {
+  //         const reason = document.getElementById('deleteReason').value;
+  //         if (!reason) {
+  //           Swal.showValidationMessage('Please provide a reason for deleting your account');
+  //         }
+  //         return reason;
+  //       }
+  //     });
+
+  //     if (reason) {
+  //       const response = await axios.post(`${API_URL}delete_admin_account`, {
+  //         admin_id: adminId,
+  //         delete_reason: reason
+  //       });
+
+  //       if (response.data.success) {
+  //         Swal.fire({
+  //           title: 'Account Deleted',
+  //           text: 'Your account has been successfully deleted.',
+  //           icon: 'success'
+  //         }).then(() => {
+  //           sessionStorage.clear();
+  //           window.location.href = '/login'; // Adjust redirect path as needed
+  //         });
+  //       } else {
+  //         Swal.fire('Error!', response.data.msg || 'Failed to delete account', 'error');
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error('Error deleting account:', error);
+  //     Swal.fire('Error!', 'Failed to delete account', 'error');
+  //   }
+  // };
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '400px' }}>
+        <FadeLoader color="#1ddec4" />
+      </div>
+    );
+  }
+
   return (
     <>
-      <Card className="mb-5">
-        <Card.Header className="bg-white">
-          <Card.Title as="h5">Profile</Card.Title>
-        </Card.Header>
-        <Card.Body>
-          <div className="view-user-content row">
-            <div className="col-lg-5">
-              <div className="d-flex flex-wrap">
-                <div className="img-div">
-                  <img alt="Sepha Wilon"
-                    src={userDetails.image ? `${IMAGE_PATH}${userDetails.image}?${new Date().getTime()}` : `${IMAGE_PATH}placeholder.jpg`} className="profile-img2" />
-                </div>
-                <div className="mobile-view ms-3" style={{ marginTop: '30px' }}>
-                  <h6>{userDetails?.name}</h6>
-                  <h6>{userDetails?.email}</h6>
-                </div>
+      {/* Profile Header Card - Same as reference UI */}
+      <Card className="border-0 shadow-lg rounded-4 mb-4">
+        <Card.Body className="p-4">
+          <div className="d-flex align-items-center gap-4 flex-wrap">
+            {/* Avatar with Edit Option */}
+            <div style={{ position: 'relative' }}>
+              <img
+                src={preview}
+                alt="Profile"
+                style={{
+                  width: 100,
+                  height: 100,
+                  borderRadius: "50%",
+                  objectFit: "cover",
+                  border: "3px solid #1ddec4"
+                }}
+              />
+              {userDetails?.image && (
+                <IconButton
+                  aria-label="delete"
+                  onClick={deleteProfileImage}
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    right: 0,
+                    backgroundColor: '#dc2626',
+                    color: 'white',
+                    padding: '4px',
+                    fontSize: '1rem',
+                    borderRadius: '50%',
+                    width: 28,
+                    height: 28
+                  }}
+                >
+                  <DeleteIcon fontSize="small" />
+                </IconButton>
+              )}
+            </div>
+
+            {/* Info */}
+            <div className="flex-grow-1">
+              <h5 className="fw-bold mb-1">{userDetails?.name}</h5>
+              <div className="d-flex gap-3 flex-wrap">
+                <small className="text-muted">
+                  Email:{" "}
+                  <a
+                    href={`mailto:${userDetails?.email}`}
+                    style={{ color: "#1ddec4", textDecoration: "underline" }}
+                  >
+                    {userDetails?.email}
+                  </a>
+                </small>
               </div>
             </div>
-            <div className="col-lg-9 content"></div>
+
+            {/* Status Badge */}
+            <div>
+              <span
+                style={{
+                  padding: "6px 14px",
+                  borderRadius: "20px",
+                  background: "#e6f9f6",
+                  color: "#1ddec4",
+                  fontWeight: 600,
+                  fontSize: "13px"
+                }}
+              >
+                Active
+              </span>
+            </div>
           </div>
         </Card.Body>
       </Card>
-      <Card>
-        <Card.Body>
-          {userDetails && (
-            <Formik
-              initialValues={{
-                name: userDetails?.name,
-                email: userDetails?.email,
-                image: null,
-                oldPassword: '',
-                newPassword: '',
-                confirmPassword: ''
-              }}
-              validationSchema={getValidationSchema(content)}
-              onSubmit={handleSubmit}
-              enableReinitialize
-            >
-              {({ values, errors, touched, handleChange, handleBlur, handleSubmit, setFieldValue }) => (
-                <Form onSubmit={handleSubmit}>
-                  <nav>
-                    <div className="container mb-2 mt-2" id="container-div">
-                      <button
-                        className={`btn me-2 mb-2 btn-content ${activeButton === 'profile' ? 'active-btns' : ''}`}
-                        style={{ width: '11rem', fontSize: '14px', marginRight: '10px' }}
-                        type="button"
-                        onClick={() => handleButtonClick('profile')}
-                      >
-                        Edit Profile
-                      </button>
-                      <button
-                        className={`btn me-2 mb-2 btn-content ${activeButton === 'password' ? 'active-btns' : ''}`}
-                        style={{ width: '13rem', fontSize: '14px' }}
-                        type="button"
-                        onClick={() => handleButtonClick('password')}
-                      >
-                        Change Password
-                      </button>
-                    </div>
-                  </nav>
 
+      {/* Tab Buttons - Modern Style */}
+      <div className="d-flex gap-2 mb-4 flex-wrap">
+        <button
+          className={`btn ${activeButton === 'profile' ? 'btn-content-active' : ''}`}
+          style={{
+            borderRadius: "999px",
+            padding: "8px 24px",
+            fontSize: "13px",
+            background: activeButton === 'profile' ? "#1ddec4" : "#eef2f7",
+            color: activeButton === 'profile' ? "#fff" : "#64748b",
+            cursor: "pointer",
+            border: 0,
+            fontWeight: 500
+          }}
+          type="button"
+          onClick={() => handleButtonClick('profile')}
+        >
+          Edit Profile
+        </button>
+        <button
+          className={`btn ${activeButton === 'password' ? 'btn-content-active' : ''}`}
+          style={{
+            borderRadius: "999px",
+            padding: "8px 24px",
+            fontSize: "13px",
+            background: activeButton === 'password' ? "#1ddec4" : "#eef2f7",
+            color: activeButton === 'password' ? "#fff" : "#64748b",
+            cursor: "pointer",
+            border: 0,
+            fontWeight: 500
+          }}
+          type="button"
+          onClick={() => handleButtonClick('password')}
+        >
+          Change Password
+        </button>
+      </div>
+
+      {/* Form Card */}
+      {userDetails && (
+        <Formik
+          initialValues={{
+            name: userDetails?.name || '',
+            email: userDetails?.email || '',
+            image: null,
+            oldPassword: '',
+            newPassword: '',
+            confirmPassword: ''
+          }}
+          validationSchema={getValidationSchema(content)}
+          onSubmit={handleSubmit}
+          enableReinitialize
+        >
+          {({ values, errors, touched, handleChange, handleBlur, handleSubmit, setFieldValue }) => (
+            <Form onSubmit={handleSubmit}>
+              <Card className="border-0 shadow-lg rounded-4">
+                <Card.Body className="p-4">
                   {content === 0 && (
-                    <div className="container">
-                      <div className="mt-3">
-                        <Form.Group className="mb-3" as={Row} controlId="formHorizontalName">
-                          <Col sm={6} className="mb-3">
-                            <div>Name</div>
+                    <div>
+                      <div className="row g-3">
+                        <div className="col-md-6">
+                          <Form.Group>
+                            <Form.Label style={{ fontSize: '13px', fontWeight: 500, marginBottom: '6px', color: '#374151' }}>
+                              Full Name <span style={{ color: '#dc2626' }}>*</span>
+                            </Form.Label>
                             <Form.Control
                               type="text"
                               placeholder="Enter Name"
@@ -273,173 +454,308 @@ const Profile = () => {
                               value={values.name}
                               onChange={handleChange}
                               onBlur={handleBlur}
-                              isInvalid={touched.name && !!errors.name}
+                              onFocus={(e) => {
+                                e.target.style.border = '1.5px solid #1ddec4';
+                                e.target.style.boxShadow = 'none';
+                                e.target.style.outline = 'none';
+                              }}
+                              style={{
+                                borderRadius: '10px',
+                                border: errors.name && touched.name ? '1px solid #dc2626' : '1px solid #e5e7eb',
+                                padding: '10px 14px',
+                                fontSize: '13px'
+                              }}
                             />
-                            <Form.Control.Feedback type="invalid">
-                              {errors.name}
-                            </Form.Control.Feedback>
-                          </Col>
+                            {errors.name && touched.name && (
+                              <div style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}>
+                                {errors.name}
+                              </div>
+                            )}
+                          </Form.Group>
+                        </div>
 
-                          <Col sm={6} className="mb-3">
-                            <div>Email</div>
+                        <div className="col-md-6">
+                          <Form.Group>
+                            <Form.Label style={{ fontSize: '13px', fontWeight: 500, marginBottom: '6px', color: '#374151' }}>
+                              Email Address <span style={{ color: '#dc2626' }}>*</span>
+                            </Form.Label>
                             <Form.Control
-                              type="text"
+                              type="email"
                               placeholder="Enter Email"
                               name="email"
                               value={values.email}
                               onChange={handleChange}
                               onBlur={handleBlur}
-                              isInvalid={touched.email && !!errors.email}
+                              onFocus={(e) => {
+                                e.target.style.border = '1.5px solid #1ddec4';
+                                e.target.style.boxShadow = 'none';
+                                e.target.style.outline = 'none';
+                              }}
+                              style={{
+                                borderRadius: '10px',
+                                border: errors.email && touched.email ? '1px solid #dc2626' : '1px solid #e5e7eb',
+                                padding: '10px 14px',
+                                fontSize: '13px'
+                              }}
                             />
-                            <Form.Control.Feedback type="invalid">
-                              {errors.email}
-                            </Form.Control.Feedback>
-                          </Col>
+                            {errors.email && touched.email && (
+                              <div style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}>
+                                {errors.email}
+                              </div>
+                            )}
+                          </Form.Group>
+                        </div>
 
-                          <Col sm={12}>
-                            <img src={preview} alt="Profile" className="profile-img mb-2 mt-1" />
+                        <div className="col-md-12">
+                          <Form.Group>
+                            <Form.Label style={{ fontSize: '13px', fontWeight: 500, marginBottom: '6px', color: '#374151' }}>
+                              Profile Image
+                            </Form.Label>
+                            <Form.Control
+                              type="file"
+                              name="image"
+                              accept="image/*"
+                              onChange={(event) => handleImageUpload(event, setFieldValue)}
+                              onBlur={handleBlur}
+                              style={{
+                                borderRadius: '10px',
+                                border: errors.image && touched.image ? '1px solid #dc2626' : '1px solid #e5e7eb',
+                                padding: '8px 14px',
+                                fontSize: '13px'
+                              }}
+                            />
+                            {errors.image && touched.image && (
+                              <div style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}>
+                                {errors.image}
+                              </div>
+                            )}
+                            <small className="text-muted" style={{ fontSize: '11px' }}>
+                              Supported formats: JPG, JPEG, GIF, PNG. Max size: 50MB
+                            </small>
+                          </Form.Group>
+                        </div>
+                      </div>
 
-                          </Col>
-                          <Col sm={12}>
-                            <div>Upload Image</div>
-                            <Form.Control type="file" name='image' onChange={(event) => handleImageUpload(event, setFieldValue)} onBlur={handleBlur}
-                              isInvalid={touched.image && !!errors.image} />
-                            <Form.Control.Feedback type="invalid">
-                              {errors.image}
-                            </Form.Control.Feedback>
-                          </Col>
-                        </Form.Group>
-
-                        <Form.Group className="mb-3" as={Row}>
-                          <Col sm={{ span: 10 }}>
-                            <Button type="submit" className="mt-2 submit-btn">
-                              Submit
-                            </Button>
-                          </Col>
-                        </Form.Group>
+                      <div className="mt-4">
+                        <Button
+                          type="submit"
+                          style={{
+                            background: "#1ddec4",
+                            border: "none",
+                            borderRadius: "10px",
+                            padding: "10px 28px",
+                            fontSize: "13px",
+                            fontWeight: 500,
+                            color: "#fff"
+                          }}
+                        >
+                          Save Changes
+                        </Button>
                       </div>
                     </div>
                   )}
 
                   {content === 1 && (
-                    <div className="container">
-                      <div className="mt-3">
-                        <Form.Group className="mb-3" as={Row} controlId="formHorizontalMessage">
-                          <Col sm={6} className="mb-3">
-                            <FormControl fullWidth error={Boolean(touched.oldPassword && errors.oldPassword)} sx={{ mt: theme.spacing(3), mb: theme.spacing(1) }}>
-                              <InputLabel htmlFor="outlined-adornment-old-password">Current Password</InputLabel>
-                              <OutlinedInput
-                                id="outlined-adornment-old-password"
+                    <div>
+                      <div className="row g-3">
+                        <div className="col-md-6">
+                          <Form.Group>
+                            <Form.Label style={{ fontSize: '13px', fontWeight: 500, marginBottom: '6px', color: '#374151' }}>
+                              Current Password <span style={{ color: '#dc2626' }}>*</span>
+                            </Form.Label>
+                            <div style={{ position: 'relative' }}>
+                              <Form.Control
                                 type={showOldPassword ? 'text' : 'password'}
-                                value={values.oldPassword}
+                                placeholder="Enter Current Password"
                                 name="oldPassword"
-                                onBlur={handleBlur}
+                                value={values.oldPassword}
                                 onChange={handleChange}
-                                label="Current Password"
-                                endAdornment={
-                                  <InputAdornment position="end">
-                                    <IconButton
-                                      aria-label="toggle old password visibility"
-                                      onClick={handleClickShowOldPassword}
-                                      onMouseDown={handleMouseDownPassword}
-                                      edge="end"
-                                      size="large"
-                                    >
-                                      {showOldPassword ? <Visibility /> : <VisibilityOff />}
-                                    </IconButton>
-                                  </InputAdornment>
-                                }
-                              />
-                              {touched.oldPassword && errors.oldPassword && (
-                                <FormHelperText error id="standard-weight-helper-text">
-                                  {errors.oldPassword}
-                                </FormHelperText>
-                              )}
-                            </FormControl>
-                          </Col>
-                          <Col sm={6} className="mb-3">
-                            <FormControl fullWidth error={Boolean(touched.newPassword && errors.newPassword)} sx={{ mt: theme.spacing(3), mb: theme.spacing(1) }}>
-                              <InputLabel htmlFor="outlined-adornment-new-password">New Password</InputLabel>
-                              <OutlinedInput
-                                id="outlined-adornment-new-password"
-                                type={showNewPassword ? 'text' : 'password'}
-                                value={values.newPassword}
-                                name="newPassword"
                                 onBlur={handleBlur}
-                                onChange={handleChange}
-                                label="New Password"
-                                endAdornment={
-                                  <InputAdornment position="end">
-                                    <IconButton
-                                      aria-label="toggle new password visibility"
-                                      onClick={handleClickShowNewPassword}
-                                      onMouseDown={handleMouseDownPassword}
-                                      edge="end"
-                                      size="large"
-                                    >
-                                      {showNewPassword ? <Visibility /> : <VisibilityOff />}
-                                    </IconButton>
-                                  </InputAdornment>
-                                }
+                                onFocus={(e) => {
+                                  e.target.style.border = '1.5px solid #1ddec4';
+                                  e.target.style.boxShadow = 'none';
+                                  e.target.style.outline = 'none';
+                                }}
+                                style={{
+                                  borderRadius: '10px',
+                                  border: errors.oldPassword && touched.oldPassword ? '1px solid #dc2626' : '1px solid #e5e7eb',
+                                  padding: '10px 14px',
+                                  fontSize: '13px',
+                                  paddingRight: '45px'
+                                }}
                               />
-                              {touched.newPassword && errors.newPassword && (
-                                <FormHelperText error id="standard-weight-helper-text">
-                                  {errors.newPassword}
-                                </FormHelperText>
-                              )}
-                            </FormControl>
-                          </Col>
-                          <Col sm={6} className="mb-3">
-                            <FormControl fullWidth error={Boolean(touched.confirmPassword && errors.confirmPassword)} sx={{ mt: theme.spacing(3), mb: theme.spacing(1) }}>
-                              <InputLabel htmlFor="outlined-adornment-confirm-password">Confirm Password</InputLabel>
-                              <OutlinedInput
-                                id="outlined-adornment-confirm-password"
-                                type={showConfirmPassword ? 'text' : 'password'}
-                                value={values.confirmPassword}
-                                name="confirmPassword"
-                                onBlur={handleBlur}
-                                onChange={handleChange}
-                                label="Confirm Password"
-                                endAdornment={
-                                  <InputAdornment position="end">
-                                    <IconButton
-                                      aria-label="toggle confirm password visibility"
-                                      onClick={handleClickShowConfirmPassword}
-                                      onMouseDown={handleMouseDownPassword}
-                                      edge="end"
-                                      size="large"
-                                    >
-                                      {showConfirmPassword ? <Visibility /> : <VisibilityOff />}
-                                    </IconButton>
-                                  </InputAdornment>
-                                }
-                              />
-                              {touched.confirmPassword && errors.confirmPassword && (
-                                <FormHelperText error id="standard-weight-helper-text">
-                                  {errors.confirmPassword}
-                                </FormHelperText>
-                              )}
-                            </FormControl>
-                          </Col>
-                        </Form.Group>
+                              <IconButton
+                                aria-label="toggle password visibility"
+                                onClick={handleClickShowOldPassword}
+                                onMouseDown={handleMouseDownPassword}
+                                style={{
+                                  position: 'absolute',
+                                  right: '8px',
+                                  top: '50%',
+                                  transform: 'translateY(-50%)',
+                                  padding: '4px'
+                                }}
+                                size="small"
+                              >
+                                {showOldPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                              </IconButton>
+                            </div>
+                            {errors.oldPassword && touched.oldPassword && (
+                              <div style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}>
+                                {errors.oldPassword}
+                              </div>
+                            )}
+                          </Form.Group>
+                        </div>
 
-                        <Form.Group className="mb-3" as={Row}>
-                          <Col sm={{ span: 10 }}>
-                            <Button type="submit" className="mt-1 submit-btn">
-                              Submit
-                            </Button>
-                          </Col>
-                        </Form.Group>
+                        <div className="col-md-6">
+                          <Form.Group>
+                            <Form.Label style={{ fontSize: '13px', fontWeight: 500, marginBottom: '6px', color: '#374151' }}>
+                              New Password <span style={{ color: '#dc2626' }}>*</span>
+                            </Form.Label>
+                            <div style={{ position: 'relative' }}>
+                              <Form.Control
+                                type={showNewPassword ? 'text' : 'password'}
+                                placeholder="Enter New Password"
+                                name="newPassword"
+                                value={values.newPassword}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                onFocus={(e) => {
+                                  e.target.style.border = '1.5px solid #1ddec4';
+                                  e.target.style.boxShadow = 'none';
+                                  e.target.style.outline = 'none';
+                                }}
+                                style={{
+                                  borderRadius: '10px',
+                                  border: errors.newPassword && touched.newPassword ? '1px solid #dc2626' : '1px solid #e5e7eb',
+                                  padding: '10px 14px',
+                                  fontSize: '13px',
+                                  paddingRight: '45px'
+                                }}
+                              />
+                              <IconButton
+                                aria-label="toggle password visibility"
+                                onClick={handleClickShowNewPassword}
+                                onMouseDown={handleMouseDownPassword}
+                                style={{
+                                  position: 'absolute',
+                                  right: '8px',
+                                  top: '50%',
+                                  transform: 'translateY(-50%)',
+                                  padding: '4px'
+                                }}
+                                size="small"
+                              >
+                                {showNewPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                              </IconButton>
+                            </div>
+                            {errors.newPassword && touched.newPassword && (
+                              <div style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}>
+                                {errors.newPassword}
+                              </div>
+                            )}
+                          </Form.Group>
+                        </div>
+
+                        <div className="col-md-6">
+                          <Form.Group>
+                            <Form.Label style={{ fontSize: '13px', fontWeight: 500, marginBottom: '6px', color: '#374151' }}>
+                              Confirm Password <span style={{ color: '#dc2626' }}>*</span>
+                            </Form.Label>
+                            <div style={{ position: 'relative' }}>
+                              <Form.Control
+                                type={showConfirmPassword ? 'text' : 'password'}
+                                placeholder="Enter Confirm Password"
+                                name="confirmPassword"
+                                value={values.confirmPassword}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                onFocus={(e) => {
+                                  e.target.style.border = '1.5px solid #1ddec4';
+                                  e.target.style.boxShadow = 'none';
+                                  e.target.style.outline = 'none';
+                                }}
+                                style={{
+                                  borderRadius: '10px',
+                                  border: errors.confirmPassword && touched.confirmPassword ? '1px solid #dc2626' : '1px solid #e5e7eb',
+                                  padding: '10px 14px',
+                                  fontSize: '13px',
+                                  paddingRight: '45px'
+                                }}
+                              />
+                              <IconButton
+                                aria-label="toggle password visibility"
+                                onClick={handleClickShowConfirmPassword}
+                                onMouseDown={handleMouseDownPassword}
+                                style={{
+                                  position: 'absolute',
+                                  right: '8px',
+                                  top: '50%',
+                                  transform: 'translateY(-50%)',
+                                  padding: '4px'
+                                }}
+                                size="small"
+                              >
+                                {showConfirmPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                              </IconButton>
+                            </div>
+                            {errors.confirmPassword && touched.confirmPassword && (
+                              <div style={{ color: '#dc2626', fontSize: '12px', marginTop: '4px' }}>
+                                {errors.confirmPassword}
+                              </div>
+                            )}
+                          </Form.Group>
+                        </div>
+                      </div>
+
+                      <div className="mt-4">
+                        <Button
+                          type="submit"
+                          style={{
+                            background: "#1ddec4",
+                            border: "none",
+                            borderRadius: "10px",
+                            padding: "10px 28px",
+                            fontSize: "13px",
+                            fontWeight: 500,
+                            color: "#fff"
+                          }}
+                        >
+                          Change Password
+                        </Button>
                       </div>
                     </div>
                   )}
-
-                </Form>
-              )}
-            </Formik>
+                </Card.Body>
+              </Card>
+            </Form>
           )}
+        </Formik>
+      )}
+
+      {/* Delete Account Card */}
+      {/* <Card className="border-0 shadow-lg rounded-4 mt-4">
+        <Card.Body className="p-4 text-center">
+          <Button
+            variant="danger"
+            onClick={}
+            style={{
+              borderRadius: "10px",
+              padding: "10px 28px",
+              fontSize: "13px",
+              fontWeight: 500,
+              background: "#dc2626",
+              border: "none"
+            }}
+          >
+            Delete My Account
+          </Button>
+          <p className="text-muted mt-3 mb-0" style={{ fontSize: "12px" }}>
+            ⚠️ Warning: This action cannot be undone. All your data will be permanently deleted.
+          </p>
         </Card.Body>
-      </Card>
+      </Card> */}
     </>
   );
 };
