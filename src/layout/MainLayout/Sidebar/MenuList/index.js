@@ -288,7 +288,7 @@ const MenuList = ({ collapsed }) => {
       }}
     >
       {/* TOP MENU */}
-      <List>
+      <List sx={{overflow:'auto'}}>
         {menu.map((item) => (
           <React.Fragment key={item.title}>
             <ListItemButton
@@ -386,7 +386,9 @@ const MenuList = ({ collapsed }) => {
       </List>
 
       {/* BOTTOM MENU */}
-      <Box sx={{ px: 1, pb: 2 }}>
+      <Box style={{  width: "100%",
+    position: "absolute",
+    bottom: "60px"}}>
         <Divider sx={{ mb: 1 }} />
 
         {/* <List>
