@@ -13,15 +13,30 @@ import { Link, useLocation } from "react-router-dom";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import GroupIcon from "@mui/icons-material/Group";
 import AutoGraphIcon from "@mui/icons-material/AutoGraph";
-import BackupTableIcon from "@mui/icons-material/BackupTable";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
-import DescriptionIcon from "@mui/icons-material/Description";
-// import ContactSupportIcon from "@mui/icons-material/ContactSupport";
-// import SignalCellularAltIcon from '@mui/icons-material/SignalCellularAlt';
+import PersonAddAltIcon from "@mui/icons-material/PersonAddAlt"
+import PersonRemoveIcon from "@mui/icons-material/PersonRemove"
+import CategoryIcon from "@mui/icons-material/Category";
+import MedicationIcon from "@mui/icons-material/Medication"
+import LocalPharmacyIcon from "@mui/icons-material/LocalPharmacy"
+import CoronavirusIcon from "@mui/icons-material/Coronavirus"
+import SickIcon from "@mui/icons-material/Sick"
+import SummarizeIcon from "@mui/icons-material/Summarize"
+import DifferenceIcon from "@mui/icons-material/Difference"
+import ContactPhoneIcon from "@mui/icons-material/ContactPhone"
+import BroadcastOnHomeIcon from "@mui/icons-material/BroadcastOnHome"
+import LanguageIcon from "@mui/icons-material/Language"
+import BackupTableIcon from "@mui/icons-material/BackupTable"
+import AddBusinessIcon from '@mui/icons-material/AddBusiness';
+import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
+import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
+import HealthAndSafetyIcon from '@mui/icons-material/HealthAndSafety';
+import AssessmentIcon from '@mui/icons-material/Assessment';
 
 // import { APP_PREFIX_PATH } from "../../../../../src/config";
 import { APP_PREFIX_PATH } from "config/constant";
+// import { title } from "process";
 
 const menu = [
   {
@@ -36,12 +51,12 @@ const menu = [
     children: [
       {
         title: "User List",
-        icon: <DescriptionIcon />,
+        icon: <PersonAddAltIcon />,
         url: APP_PREFIX_PATH + "/manage-user/userlist"
       },
       {
         title: "Deleted Users",
-        icon: <DescriptionIcon />,
+        icon: <PersonRemoveIcon />,
         url: APP_PREFIX_PATH + "/manage-user/deleteuser"
       },
     ]
@@ -61,7 +76,7 @@ const menu = [
 
  {
     title: "Manage Doctor Category",
-    icon: <BackupTableIcon />,
+    icon: <CategoryIcon />,
     url: APP_PREFIX_PATH + "/manage-category"
   },
    {
@@ -70,12 +85,12 @@ const menu = [
     children: [
       {
         title: "Doctor List",
-        icon: <DescriptionIcon />,
+        icon: <MedicationIcon />,
         url: APP_PREFIX_PATH + "/manage-doctor"
       },
       {
         title: "Deleted Doctor List",
-        icon: <DescriptionIcon />,
+        icon: <PersonRemoveIcon />,
         url: APP_PREFIX_PATH + "/manage-user/deletedoctor"
       },
     ]
@@ -105,95 +120,110 @@ const menu = [
 //   },
  {
     title: "Manage Medicine",
-    icon: <HomeOutlinedIcon />,
+    icon: <LocalPharmacyIcon />,
     url: APP_PREFIX_PATH + "/manage-medicine"
   },
    {
     title: "Manage Disease",
-    icon: <HomeOutlinedIcon />,
+    icon: <CoronavirusIcon />,
     url: APP_PREFIX_PATH + "/manage-disease"
   },
    {
     title: "Manage Symptom",
-    icon: <HomeOutlinedIcon />,
+    icon: <SickIcon />,
     url: APP_PREFIX_PATH + "/manage-symptom"
   },
   {
     title: "Manage Report Category",
-    icon: <HomeOutlinedIcon />,
+    icon: <SummarizeIcon />,
     url: APP_PREFIX_PATH + "/manage-report-category"
   },
       {
     title: "Analytics",
-    icon: <HomeOutlinedIcon />,
+    icon: <AutoGraphIcon />,
     url: APP_PREFIX_PATH + "/analytics"
   },
     {
     title: "Manage FAQs",
-    icon: <HomeOutlinedIcon />,
+    icon: <SummarizeIcon />,
     url: APP_PREFIX_PATH + "/manage-faq"
   },
      {
     title: "Manage Content",
-    icon: <HomeOutlinedIcon />,
+    icon: <DifferenceIcon />,
     url: APP_PREFIX_PATH + "/manage-contents"
   },
       {
     title: "Manage Help & Support",
-    icon: <HomeOutlinedIcon />,
+    icon: <ContactPhoneIcon />,
     url: APP_PREFIX_PATH + "/manage-contact-us"
   },
      {
-    title: "Manage Help & Support",
-    icon: <HomeOutlinedIcon />,
-    url: APP_PREFIX_PATH + "/manage-contact-us"
+    title: "Manage Broadcast",
+    icon: <BroadcastOnHomeIcon />,
+    url: APP_PREFIX_PATH + "/manage-broadcast"
   },
+   {
+     title: "Language",
+    icon: <LanguageIcon />,
+    url: APP_PREFIX_PATH + "/admin/languages"
+    
+  },
+
  
   {
-    title: "Reports",
-    icon: <AutoGraphIcon />,
+    title: "Tabular Reports",
+    icon: <BackupTableIcon />,
     children: [
       {
         title: "User Report",
+        icon: <PersonAddAltIcon />,
         url: APP_PREFIX_PATH + "/tabular-report/user-report"
       },
       {
         title: "Doctor Report",
+        icon: <LocalHospitalIcon />,
         url: APP_PREFIX_PATH + "/tabular-report/doctor-report"
       },
       {
         title: "Medication Report",
+        icon: <MedicalServicesIcon />,
+
         url: APP_PREFIX_PATH + "/tabular-report/medication-report"
       },
       {
         title: "Health Report",
+        icon: <HealthAndSafetyIcon />,
         url: APP_PREFIX_PATH + "/tabular-report/health-report"
       },
       {
         title: "Measurement Report",
+        icon: <AssessmentIcon />,
         url: APP_PREFIX_PATH + "/tabular-report/measurement-report"
       },
-      {
-        title: "Lab Report",
-        url: APP_PREFIX_PATH + "/tabular-report/lab-report"
-      },
-      {
-        title: "Shared Report",
-        url: APP_PREFIX_PATH + "/tabular-report/shared-report"
-      }
+      // {
+      //   title: "Lab Report",
+      //   url: APP_PREFIX_PATH + "/tabular-report/lab-report"
+      // },
+      // {
+      //   title: "Shared Report",
+      //   url: APP_PREFIX_PATH + "/tabular-report/shared-report"
+      // }
     ]
   },
 
   {
-    title: "Analytics",
+    title: "Analytical Report",
     icon: <AutoGraphIcon />,
     children: [
       {
         title: "User Analytics",
+        icon : <PersonAddAltIcon />,
         url: APP_PREFIX_PATH + "/analytic-report/user-ana-report"
       },
       {
         title: "Doctor Analytics",
+        icon : <MedicationIcon />,
         url: APP_PREFIX_PATH + "/analytic-report/doctor-ana-report"
       }
     ]
@@ -204,6 +234,13 @@ const menu = [
 //     icon: <SignalCellularAltIcon />,
 //     url: APP_PREFIX_PATH + "/insights/new-insights"
 //   },
+
+  {
+    title: "New Insights",
+    icon: <AddBusinessIcon />,
+    url: APP_PREFIX_PATH + "/insights/new-insights"
+  },
+ 
 
 //   {
 //     title: "Bulk Upload",
@@ -281,14 +318,19 @@ const MenuList = ({ collapsed }) => {
   return (
     <Box
       sx={{
-        height: "100%",
+        height: "100vh",
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between"
       }}
     >
       {/* TOP MENU */}
-      <List sx={{overflow:'auto'}}>
+      <List  sx={{
+    flex: 1,
+    overflowY: 'auto',
+    overflowX: 'hidden',
+    paddingBottom:'100px'
+  }}>
         {menu.map((item) => (
           <React.Fragment key={item.title}>
             <ListItemButton
@@ -386,9 +428,7 @@ const MenuList = ({ collapsed }) => {
       </List>
 
       {/* BOTTOM MENU */}
-      <Box style={{  width: "100%",
-    position: "absolute",
-    bottom: "60px"}}>
+      <Box sx={{ mt: 'auto' }}>
         <Divider sx={{ mb: 1 }} />
 
         {/* <List>

@@ -22,8 +22,7 @@ const Sidebar = ({ drawerOpen, drawerToggle }) => {
         "& .MuiDrawer-paper": {
           width: matchUpMd ? (drawerOpen ? drawerWidth : collapsedWidth) : drawerWidth,
           transition: "width 0.25s ease",
-          overflow: "hidden",
-          // overflowY: "hidden",
+          overflowX: "hidden",
           borderRight: "1px solid #e9ecef",
           top: { md: 64, xs: 0 },
           boxShadow: matchUpMd ? 'none' : '0 0.15rem 1.75rem 0 rgba(33, 40, 50, 0.15)'
