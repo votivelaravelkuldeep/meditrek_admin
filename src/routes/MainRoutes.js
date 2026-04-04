@@ -39,6 +39,7 @@ import ManageFaq from 'views/AllPage/ManageFaq';
 import DeleteDoctor from 'views/AllPage/DeleteDoctor';
 // import AdminAnalytics from 'views/AllPage/AdminAnalytics';
 import NewInsights from 'views/AllPage/NewInsights';
+import AdminAnalytics from 'views/AllPage/Analytics';
 
 const DashboardDefault = Loadable(lazy(() => import('../views/Dashboard')));
 const UtilsTypography = Loadable(lazy(() => import('../views/Utils/Typography')));
@@ -72,6 +73,8 @@ const MainRoutes = {
 
     /** FAQ */
     { path: 'manage-faq', element: <ManageFaq /> },
+
+    { path: 'analytics', element: <AdminAnalytics /> },
 
     /** Report Category */
     { path: 'manage-report-category', element: <ManageReportCategory /> },

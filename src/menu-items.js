@@ -189,6 +189,13 @@ export default {
           icon: icons['SummarizeIcon'],
           url: APP_PREFIX_PATH + '/manage-report-category'
         },
+    {
+          id: 'analytics',
+          title: 'Analytics',
+          type: 'item',
+          icon: icons['SummarizeIcon'],
+          url: APP_PREFIX_PATH + '/analytics'
+        },
           {
           id: 'manageFaq',
           title: 'Manage FAQ',

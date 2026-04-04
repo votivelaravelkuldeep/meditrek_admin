@@ -123,6 +123,11 @@ const menu = [
     icon: <HomeOutlinedIcon />,
     url: APP_PREFIX_PATH + "/manage-report-category"
   },
+      {
+    title: "Analytics",
+    icon: <HomeOutlinedIcon />,
+    url: APP_PREFIX_PATH + "/analytics"
+  },
     {
     title: "Manage FAQs",
     icon: <HomeOutlinedIcon />,
