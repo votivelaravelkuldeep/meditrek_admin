@@ -149,7 +149,7 @@
 /* manage user  css end */
 /* profile css start */
 .active {
-  background-color: #0ccfb5 !important;
+  /* background-color: #0ccfb5 !important; */
   color: white !important;
 }
 
@@ -263,4 +263,23 @@
   text-align: center;
   min-width: 160px;
   /* Set as needed */
+}
+
+/* 6/04 */
+.btn-primary:hover{
+  border: 1px solid #0ccfb5 !important;
+  background: white !important;
+  color: #0ccfb5 !important;
+}
+
+ /* 06/04  */
+ .action-btn{
+  font-size: 13px;
+  border-radius: 10px;
+  transition: all ease-in-out .3s;
+   }
+
+   .custom-search:focus {
+  border-color: #1ddec4;
+  box-shadow: 0 0 0 2px rgba(29, 222, 196, 0.15);
 }
