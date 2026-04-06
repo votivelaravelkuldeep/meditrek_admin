@@ -83,7 +83,7 @@ const CustomTable = ({
                         </tr>
                     </thead>
 
-                    <tbody>
+                    <tbody style={{verticalAlign:"middle"}}>
                         {currentData.length > 0 ? (
                             currentData.map((row, i) => (
                                 <tr key={i}>
