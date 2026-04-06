@@ -2,7 +2,7 @@
   "name": "materially-free-react-admin-template",
   "version": "2.1.0",
   "private": true,
-  "homepage": "/meditrek/admin/",
+  "homepage": "/meditrek/admin/staging",
   "dependencies": {
     "@emotion/react": "^11.11.3",
     "@emotion/styled": "^11.11.0",
