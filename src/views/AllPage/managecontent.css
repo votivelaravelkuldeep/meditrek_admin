@@ -121,6 +121,7 @@
   color: #ffffff;
   border: 1px solid #1DDEC4 !important;
   font-weight: 500;
+  transition: all ease-in-out .3s;
 }
 
 .btn-primary {
@@ -282,4 +283,19 @@
    .custom-search:focus {
   border-color: #1ddec4;
   box-shadow: 0 0 0 2px rgba(29, 222, 196, 0.15);
+}
+
+/* MODAL DESIGN */
+.custom-modal .modal-content {
+  border-radius: 16px;
+  padding: 10px;
+}
+
+.custom-modal .modal-header {
+  border-bottom: none;
+}
+
+.custom-modal .modal-title {
+  font-size: 16px;
+  font-weight: 600;
 }

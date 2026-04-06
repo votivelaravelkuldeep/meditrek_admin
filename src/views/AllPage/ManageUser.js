@@ -139,14 +139,12 @@ function ManageUser() {
     {
       label: 'S. No',
       key: 'sr_no',
-      sortable: true,
       render: (_, index) => index + 1
     },
    
     {
       label: 'Image',
       key: 'image',
-      sortable: true,
       render: (user) => (
         <img
           src={user.image ? `${IMAGE_PATH}${user.image}?${new Date().getTime()}` : `${IMAGE_PATH}placeholder.jpg`}
