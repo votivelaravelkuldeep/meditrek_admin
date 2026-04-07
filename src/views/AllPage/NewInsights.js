@@ -1,37 +1,21 @@
-import React, { useEffect, useState } from 'react';
-import {
-  Menu,
-  MenuItem,
-  
-} from '@mui/material';
-// import MoreVertIcon from '@mui/icons-material/MoreVert';
-import {
-  Grid,
-  Card,
-  Typography,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Switch,
-  FormControlLabel
-} from '@mui/material';
-import axios from 'axios';
-import { API_URL } from 'config/constant';
+import React, { useEffect, useState } from "react";
+import { Menu, MenuItem } from "@mui/material";
+import axios from "axios";
+import { API_URL } from "config/constant";
+import FormInput from "component/common/formElements/FormInput";
+import FormTextarea from "component/common/formElements/FormTextarea";
 
 const NewInsights = () => {
-    const [anchorEl, setAnchorEl] = useState(null);
-    const [selectedItem, setSelectedItem] = useState(null);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedItem, setSelectedItem] = useState(null);
 
   const [posts, setPosts] = useState([]);
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState(null);
 
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [url, setUrl] = useState('');
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [url, setUrl] = useState("");
   const [image, setImage] = useState(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -39,9 +23,7 @@ const NewInsights = () => {
 
   // ================= FETCH =================
   const fetchPosts = async () => {
-    const res = await axios.get(
-      `${API_URL}get-all-insights-posts`
-    );
+    const res = await axios.get(`${API_URL}get-all-insights-posts`);
     if (res.data.success) setPosts(res.data.data);
   };
 
@@ -61,9 +43,9 @@ const NewInsights = () => {
       setIsVisible(item.is_visible === 1);
     } else {
       setEditId(null);
-      setTitle('');
-      setDescription('');
-      setUrl('');
+      setTitle("");
+      setDescription("");
+      setUrl("");
       setImage(null);
       setIsVisible(false);
     }
@@ -74,27 +56,24 @@ const NewInsights = () => {
   // ================= SAVE =================
   const handleSave = async () => {
     const formData = new FormData();
-    formData.append('admin_id', admin_id);
-    formData.append('title', title);
-    formData.append('description', description);
-    formData.append('url', url);
-    formData.append('image', image);
-    formData.append('is_visible', isVisible ? 1 : 0);
+    formData.append("admin_id", admin_id);
+    formData.append("title", title);
+    formData.append("description", description);
+    formData.append("url", url);
+    formData.append("image", image);
+    formData.append("is_visible", isVisible ? 1 : 0);
 
-    let api = 'new-insights-create-post';
+    let api = "new-insights-create-post";
 
     if (editId) {
-      formData.append('id', editId);
-      api = 'update-insights-post'; // backend banayenge
+      formData.append("id", editId);
+      api = "update-insights-post";
     }
 
-    const res = await axios.post(
-      `${API_URL}${api}`,
-      formData
-    );
+    const res = await axios.post(`${API_URL}${api}`, formData);
 
     if (res.data.success) {
-      alert(editId ? 'Updated' : 'Created');
+      alert(editId ? "Updated" : "Created");
       handleClose();
       fetchPosts();
     }
@@ -102,173 +81,280 @@ const NewInsights = () => {
 
   // ================= DELETE =================
   const handleDelete = async (id) => {
-    if (!window.confirm('Delete this post?')) return;
+    if (!window.confirm("Delete this post?")) return;
 
-    const res = await axios.post(
-      `${API_URL}delete-insights-post`,
-      { id }
-    );
+    const res = await axios.post(`${API_URL}delete-insights-post`, { id });
 
     if (res.data.success) {
-      alert('Deleted');
+      alert("Deleted");
       fetchPosts();
     }
   };
 
   const handleMenuOpen = (event, item) => {
-  setAnchorEl(event.currentTarget);
+    setAnchorEl(event.currentTarget);
     setSelectedItem(item);
-    };
+  };
 
-    const handleMenuClose = () => {
-    setAnchorEl(null);
-    }; 
-    
+  const handleMenuClose = () => setAnchorEl(null);
+
   return (
-    <Grid container spacing={2}>
-      <Grid item xs={12}>
-        <Card sx={{ p: 3, borderRadius: '10px' }}>
+    <>
+      {/* CARD */}
+      <div
+        style={{
+          background: "#fff",
+          borderRadius: "16px",
+          padding: "20px",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
+        }}
+      >
+        {/* HEADER */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            marginBottom: "16px",
+          }}
+        >
+          <h5 style={{ fontWeight: 600 }}>Insights List</h5>
 
-          {/* HEADER */}
-          <Grid container justifyContent="space-between">
-            <Typography variant="h5">Insights List</Typography>
+          <button
+            onClick={() => handleOpen()}
+            style={{
+              background: "#1ddec4",
+              color: "#fff",
+              border: "none",
+              borderRadius: "999px",
+              padding: "6px 16px",
+              fontSize: "13px",
+              cursor: "pointer",
+            }}
+          >
+            + Add Post
+          </button>
+        </div>
 
-            <Button variant="contained" onClick={() => handleOpen()}>
-              + Add Post
-            </Button>
-          </Grid>
+        {/* TABLE */}
+        <div style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead style={{ background: "#f8fafc" }}>
+              <tr>
+                <th style={th}>S.No</th>
+                <th style={th}>Title</th>
+                <th style={th}>Status</th>
+                <th style={th}>Action</th>
+              </tr>
+            </thead>
 
-         {/* TABLE */}
-            <div style={{ marginTop: '20px' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                <tr style={{ background: '#f5f6fa' }}>
-                    <th style={th}>S.No</th>
-                    <th style={th}>Title</th>
-                    <th style={th}>Status</th>
-                    <th style={th}>Action</th> {/* Image column hata di */}
-                </tr>
-                </thead>
-
-                <tbody>
-                {posts.map((item, i) => (
-                    <tr key={item.id} style={{ borderBottom: '1px solid #eee' }}>
+            <tbody>
+              {posts.length > 0 ? (
+                posts.map((item, i) => (
+                  <tr key={item.id} style={{ borderBottom: "1px solid #eee" }}>
                     <td style={td}>{i + 1}</td>
+
                     <td style={td}>{item.title}</td>
-                    <td style={td}>{item.is_visible ? 'Yes' : 'No'}</td>
 
                     <td style={td}>
-                        <Button
-                        variant="contained"
-                        size="small"
-                        onClick={(e) => handleMenuOpen(e, item)}
-                        sx={{
-                            background: '#20c997',
-                            textTransform: 'none'
+                      <span
+                        style={{
+                          padding: "4px 10px",
+                          borderRadius: "20px",
+                          fontSize: "12px",
+                          background: item.is_visible
+                            ? "#dcfce7"
+                            : "#fee2e2",
+                          color: item.is_visible ? "#16a34a" : "#dc2626",
+                          fontWeight: 600,
                         }}
-                        >
-                        Action ▼
-                        </Button>
+                      >
+                        {item.is_visible ? "Visible" : "Hidden"}
+                      </span>
                     </td>
-                    </tr>
-                ))}
-                </tbody>
-            </table>
 
-            {/* MENU */}
-            <Menu
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={handleMenuClose}
-            >
-                <MenuItem
-                onClick={() => {
-                    handleOpen(selectedItem); // modal open with data
-                    handleMenuClose();
-                }}
-                >
-                ✏️ Edit
-                </MenuItem>
-                <MenuItem
-                onClick={() => {
-                    handleDelete(selectedItem.id);
-                    handleMenuClose();
-                }}
-                sx={{ color: 'red' }}
-                >
-                🗑 Delete
-                </MenuItem>
-            </Menu>
-            </div>
+                    <td style={td}>
+                      <button
+                        onClick={(e) => handleMenuOpen(e, item)}
+                        style={{
+                          background: "#e6f9f6",
+                          color: "#1ddec4",
+                          border: "none",
+                          padding: "6px 12px",
+                          borderRadius: "8px",
+                          cursor: "pointer",
+                          fontSize: "12px",
+                        }}
+                      >
+                        Action ▼
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td
+                    colSpan="4"
+                    style={{ textAlign: "center", padding: "20px" }}
+                  >
+                    No Data Available
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
 
-            
+      {/* MENU */}
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
+        <MenuItem
+          onClick={() => {
+            handleOpen(selectedItem);
+            handleMenuClose();
+          }}
+        >
+          ✏️ Edit
+        </MenuItem>
 
-        </Card>
-      </Grid>
+        <MenuItem
+          onClick={() => {
+            handleDelete(selectedItem.id);
+            handleMenuClose();
+          }}
+          sx={{ color: "red" }}
+        >
+          🗑 Delete
+        </MenuItem>
+      </Menu>
 
       {/* MODAL */}
-      <Dialog open={open} onClose={handleClose} fullWidth>
-        <DialogTitle>{editId ? 'Edit' : 'Add'} Post</DialogTitle>
-
-        <DialogContent>
-          <TextField
-            fullWidth
-            label="Title"
-            sx={{ mt: 2 }}
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-
-          <TextField
-            fullWidth
-            label="Description"
-            sx={{ mt: 2 }}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-
-          <TextField
-            fullWidth
-            label="URL"
-            sx={{ mt: 2 }}
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-          />
-
-          <Button
-            variant="outlined"
-            component="label"
-            sx={{ mt: 2 }}
+      {open && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.4)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 999,
+          }}
+        >
+          <div
+            style={{
+              background: "#fff",
+              borderRadius: "16px",
+              padding: "20px",
+              width: "420px",
+              maxWidth: "95%",
+              boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
+            }}
           >
-            Upload Image
-            <input type="file" hidden onChange={(e) => setImage(e.target.files[0])} />
-          </Button>
+            <h5 style={{ fontWeight: 600 }}>
+              {editId ? "Edit Post" : "Add Post"}
+            </h5>
 
-          <FormControlLabel
-            control={
-              <Switch
-                checked={isVisible}
-                onChange={(e) => setIsVisible(e.target.checked)}
+            <div style={{ marginTop: "15px", display: "grid", gap: "12px" }}>
+              <FormInput
+                label="Title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Enter title"
+                required
               />
-            }
-            label="Status"
-            sx={{ mt: 2 }}
-          />
-        </DialogContent>
 
-        <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button variant="contained" onClick={handleSave}>
-            Save
-          </Button>
-        </DialogActions>
-      </Dialog>
+              <FormTextarea
+                label="Description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Enter description"
+              />
 
-    </Grid>
+              <FormInput
+                label="URL"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="Enter URL"
+              />
+
+              <div>
+                <label
+                  htmlFor="imageUpload"
+                  style={{ fontSize: "13px", fontWeight: 500 }}
+                >
+                  Upload Image
+                </label>
+
+                <input
+                  id="imageUpload"
+                  type="file"
+                  onChange={(e) => setImage(e.target.files[0])}
+                  style={{ marginTop: "6px" }}
+                />
+              </div>
+
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <input
+                  type="checkbox"
+                  checked={isVisible}
+                  onChange={(e) => setIsVisible(e.target.checked)}
+                />
+                <span style={{ fontSize: "13px" }}>Visible</span>
+              </div>
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "10px",
+                marginTop: "20px",
+              }}
+            >
+              <button
+                onClick={handleClose}
+                style={{
+                  background: "#f1f5f9",
+                  border: "none",
+                  padding: "6px 14px",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                }}
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={handleSave}
+                style={{
+                  background: "#1ddec4",
+                  color: "#fff",
+                  border: "none",
+                  padding: "6px 14px",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                }}
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 
-const th = { padding: '10px', textAlign: 'left' };
-const td = { padding: '10px' };
+const th = {
+  padding: "12px",
+  fontSize: "13px",
+  fontWeight: 600,
+  textAlign: "left",
+};
+
+const td = {
+  padding: "12px",
+  fontSize: "13px",
+};
 
 export default NewInsights;
