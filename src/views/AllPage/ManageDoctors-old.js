@@ -1,25 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Button, Form } from 'react-bootstrap';
+import { Card, Table, Modal, Button, Form } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import './managecontent.css';
-// import Pagination from '@mui/material/Pagination';
-// import Stack from '@mui/material/Stack';
-// import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-// import ToggleOffIcon from '@mui/icons-material/ToggleOff';
-// import ToggleOnIcon from '@mui/icons-material/ToggleOn';
-// import Typography from '@mui/material/Typography';
+import Pagination from '@mui/material/Pagination';
+import Stack from '@mui/material/Stack';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import ToggleOffIcon from '@mui/icons-material/ToggleOff';
+import ToggleOnIcon from '@mui/icons-material/ToggleOn';
+import Typography from '@mui/material/Typography';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 import { encode as base64_encode } from 'base-64';
 import { API_URL, APP_PREFIX_PATH, IMAGE_PATH } from 'config/constant';
-// import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import { useNavigate } from 'react-router';
-
-import CustomTable from 'component/common/CustomTable';
-// import { Link } from 'react-router-dom';
-import DoctorStatus from 'component/common/Status';
-import DoctorActions from 'component/common/Action';
 
 function ManageDoctors() {
   const [showAddModal, setShowAddModal] = useState(false);
@@ -37,21 +32,7 @@ function ManageDoctors() {
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
 
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [sortConfig, setSortConfig] = useState(null);
-
-  // const doctorsPerPage = 50;
-
-  const handleSort = (key) => {
-    setSortConfig((prev) => {
-      if (!prev) return { key, direction: 'asc' };
-
-      return {
-        key,
-        direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
-      };
-    });
-  };
+  const doctorsPerPage = 50;
 
   const fetchSpecializations = async () => {
     try {
@@ -231,44 +212,50 @@ function ManageDoctors() {
     });
   };
   const handleDeleteDoctor = async (doctor_id) => {
-    Swal.fire({
-      title: 'Are you sure?',
-      text: 'You want to delete this doctor?',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Yes, delete it!'
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          const response = await axios.post(`${API_URL}delete_doctor`, {
-            doctor_id: doctor_id
+  Swal.fire({
+    title: "Are you sure?",
+    text: "You want to delete this doctor?",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#d33",
+    cancelButtonColor: "#3085d6",
+    confirmButtonText: "Yes, delete it!"
+  }).then(async (result) => {
+
+    if (result.isConfirmed) {
+      try {
+
+        const response = await axios.post(`${API_URL}delete_doctor`, {
+          doctor_id: doctor_id
+        });
+
+        if (response.data.success) {
+
+          Swal.fire({
+            title: "Deleted!",
+            text: "Doctor deleted successfully",
+            icon: "success",
+            timer: 2000
           });
 
-          if (response.data.success) {
-            Swal.fire({
-              title: 'Deleted!',
-              text: 'Doctor deleted successfully',
-              icon: 'success',
-              timer: 2000
-            });
+          // setTriggerFetch(!triggerFetch); // table refresh
+          getDoctors();
 
-            // setTriggerFetch(!triggerFetch); // table refresh
-            getDoctors();
-          } else {
-            Swal.fire('Error', response.data.msg, 'error');
-          }
-        } catch (error) {
-          console.error('Delete error', error);
+        } else {
+          Swal.fire("Error", response.data.msg, "error");
         }
-      }
-    });
-  };
 
-  // const handleSearchChange = (event) => {
-  //   setSearchQuery(event.target.value);
-  // };
+      } catch (error) {
+        console.error("Delete error", error);
+      }
+    }
+
+  });
+};
+
+  const handleSearchChange = (event) => {
+    setSearchQuery(event.target.value);
+  };
 
   const filteredUsers = doctorData.filter(
     (user) =>
@@ -281,14 +268,14 @@ function ManageDoctors() {
   );
 
   // Pagination logic
-  // const indexOfLastDoctor = currentPage * doctorsPerPage;
-  // const indexOfFirstDoctor = indexOfLastDoctor - doctorsPerPage;
-  // const currentDoctors = filteredUsers.slice(indexOfFirstDoctor, indexOfLastDoctor);
-  // const totalPages = Math.ceil(filteredUsers.length / doctorsPerPage);
+  const indexOfLastDoctor = currentPage * doctorsPerPage;
+  const indexOfFirstDoctor = indexOfLastDoctor - doctorsPerPage;
+  const currentDoctors = filteredUsers.slice(indexOfFirstDoctor, indexOfLastDoctor);
+  const totalPages = Math.ceil(filteredUsers.length / doctorsPerPage);
 
-  // const handlePageChange = (event, value) => {
-  //   setCurrentPage(value);
-  // };
+  const handlePageChange = (event, value) => {
+    setCurrentPage(value);
+  };
 
   const handleCloseAddModal = () => {
     setShowAddModal(false);
@@ -428,201 +415,191 @@ function ManageDoctors() {
       });
   };
 
-  const doctorColumns = [
-    {
-      label: 'S. No',
-      key: 'sr_no',
-      render: (_, index) => index + 1
-    },
-
-    {
-      label: 'Image',
-      key: 'image',
-      render: (doctor) => (
-        <img
-          src={doctor.image ? `${IMAGE_PATH}${doctor.image}?${new Date().getTime()}` : `${IMAGE_PATH}placeholder.jpg`}
-          alt=""
-          style={{
-            width: '40px',
-            height: '40px',
-            borderRadius: '50%',
-            objectFit: 'cover',
-            border: '1px solid #1ddec4'
-          }}
-        />
-      )
-    },
-
-    { label: 'Name', key: 'doctor_name', sortable: true },
-    { label: 'Specialization', key: 'category_name', sortable: true },
-    { label: 'Mobile', key: 'mobile', sortable: true },
-    { label: 'Email', key: 'email', sortable: true },
-
-    {
-      label: 'Approve Status',
-      key: 'approve_status',
-      render: (doctor) => (
-        <span
-          style={{
-            padding: '4px 8px',
-            borderRadius: '6px',
-            fontSize: '11px',
-            background: doctor.approve_status === 1 ? '#dcfce7' : '#ea580c2e',
-            color: doctor.approve_status === 1 ? '#16a34a' : '#ea580c',
-            fontWeight: 600
-          }}
-        >
-          {doctor.approve_status_lable}
-        </span>
-      )
-    },
-
-    {
-      label: 'Status',
-      key: 'active_flag',
-      render: (doctor) => <DoctorStatus active_flag={doctor.active_flag} />
-      // render: (doctor) => (
-      //   <span
-      //     style={{
-      //       padding: '4px 8px',
-      //       borderRadius: '6px',
-      //       fontSize: '11px',
-      //       background: doctor.active_flag === 1 ? '#dcfce7' : '#fee2e2',
-      //       color: doctor.active_flag === 1 ? '#16a34a' : '#dc2626',
-      //       fontWeight: 600
-      //     }}
-      //   >
-      //     {doctor.active_flag === 1 ? 'Active' : 'Deactive'}
-      //   </span>
-      // )
-    },
-
-    {
-      label: 'Action',
-      key: 'action',
-      // render: (doctor, index) => (
-      //   <div className="dropdown text-center">
-      //     <button
-      //       className="btn btn-primary dropdown-toggle action-btn"
-      //       data-bs-toggle="dropdown"
-      //       style={{ fontSize: '12px', padding: '4px 10px' }}
-      //     >
-      //       Action
-      //     </button>
-
-      //     <ul className="dropdown-menu" style={{ fontSize: '12px' }}>
-      //       <li>
-      //         <Link to={`${APP_PREFIX_PATH}/view-doctor/${btoa(doctor.doctor_id)}`} className="dropdown-item">
-      //           <VisibilityIcon style={{ fontSize: '16px' }} /> View
-      //         </Link>
-      //       </li>
-
-      //       {doctor.approve_status === 0 && (
-      //         <>
-      //           <li>
-      //             <button
-      //               className="dropdown-item"
-      //               onClick={() =>
-      //                 handleActionChange(
-      //                   index,
-      //                   'Approve',
-      //                   doctor.doctor_id,
-      //                   doctor.doctor_name,
-      //                   doctor.doctor_category_id,
-      //                   doctor.mobile,
-      //                   doctor.email
-      //                 )
-      //               }
-      //             >
-      //               ✅ Approve
-      //             </button>
-      //           </li>
-
-      //           <li>
-      //             <button className="dropdown-item" onClick={() => handleActionChange(index, 'Reject', doctor.doctor_id)}>
-      //               ❌ Reject
-      //             </button>
-      //           </li>
-      //         </>
-      //       )}
-
-      //       {doctor.approve_status === 1 && (
-      //         <li>
-      //           <button className="dropdown-item" onClick={() => handleActiveDeactive(doctor.doctor_id, doctor.active_flag)}>
-      //             <ToggleOnIcon style={{fontSize:'16px'}} />
-      //              Activate/Deactivate
-      //           </button>
-      //         </li>
-      //       )}
-
-      //       <li>
-      //         <button className="dropdown-item text-danger" onClick={() => handleDeleteDoctor(doctor.doctor_id)}>
-      //           🗑 Delete
-      //         </button>
-      //       </li>
-      //     </ul>
-      //   </div>
-      // )
-      render: (doctor, index) => (
-        <DoctorActions
-          doctor={doctor}
-          index={index}
-          handleActionChange={handleActionChange}
-          handleActiveDeactive={handleActiveDeactive}
-          handleDeleteDoctor={handleDeleteDoctor}
-        />
-      )
-    },
-    { label: 'Created At', key: 'createtime', sortable: true }
-  ];
-
   return (
     <>
-      {/* <Typography style={{ marginTop: '15px', marginBottom: '30px' }} variant="h4" gutterBottom>
-        <span style={{ color: '#1ddec4' }}>Dashboard</span> / Manage Doctor
-      </Typography> */}
+      <Typography style={{ marginTop: '15px', marginBottom: '30px' }} variant="h4" gutterBottom>
+        <span style={{ color: '#1ddec4' }}>Dashboard</span> / Manage Doctor 
+      </Typography>
 
-      {/* <Card> */}
-      <div
-        style={{
-          background: '#fff',
-          borderRadius: 16,
-          padding: '16px',
-          boxShadow: '0 4px 8px rgba(0,0,0,0.05)'
-        }}
-      >
-        {/* Search */}
-        <div className="d-flex justify-content-end">
-          <input
-            className="custom-search form-control"
-            style={{ width: '250px', fontSize: '13px' }}
-            placeholder="Search..."
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
+      <Card>
+        <Card.Header className="bg-white">
+          <div className="d-flex justify-content-between flex-wrap">
+            <div>
+              <label htmlFor="search-input" style={{ marginRight: '5px' }}>
+                Search
+              </label>
+              <input
+                className="search-input"
+                type="text"
+                placeholder="Search..."
+                onChange={handleSearchChange}
+                style={{ marginTop: '8px', marginBottom: '5px', padding: '5px', width: '200px', border: '1px solid #f2f2f2' }}
+              />
+            </div>
+          </div>
+        </Card.Header>
 
-        {/* Table */}
-        <div
-          style={{
-            marginTop: '16px',
-            borderRadius: '12px',
-            overflow: 'hidden'
-          }}
-        >
-          <CustomTable
-            columns={doctorColumns}
-            data={filteredUsers}
-            currentPage={currentPage}
-            sortConfig={sortConfig}
-            onSort={handleSort}
-            rowsPerPage={rowsPerPage}
-            onPageChange={(page) => setCurrentPage(page)}
-            onRowsPerPageChange={(size) => {
-              setRowsPerPage(size);
-              setCurrentPage(1);
-            }}
-          />
-        </div>
+        <Card.Body>
+          <div className="table-container">
+            <Table hover className="fixed-header-table">
+              <thead>
+                <tr>
+                  <th style={{ textAlign: 'center', fontWeight: '500' }}>S. No</th>
+                  <th style={{ textAlign: 'center', fontWeight: '500' }}>Action</th>
+                  <th style={{ textAlign: 'center', fontWeight: '500' }}>Image</th>
+                  <th style={{ textAlign: 'center', fontWeight: '500' }}>Name</th>
+                  <th style={{ textAlign: 'center', fontWeight: '500' }}>Specialization</th>
+                  <th style={{ textAlign: 'center', fontWeight: '500' }}>Mobile</th>
+                  <th style={{ textAlign: 'center', fontWeight: '500' }}>Email</th>
+                  <th style={{ textAlign: 'center', fontWeight: '500' }}>Approve Status</th>
+                  <th style={{ textAlign: 'center', fontWeight: '500' }}>Active Status</th>
+                  
+                  <th style={{ textAlign: 'center', fontWeight: '500', minWidth: '200px' }}>Create Date & Time</th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentDoctors.map((doctor, index) => (
+                  <tr key={doctor.doctor_id}>
+                    <th scope="row" style={{ textAlign: 'center' }}>
+                      {indexOfFirstDoctor + index + 1}
+                    </th>
+                    <td>
+                      <div className="dropdown text-center">
+                        <button
+                          className="btn btn-primary dropdown-toggle action-btn"
+                          type="button"
+                          id={`dropdownMenuButton${doctor.doctor_id}`}
+                          data-bs-toggle="dropdown"
+                          aria-expanded="false"
+                        >
+                          Action
+                        </button>
+                        <ul className="dropdown-menu" aria-labelledby={`dropdownMenuButton${doctor.doctor_id}`}>
+                          <li>
+                            <button className="dropdown-item" onClick={() => handleActionChange(index, 'View', doctor.doctor_id)}>
+                              <VisibilityIcon style={{ marginRight: '8px' }} /> View
+                            </button>
+                          </li>
+                          {doctor.approve_status === 0 && (
+                            <>
+                              <li>
+                                <button
+                                  className="dropdown-item"
+                                  onClick={() => handleActionChange(index, 'Approve', doctor.doctor_id, doctor.doctor_name, doctor.doctor_category_id, doctor.mobile, doctor.email)}
+                                >
+                                  <CheckCircleOutlineIcon style={{ marginRight: '8px' }} /> Approve
+                                </button>
+                              </li>
+                              <li>
+                                <button className="dropdown-item" onClick={() => handleActionChange(index, 'Reject', doctor.doctor_id)}>
+                                  <ToggleOffIcon style={{ marginRight: '8px' }} /> Reject
+                                </button>
+                              </li>
+                            </>
+                          )}
+                          {doctor.approve_status === 1 && (
+                            <li>
+                              <button
+                                className="dropdown-item"
+                                onClick={() => handleActiveDeactive(doctor.doctor_id, doctor.active_flag)}
+                              >
+                                {doctor.active_flag === 1 ? (
+                                  <ToggleOffIcon style={{ marginRight: '8px' }} />
+                                ) : (
+                                  <ToggleOnIcon style={{ marginRight: '8px' }} />
+                                )}
+                                Activate/Deactivate
+                              </button>
+                            </li>
+
+                          )}
+                           <li>
+                            <button
+                              className="dropdown-item"
+                              onClick={() => handleDeleteDoctor(doctor.doctor_id)}
+                              style={{ color: "red" }}
+                            >
+                              🗑 Delete
+                            </button>
+                          </li>
+                        </ul>
+                      </div>
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      <img
+                        src={doctor.image ? `${IMAGE_PATH}${doctor.image}?${new Date().getTime()}` : `${IMAGE_PATH}placeholder.jpg`}
+                        alt="Doctor"
+                        style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }}
+                      />
+                    </td>
+                    <td style={{ textAlign: 'center' }}>{doctor.doctor_name}</td>
+                    <td style={{ textAlign: 'center' }}>{doctor.category_name}</td>
+                    <td style={{ textAlign: 'center' }}>{doctor.mobile}</td>
+                    <td style={{ textAlign: 'center' }}>{doctor.email}</td>
+                    <td
+                      style={{
+                        textAlign: 'center'
+                      }}
+                    >
+                      <p
+                        style={{
+                          textAlign: 'center',
+                          height: '40px',
+                          width: '90px',
+                          borderRadius: '5px',
+                          backgroundColor: doctor.approve_status === 0 ? 'orange' : 'green',
+                          color: 'white',
+                          padding: '8px',
+                          margin:'0 auto'
+                        }}
+                      >
+                        {' '}
+                        {doctor.approve_status_lable}
+                      </p>
+                    </td>
+
+
+
+{/* Actvie Status */}
+                    <td
+                      style={{
+                        textAlign: 'center'
+                      }}
+                    >
+                      <p
+                        style={{
+                          textAlign: 'center',
+                          height: '40px',
+                          width: '90px',
+                          borderRadius: '5px',
+                          backgroundColor: doctor.active_flag === 1 ? 'green' : 'red',
+                          color: 'white',
+                          padding: '8px',
+                          margin:'0 auto'
+                        }}
+                      >
+                        {' '}
+                        {doctor.active_flag === 1 ? 'Active' : 'Deactive'}
+                      </p>
+                    </td>
+
+
+
+                    <td style={{ textAlign: 'center' }}>{doctor.createtime}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </div>
+          <div className="d-flex justify-content-between">
+            <p style={{ fontWeight: '500' }} className="pagination">
+              Showing {indexOfFirstDoctor + 1} to {Math.min(indexOfLastDoctor, currentDoctors.length)} of {currentDoctors.length} entries
+            </p>
+            <Stack spacing={2} alignItems="right">
+              <Pagination count={totalPages} page={currentPage} onChange={handlePageChange} />
+            </Stack>
+          </div>
+        </Card.Body>
 
         {/* Add Doctor Modal */}
         <Modal show={showAddModal} onHide={handleCloseAddModal} style={{ zIndex: '99999' }}>
@@ -807,8 +784,7 @@ function ManageDoctors() {
             </Modal.Footer>
           </form>
         </Modal>
-        {/* </Card> */}
-      </div>
+      </Card>
     </>
   );
 }
