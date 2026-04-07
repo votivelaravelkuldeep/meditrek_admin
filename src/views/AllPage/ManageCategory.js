@@ -241,7 +241,7 @@ function ManageCategory() {
         </Formik>
       </Modal> */}
       <Modal show={showModal} onHide={() => setShowModal(false)} centered className="custom-modal">
-        <Modal.Header closeButton>
+        <Modal.Header closeButton style={{borderBottom:0,paddingBottom:0}}>
           <Modal.Title>Add Specialization</Modal.Title>
         </Modal.Header>
 
