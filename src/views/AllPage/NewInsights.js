@@ -1,9 +1,17 @@
-import React, { useEffect, useState } from "react";
-import { Menu, MenuItem } from "@mui/material";
+import React, { useEffect, useState, useRef } from "react";
+import { Menu, MenuItem, Pagination } from "@mui/material";
 import axios from "axios";
 import { API_URL } from "config/constant";
 import FormInput from "component/common/formElements/FormInput";
 import FormTextarea from "component/common/formElements/FormTextarea";
+import CustomTable from "component/common/CustomTable";
+import { Card, Button } from "react-bootstrap";
+import "bootstrap/dist/css/bootstrap.min.css";
+import { FadeLoader } from "react-spinners";
+import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import Swal from "sweetalert2";
 
 const NewInsights = () => {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -12,28 +20,122 @@ const NewInsights = () => {
   const [posts, setPosts] = useState([]);
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [url, setUrl] = useState("");
   const [image, setImage] = useState(null);
   const [isVisible, setIsVisible] = useState(false);
+  const [sortConfig, setSortConfig] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
+  
+  const modalRef = useRef(null);
+
+  const handleSort = (key) => {
+    setSortConfig((prev) => {
+      if (!prev) return { key, direction: "asc" };
+      return {
+        key,
+        direction:
+          prev.key === key && prev.direction === "asc" ? "desc" : "asc",
+      };
+    });
+  };
+
+  const columns = [
+    {
+      label: "S.No",
+      key: "sr_no",
+      sortable: true,
+      render: (_, index) => index + 1,
+    },
+    {
+      label: "Title",
+      key: "title",
+      sortable: true,
+    },
+    {
+      label: "Status",
+      key: "is_visible",
+      sortable: true,
+      render: (row) => (
+        <span
+          style={{
+            padding: "4px 10px",
+            borderRadius: "20px",
+            fontSize: "12px",
+            background: row.is_visible ? "#dcfce7" : "#fee2e2",
+            color: row.is_visible ? "#16a34a" : "#dc2626",
+            fontWeight: 600,
+          }}
+        >
+          {row.is_visible ? "Visible" : "Hidden"}
+        </span>
+      ),
+    },
+    {
+      label: "Action",
+      key: "action",
+      render: (row) => (
+        <button
+          onClick={(e) => handleMenuOpen(e, row)}
+          type="button"
+          style={{
+            background: "#e6f9f6",
+            color: "#1ddec4",
+            border: "none",
+            padding: "6px 12px",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontSize: "12px",
+          }}
+        >
+          Action ▼
+        </button>
+      ),
+    },
+  ];
 
   const admin_id = 1;
 
-  // ================= FETCH =================
+  const validateForm = () => {
+    const newErrors = {};
+    if (!title.trim()) {
+      newErrors.title = "Title is required";
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleBlur = (field) => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+  };
+
   const fetchPosts = async () => {
-    const res = await axios.get(`${API_URL}get-all-insights-posts`);
-    if (res.data.success) setPosts(res.data.data);
+    setLoading(true);
+    try {
+      const res = await axios.get(`${API_URL}get-all-insights-posts`);
+      if (res.data.success) setPosts(res.data.data);
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
     fetchPosts();
   }, []);
 
-  // ================= OPEN MODAL =================
   const handleOpen = (item = null) => {
     setOpen(true);
+    setErrors({});
+    setTouched({});
 
     if (item) {
       setEditId(item.id);
@@ -53,14 +155,15 @@ const NewInsights = () => {
 
   const handleClose = () => setOpen(false);
 
-  // ================= SAVE =================
   const handleSave = async () => {
+    if (!validateForm()) return;
+
     const formData = new FormData();
     formData.append("admin_id", admin_id);
     formData.append("title", title);
     formData.append("description", description);
     formData.append("url", url);
-    formData.append("image", image);
+    if (image) formData.append("image", image);
     formData.append("is_visible", isVisible ? 1 : 0);
 
     let api = "new-insights-create-post";
@@ -70,24 +173,57 @@ const NewInsights = () => {
       api = "update-insights-post";
     }
 
-    const res = await axios.post(`${API_URL}${api}`, formData);
+    try {
+      const res = await axios.post(`${API_URL}${api}`, formData);
 
-    if (res.data.success) {
-      alert(editId ? "Updated" : "Created");
-      handleClose();
-      fetchPosts();
+      if (res.data.success) {
+        Swal.fire({
+          icon: "success",
+          title: editId ? "Updated!" : "Created!",
+          text: editId ? "Post updated successfully" : "Post created successfully",
+          timer: 2000,
+          showConfirmButton: false,
+        });
+        handleClose();
+        fetchPosts();
+      }
+    } catch (error) {
+      console.error("Error saving post:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Something went wrong",
+      });
     }
   };
 
-  // ================= DELETE =================
   const handleDelete = async (id) => {
-    if (!window.confirm("Delete this post?")) return;
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "You want to delete this post?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    });
 
-    const res = await axios.post(`${API_URL}delete-insights-post`, { id });
+    if (result.isConfirmed) {
+      try {
+        const res = await axios.post(`${API_URL}delete-insights-post`, { id });
 
-    if (res.data.success) {
-      alert("Deleted");
-      fetchPosts();
+        if (res.data.success) {
+          Swal.fire("Deleted!", "Post has been deleted.", "success");
+          fetchPosts();
+        }
+      } catch (error) {
+        console.error("Error deleting post:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Failed to delete post",
+        });
+      }
     }
   };
 
@@ -98,244 +234,285 @@ const NewInsights = () => {
 
   const handleMenuClose = () => setAnchorEl(null);
 
+  const filteredPosts = posts.filter((post) =>
+    post.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const indexOfLastItem = currentPage * rowsPerPage;
+  const indexOfFirstItem = indexOfLastItem - rowsPerPage;
+  const currentPosts = filteredPosts.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredPosts.length / rowsPerPage);
+
+  const handlePageChange = (event, value) => {
+    setCurrentPage(value);
+  };
+
+  const handleOverlayClick = (e) => {
+    if (e.target === e.currentTarget) {
+      handleClose();
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Escape') {
+      handleClose();
+    }
+  };
+
   return (
     <>
-      {/* CARD */}
-      <div
-        style={{
-          background: "#fff",
-          borderRadius: "16px",
-          padding: "20px",
-          boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
-        }}
-      >
-        {/* HEADER */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            marginBottom: "16px",
-          }}
-        >
-          <h5 style={{ fontWeight: 600 }}>Insights List</h5>
+      <Card className="border-0 shadow-lg rounded-4">
+        <Card.Body className="p-4">
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <h5 className="fw-bold mb-0" style={{ color: "#1e293b" }}>
+              Insights List
+            </h5>
+            <Button
+              onClick={() => handleOpen()}
+              style={{
+                background: "#1ddec4",
+                border: "none",
+                borderRadius: "999px",
+                padding: "8px 20px",
+                fontSize: "13px",
+                fontWeight: 500,
+              }}
+            >
+              <AddIcon sx={{ fontSize: 18, mr: 0.5 }} /> Add Post
+            </Button>
+          </div>
 
-          <button
-            onClick={() => handleOpen()}
-            style={{
-              background: "#1ddec4",
-              color: "#fff",
-              border: "none",
-              borderRadius: "999px",
-              padding: "6px 16px",
-              fontSize: "13px",
-              cursor: "pointer",
-            }}
-          >
-            + Add Post
-          </button>
-        </div>
+          <div className="mb-3 d-flex justify-content-end">
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Search by title..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{
+                width: "250px",
+                borderRadius: "10px",
+                border: "1px solid #e2e8f0",
+                fontSize: "13px",
+                padding: "8px 12px",
+              }}
+            />
+          </div>
 
-        {/* TABLE */}
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead style={{ background: "#f8fafc" }}>
-              <tr>
-                <th style={th}>S.No</th>
-                <th style={th}>Title</th>
-                <th style={th}>Status</th>
-                <th style={th}>Action</th>
-              </tr>
-            </thead>
+          {loading ? (
+            <div className="d-flex justify-content-center py-5">
+              <FadeLoader color="#1ddec4" />
+            </div>
+          ) : (
+            <>
+              <CustomTable
+                columns={columns}
+                data={currentPosts}
+                sortConfig={sortConfig}
+                onSort={handleSort}
+                currentPage={currentPage}
+                rowsPerPage={rowsPerPage}
+                onPageChange={(page) => setCurrentPage(page)}
+                onRowsPerPageChange={(size) => {
+                  setRowsPerPage(size);
+                  setCurrentPage(1);
+                }}
+                hideRowsPerPage={true}
+              />
 
-            <tbody>
-              {posts.length > 0 ? (
-                posts.map((item, i) => (
-                  <tr key={item.id} style={{ borderBottom: "1px solid #eee" }}>
-                    <td style={td}>{i + 1}</td>
-
-                    <td style={td}>{item.title}</td>
-
-                    <td style={td}>
-                      <span
-                        style={{
-                          padding: "4px 10px",
-                          borderRadius: "20px",
-                          fontSize: "12px",
-                          background: item.is_visible
-                            ? "#dcfce7"
-                            : "#fee2e2",
-                          color: item.is_visible ? "#16a34a" : "#dc2626",
-                          fontWeight: 600,
-                        }}
-                      >
-                        {item.is_visible ? "Visible" : "Hidden"}
-                      </span>
-                    </td>
-
-                    <td style={td}>
-                      <button
-                        onClick={(e) => handleMenuOpen(e, item)}
-                        style={{
-                          background: "#e6f9f6",
-                          color: "#1ddec4",
-                          border: "none",
-                          padding: "6px 12px",
-                          borderRadius: "8px",
-                          cursor: "pointer",
-                          fontSize: "12px",
-                        }}
-                      >
-                        Action ▼
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td
-                    colSpan="4"
-                    style={{ textAlign: "center", padding: "20px" }}
-                  >
-                    No Data Available
-                  </td>
-                </tr>
+              {filteredPosts.length > 0 && (
+                <div className="d-flex justify-content-between align-items-center mt-3">
+                  <p className="text-muted small mb-0">
+                    Showing {indexOfFirstItem + 1} to{" "}
+                    {Math.min(indexOfLastItem, filteredPosts.length)} of{" "}
+                    {filteredPosts.length} entries
+                  </p>
+                  <Pagination
+                    count={totalPages}
+                    page={currentPage}
+                    onChange={handlePageChange}
+                    color="primary"
+                    sx={{
+                      "& .MuiPaginationItem-root.Mui-selected": {
+                        backgroundColor: "#1ddec4",
+                        color: "#fff",
+                      },
+                    }}
+                  />
+                </div>
               )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+            </>
+          )}
+        </Card.Body>
+      </Card>
 
-      {/* MENU */}
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
-        <MenuItem
-          onClick={() => {
-            handleOpen(selectedItem);
-            handleMenuClose();
-          }}
-        >
-          ✏️ Edit
+        <MenuItem onClick={() => { handleOpen(selectedItem); handleMenuClose(); }}>
+          <EditIcon fontSize="small" sx={{ mr: 1 }} /> Edit
         </MenuItem>
-
-        <MenuItem
-          onClick={() => {
-            handleDelete(selectedItem.id);
-            handleMenuClose();
-          }}
-          sx={{ color: "red" }}
-        >
-          🗑 Delete
+        <MenuItem onClick={() => { handleDelete(selectedItem?.id); handleMenuClose(); }} sx={{ color: "red" }}>
+          <DeleteIcon fontSize="small" sx={{ mr: 1 }} /> Delete
         </MenuItem>
       </Menu>
 
-      {/* MODAL */}
+      {/* Modal - Fixed accessibility issues */}
       {open && (
         <div
+          role="presentation"
           style={{
             position: "fixed",
             inset: 0,
-            background: "rgba(0,0,0,0.4)",
+            background: "rgba(0,0,0,0.5)",
             display: "flex",
-            justifyContent: "center",
             alignItems: "center",
-            zIndex: 999,
+            justifyContent: "center",
+            zIndex: 9999,
           }}
+          onClick={handleOverlayClick}
+          onKeyDown={handleKeyDown}
         >
           <div
+            ref={modalRef}
+            role="dialog"
+            aria-modal="true"
             style={{
+              width: "500px",
+              maxWidth: "90%",
               background: "#fff",
-              borderRadius: "16px",
-              padding: "20px",
-              width: "420px",
-              maxWidth: "95%",
-              boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
+              borderRadius: "12px",
+              boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1)",
+              overflow: "hidden",
             }}
           >
-            <h5 style={{ fontWeight: 600 }}>
-              {editId ? "Edit Post" : "Add Post"}
-            </h5>
+            <div
+              style={{
+                padding: "16px 20px",
+                borderBottom: "1px solid #e5e7eb",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <h6 style={{ margin: 0, fontWeight: 600, fontSize: "16px", color: "#1e293b" }}>
+                {editId ? "Edit Post" : "Add New Post"}
+              </h6>
+              <button
+                onClick={handleClose}
+                aria-label="Close"
+                type="button"
+                style={{
+                  border: "none",
+                  background: "none",
+                  fontSize: "20px",
+                  cursor: "pointer",
+                  color: "#9ca3af",
+                  padding: 0,
+                  lineHeight: 1,
+                }}
+              >
+                ×
+              </button>
+            </div>
 
-            <div style={{ marginTop: "15px", display: "grid", gap: "12px" }}>
-              <FormInput
-                label="Title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Enter title"
-                required
-              />
+            <div style={{ padding: "20px" }}>
+              <div style={{ marginBottom: "16px" }}>
+                <FormInput
+                  label="Title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  onBlur={() => handleBlur("title")}
+                  placeholder="Enter title"
+                  error={errors.title}
+                  touched={touched.title}
+                  required
+                />
+              </div>
 
-              <FormTextarea
-                label="Description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Enter description"
-              />
+              <div style={{ marginBottom: "16px" }}>
+                <FormTextarea
+                  label="Description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  onBlur={() => handleBlur("description")}
+                  placeholder="Enter description"
+                  rows={4}
+                />
+              </div>
 
-              <FormInput
-                label="URL"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                placeholder="Enter URL"
-              />
+              <div style={{ marginBottom: "16px" }}>
+                <FormInput
+                  label="URL"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  onBlur={() => handleBlur("url")}
+                  placeholder="Enter URL"
+                />
+              </div>
 
-              <div>
-                <label
-                  htmlFor="imageUpload"
-                  style={{ fontSize: "13px", fontWeight: 500 }}
-                >
-                  Upload Image
-                </label>
-
-                <input
-                  id="imageUpload"
+              <div style={{ marginBottom: "16px" }}>
+                <FormInput
+                  label="Upload Image"
                   type="file"
                   onChange={(e) => setImage(e.target.files[0])}
-                  style={{ marginTop: "6px" }}
                 />
               </div>
 
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 <input
+                  id="visibleCheck"
                   type="checkbox"
                   checked={isVisible}
                   onChange={(e) => setIsVisible(e.target.checked)}
+                  style={{ cursor: "pointer" }}
                 />
-                <span style={{ fontSize: "13px" }}>Visible</span>
+                <label
+                  htmlFor="visibleCheck"
+                  style={{ fontSize: "13px", color: "#374151", margin: 0, cursor: "pointer" }}
+                >
+                  Visible
+                </label>
               </div>
             </div>
 
             <div
               style={{
+                padding: "12px 20px",
+                borderTop: "1px solid #e5e7eb",
                 display: "flex",
                 justifyContent: "flex-end",
                 gap: "10px",
-                marginTop: "20px",
               }}
             >
               <button
                 onClick={handleClose}
+                type="button"
                 style={{
-                  background: "#f1f5f9",
-                  border: "none",
-                  padding: "6px 14px",
-                  borderRadius: "8px",
+                  padding: "6px 16px",
+                  fontSize: "13px",
+                  borderRadius: "6px",
+                  border: "1px solid #e5e7eb",
+                  background: "#fff",
+                  color: "#374151",
                   cursor: "pointer",
                 }}
               >
                 Cancel
               </button>
-
               <button
                 onClick={handleSave}
+                type="button"
                 style={{
+                  padding: "6px 20px",
+                  fontSize: "13px",
+                  borderRadius: "6px",
+                  border: "none",
                   background: "#1ddec4",
                   color: "#fff",
-                  border: "none",
-                  padding: "6px 14px",
-                  borderRadius: "8px",
                   cursor: "pointer",
+                  fontWeight: 500,
                 }}
               >
-                Save
+                Save Note
               </button>
             </div>
           </div>
@@ -343,18 +520,6 @@ const NewInsights = () => {
       )}
     </>
   );
-};
-
-const th = {
-  padding: "12px",
-  fontSize: "13px",
-  fontWeight: 600,
-  textAlign: "left",
-};
-
-const td = {
-  padding: "12px",
-  fontSize: "13px",
 };
 
 export default NewInsights;
