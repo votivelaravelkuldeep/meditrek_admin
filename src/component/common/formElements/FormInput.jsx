@@ -48,12 +48,22 @@ const FormInput = ({
 
         {/* Right Icon (for password etc.) */}
         {rightIcon && (
-          <div
+          <button
+            type="button"
             onClick={onIconClick}
-            className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer"
+            style={{
+              position: "absolute",
+              right: "10px",
+              top: "50%",
+              transform: "translateY(-50%)",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: 0
+            }}
           >
             {rightIcon}
-          </div>
+          </button>
         )}
       </div>
 
