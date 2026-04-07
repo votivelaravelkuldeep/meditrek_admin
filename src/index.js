@@ -22,7 +22,7 @@ const root = createRoot(document.getElementById('root'));
 
 root.render(
   <Provider store={store}>
- <BrowserRouter basename="/meditrek/admin">
+ <BrowserRouter basename="/meditrek/admin/staging">
 
 
       <App />
