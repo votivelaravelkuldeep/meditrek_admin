@@ -313,73 +313,50 @@ function ManageCategory() {
           )}
         </Formik>
       </Modal> */}
-      <Modal
-  show={showModal2}
-  onHide={() => setShowModal2(false)}
-  centered
-  className="custom-modal"
->
-  <Modal.Header closeButton>
-    <Modal.Title>Edit Specialization</Modal.Title>
-  </Modal.Header>
+      <Modal show={showModal2} onHide={() => setShowModal2(false)} centered className="custom-modal">
+        <Modal.Header closeButton>
+          <Modal.Title>Edit Specialization</Modal.Title>
+        </Modal.Header>
 
-  <Formik
-    enableReinitialize
-    initialValues={{
-      categoryName: editingCategory?.doctor_specialization_name || ''
-    }}
-    validationSchema={validationSchema}
-    onSubmit={handleEdit}
-  >
-    {({ handleSubmit, errors, touched }) => (
-      <FormikForm onSubmit={handleSubmit}>
-        <Modal.Body>
-          <Form.Group style={{ display: 'flex', flexDirection: 'column' }}>
-            <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>
-              Specialization Name
-            </Form.Label>
+        <Formik
+          enableReinitialize
+          initialValues={{
+            categoryName: editingCategory?.doctor_specialization_name || ''
+          }}
+          validationSchema={validationSchema}
+          onSubmit={handleEdit}
+        >
+          {({ handleSubmit, errors, touched }) => (
+            <FormikForm onSubmit={handleSubmit}>
+              <Modal.Body>
+                <Form.Group style={{ display: 'flex', flexDirection: 'column' }}>
+                  <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>Specialization Name</Form.Label>
 
-            <Field
-              name="categoryName"
-              type="text"
-              placeholder="Enter Specialization Name"
-              className={`custom-input custom-search form-control ${
-                errors.categoryName && touched.categoryName
-                  ? 'is-invalid'
-                  : ''
-              }`}
-              style={{ fontSize: '13px' }}
-            />
+                  <Field
+                    name="categoryName"
+                    type="text"
+                    placeholder="Enter Specialization Name"
+                    className={`custom-input custom-search form-control ${errors.categoryName && touched.categoryName ? 'is-invalid' : ''}`}
+                    style={{ fontSize: '13px' }}
+                  />
 
-            {errors.categoryName && touched.categoryName && (
-              <div className="invalid-feedback">
-                {errors.categoryName}
-              </div>
-            )}
-          </Form.Group>
-        </Modal.Body>
+                  {errors.categoryName && touched.categoryName && <div className="invalid-feedback">{errors.categoryName}</div>}
+                </Form.Group>
+              </Modal.Body>
 
-        <Modal.Footer style={{ borderTop: 'none' }}>
-          <Button
-            variant="light"
-            onClick={() => setShowModal2(false)}
-            style={{ borderRadius: '10px', fontSize: '13px' }}
-          >
-            Cancel
-          </Button>
+              <Modal.Footer style={{ borderTop: 'none' }}>
+                <Button variant="light" onClick={() => setShowModal2(false)} style={{ borderRadius: '10px', fontSize: '13px' }}>
+                  Cancel
+                </Button>
 
-          <Button
-            className="custom-btn"
-            type="submit"
-            style={{ fontSize: '12px' }}
-          >
-            Update
-          </Button>
-        </Modal.Footer>
-      </FormikForm>
-    )}
-  </Formik>
-</Modal>
+                <Button className="custom-btn" type="submit" style={{ fontSize: '12px' }}>
+                  Update
+                </Button>
+              </Modal.Footer>
+            </FormikForm>
+          )}
+        </Formik>
+      </Modal>
     </div>
   );
 }
