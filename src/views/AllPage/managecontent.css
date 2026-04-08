@@ -247,7 +247,7 @@
 
 /* Table container */
 .table-container {
-  max-height: 500px;
+  /* max-height: 500px; */
   overflow-y: auto;
   border: 1px solid #ddd;
 }
@@ -280,7 +280,7 @@
   transition: all ease-in-out .3s;
    }
 
-   .custom-search:focus {
+  .custom-search:focus {
   border-color: #1ddec4;
   box-shadow: 0 0 0 2px rgba(29, 222, 196, 0.15);
 }
@@ -298,4 +298,9 @@
 .custom-modal .modal-title {
   font-size: 16px;
   font-weight: 600;
+}
+.btn{
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }

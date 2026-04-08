@@ -17,6 +17,7 @@ import * as Yup from 'yup';
 
 import { API_URL } from 'config/constant';
 import { Link } from 'react-router-dom';
+import Heading from 'component/common/Heading';
 
 function ManageCategory() {
   const [category, setCategory] = useState([]);
@@ -185,16 +186,22 @@ function ManageCategory() {
     >
       {/* HEADER */}
       <div className="d-flex justify-content-between align-items-center">
-        <Button className="btn btn-primary" style={{ fontSize: '12px', borderRadius: '10px' }} onClick={() => setShowModal(true)}>
-          <AddIcon /> Add Specialization
-        </Button>
+        {/* <h5 className="fw-bold mb-0" style={{ color: '#1e293b' }}>
+          Manage Specialization
+        </h5> */}
+        <Heading heading='Manage Specialization' />
 
-        <input
-          className="custom-search form-control"
-          style={{ width: '250px', fontSize: '13px' }}
-          placeholder="Search..."
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
+        <div className="d-flex gap-2">
+          <input
+            className="custom-search form-control"
+            style={{ width: '250px', fontSize: '13px' }}
+            placeholder="Search..."
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <Button className="btn btn-primary" style={{ fontSize: '12px', borderRadius: '10px' }} onClick={() => setShowModal(true)}>
+            <AddIcon /> Add Specialization
+          </Button>
+        </div>
       </div>
 
       {/* TABLE */}
@@ -241,7 +248,7 @@ function ManageCategory() {
         </Formik>
       </Modal> */}
       <Modal show={showModal} onHide={() => setShowModal(false)} centered className="custom-modal">
-        <Modal.Header closeButton style={{borderBottom:0,paddingBottom:0}}>
+        <Modal.Header closeButton style={{ borderBottom: 0, paddingBottom: 0 }}>
           <Modal.Title>Add Specialization</Modal.Title>
         </Modal.Header>
 

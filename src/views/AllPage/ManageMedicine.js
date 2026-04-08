@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Modal, Button, Form } from 'react-bootstrap';
+import { Modal, Button, Form } from 'react-bootstrap';
 // import { Link } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
@@ -18,6 +18,7 @@ import * as Yup from 'yup';
 import { API_URL, APP_PREFIX_PATH } from 'config/constant';
 import { useNavigate } from 'react-router-dom';
 import CustomTable from 'component/common/CustomTable';
+import Heading from 'component/common/Heading';
 
 function ManageMedicine() {
   const navigate = useNavigate();
@@ -65,42 +66,42 @@ function ManageMedicine() {
     setSelectAll(!selectAll);
   };
 
-  //   const deleteSelectedMedicines = () => {
-  //     if (selectedMedicines.length === 0) {
-  //       Swal.fire('Please select at least one medicine');
-  //       return;
-  //     }
+    const deleteSelectedMedicines = () => {
+      if (selectedMedicines.length === 0) {
+        Swal.fire('Please select at least one medicine');
+        return;
+      }
 
-  //     Swal.fire({
-  //       title: 'Are you sure?',
-  //       text: 'You want to delete selected medicines?',
-  //       icon: 'warning',
-  //       showCancelButton: true,
-  //       confirmButtonText: 'Yes, delete!'
-  //     }).then(async (result) => {
-  //       if (result.isConfirmed) {
-  //         try {
-  //           const response = await axios.post(`${API_URL}delete_medicine_bulk`, {
-  //             medicine_ids: selectedMedicines
-  //           });
-  //           // const response = await axios.post("http://localhost:3001/meditrek/server/adminAPI/delete_medicine_bulk", {
-  //           //   medicine_ids: selectedMedicines
-  //           // });
+      Swal.fire({
+        title: 'Are you sure?',
+        text: 'You want to delete selected medicines?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete!'
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          try {
+            const response = await axios.post(`${API_URL}delete_medicine_bulk`, {
+              medicine_ids: selectedMedicines
+            });
+            // const response = await axios.post("http://localhost:3001/meditrek/server/adminAPI/delete_medicine_bulk", {
+            //   medicine_ids: selectedMedicines
+            // });
 
-  //           if (response.data.success) {
-  //             Swal.fire('Deleted!', response.data.msg, 'success');
-  //             setSelectedMedicines([]);
-  //             setSelectAll(false);
-  //             fetchData();
-  //           } else {
-  //             Swal.fire('Error', response.data.msg, 'error');
-  //           }
-  //         } catch (error) {
-  //           console.error(error);
-  //         }
-  //       }
-  //     });
-  //   };
+            if (response.data.success) {
+              Swal.fire('Deleted!', response.data.msg, 'success');
+              setSelectedMedicines([]);
+              setSelectAll(false);
+              fetchData();
+            } else {
+              Swal.fire('Error', response.data.msg, 'error');
+            }
+          } catch (error) {
+            console.error(error);
+          }
+        }
+      });
+    };
 
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
@@ -331,7 +332,7 @@ function ManageMedicine() {
       {/* <Typography style={{ marginTop: '15px', marginBottom: '30px' }} variant="h4" gutterBottom>
         <span style={{ color: '#1ddec4' }}>Dashboard</span> / Manage Medicine
       </Typography> */}
-      <Card>
+      <div>
         <div
           style={{
             background: '#fff',
@@ -342,30 +343,32 @@ function ManageMedicine() {
         >
           {/* HEADER */}
           <div className="d-flex justify-content-between align-items-center flex-wrap">
+            <Heading heading='Manage Medicine' />
             <div className="d-flex gap-2">
-              <Button className="btn btn-primary" style={{ fontSize: '12px', borderRadius: '10px' }} onClick={handleShowModal2}>
-                <AddIcon /> Add Medicine
-              </Button>
-
-              <Button
-                className="btn btn-primary"
-                style={{ fontSize: '12px', borderRadius: '10px' }}
-                onClick={() => navigate(APP_PREFIX_PATH + '/bulk_upload_medicine')}
-              >
-                <CloudUploadIcon /> Bulk Upload
-              </Button>
-
-              {/* <Button className="btn btn-danger" style={{ fontSize: '12px', borderRadius: '10px' }} onClick={deleteSelectedMedicines}>
-                <DeleteIcon /> Delete Selected
-              </Button> */}
-            </div>
-
-            <input
+               <input
               className="custom-search form-control"
               style={{ width: '250px', fontSize: '13px' }}
               placeholder="Search..."
               onChange={handleSearchChange}
             />
+              <Button className="btn btn-primary" style={{ fontSize: '12px', borderRadius: '10px',padding:'4px 8px' }} onClick={handleShowModal2}>
+                <AddIcon style={{fontSize:'13px'}} /> Add Medicine
+              </Button>
+
+              <Button
+                className="btn btn-primary"
+                style={{ fontSize: '12px', borderRadius: '10px',padding:'4px 8px' }}
+                onClick={() => navigate(APP_PREFIX_PATH + '/bulk_upload_medicine')}
+              >
+                <CloudUploadIcon style={{fontSize:'13px'}} /> Bulk Upload
+              </Button>
+
+              <Button className="btn btn-danger" style={{ fontSize: '12px', borderRadius: '10px',padding:'4px 8px' }} onClick={deleteSelectedMedicines}>
+                <DeleteIcon style={{fontSize:'13px'}} /> Delete Selected
+              </Button>
+            </div>
+
+           
           </div>
 
           {/* TABLE */}
@@ -482,7 +485,7 @@ function ManageMedicine() {
             </Formik>
           </Modal.Body>
         </Modal>
-      </Card>
+      </div>
     </>
   );
 }

@@ -12,6 +12,7 @@ import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Swal from "sweetalert2";
+import './managecontent.css';
 
 const NewInsights = () => {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -414,8 +415,8 @@ const NewInsights = () => {
               </button>
             </div>
 
-            <div style={{ padding: "20px" }}>
-              <div style={{ marginBottom: "16px" }}>
+            <div style={{ padding: "20px",width:'100%' }}>
+              <div style={{ marginBottom: "10px",width:'100%' }}>
                 <FormInput
                   label="Title"
                   value={title}
@@ -425,10 +426,12 @@ const NewInsights = () => {
                   error={errors.title}
                   touched={touched.title}
                   required
+                  style={{width:'100%' }}
+                  className="custom-input custom-search"
                 />
               </div>
 
-              <div style={{ marginBottom: "16px" }}>
+              <div style={{ marginBottom: "10px",width:'100%' }}>
                 <FormTextarea
                   label="Description"
                   value={description}
@@ -439,7 +442,7 @@ const NewInsights = () => {
                 />
               </div>
 
-              <div style={{ marginBottom: "16px" }}>
+              <div style={{ marginBottom: "10px",width:'100%' }}>
                 <FormInput
                   label="URL"
                   value={url}
@@ -449,7 +452,7 @@ const NewInsights = () => {
                 />
               </div>
 
-              <div style={{ marginBottom: "16px" }}>
+              <div style={{ marginBottom: "10px",width:'100%' }}>
                 <FormInput
                   label="Upload Image"
                   type="file"

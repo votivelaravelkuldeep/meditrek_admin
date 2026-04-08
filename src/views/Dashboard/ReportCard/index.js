@@ -78,10 +78,10 @@ import { Box, Card, CardContent, Typography,CircularProgress } from '@mui/materi
 
 // ==============================|| REPORT CARD ||============================== //
 
-const ReportCard = ({ primary, secondary, iconPrimary, color,loading,growth }) => {
-  const value = parseFloat(growth);
-  const isPositive = value > 0;
-  const isZero = value === 0;
+const ReportCard = ({ primary, secondary, iconPrimary, color,loading }) => {
+  // const value = parseFloat(growth);
+  // const isPositive = value > 0;
+  // const isZero = value === 0;
   // const theme = useTheme();
   const IconPrimary = iconPrimary;
   const primaryIcon = iconPrimary ? <IconPrimary fontSize="20px" /> : null;
@@ -112,11 +112,11 @@ const ReportCard = ({ primary, secondary, iconPrimary, color,loading,growth }) =
     color: color
   }));
 
-  const Growth = styled(Box)(() => ({
-    fontSize: 12,
-    marginTop: 6,
-    color: '#6b7280'
-  }));
+  // const Growth = styled(Box)(() => ({
+  //   fontSize: 12,
+  //   marginTop: 6,
+  //   color: '#6b7280'
+  // }));
 
   return (
     // <StyledCard>
@@ -208,7 +208,7 @@ const ReportCard = ({ primary, secondary, iconPrimary, color,loading,growth }) =
         )}
 
         {/* Growth */}
-        <Growth>
+        {/* <Growth>
           <span
             style={{
               color: isZero
@@ -223,7 +223,7 @@ const ReportCard = ({ primary, secondary, iconPrimary, color,loading,growth }) =
             {isNaN(value) ? 0 : value}%
           </span>{" "}
           from last week
-        </Growth>
+        </Growth> */}
       </CardContent>
     </StyledCard>
   );

@@ -20,6 +20,7 @@ import CustomTable from 'component/common/CustomTable';
 // import { Link } from 'react-router-dom';
 import DoctorStatus from 'component/common/Status';
 import DoctorActions from 'component/common/Action';
+import Heading from 'component/common/Heading';
 
 function ManageDoctors() {
   const [showAddModal, setShowAddModal] = useState(false);
@@ -592,7 +593,12 @@ function ManageDoctors() {
         }}
       >
         {/* Search */}
-        <div className="d-flex justify-content-end">
+        <div className="d-flex justify-content-between gap-2 flex-wrap align-items-center">
+          {/* <h5 className="fw-bold mb-0" style={{ color: '#1e293b' }}>
+            Manage Doctor
+          </h5> */}
+          <Heading heading='Manage Doctor' />
+
           <input
             className="custom-search form-control"
             style={{ width: '250px', fontSize: '13px' }}

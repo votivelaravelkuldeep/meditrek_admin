@@ -20,6 +20,7 @@ import { API_URL } from 'config/constant';
 
 import { APP_PREFIX_PATH } from 'config/constant';
 import CustomTable from 'component/common/CustomTable';
+import Heading from 'component/common/Heading';
 
 function ManageDisease() {
   const navigate = useNavigate();
@@ -330,22 +331,24 @@ function ManageDisease() {
       >
         {/* HEADER */}
         <div className="d-flex justify-content-between align-items-center flex-wrap">
-          <div className="d-flex gap-2">
-            <Button className="btn btn-primary" style={{ fontSize: '12px', borderRadius: '10px' }} onClick={handleShowModal2}>
-              <AddIcon /> Add Disease
-            </Button>
-
-            <Button className="btn btn-primary" style={{ fontSize: '12px', borderRadius: '10px' }} onClick={handleBulkUpload}>
-              <CloudUploadIcon /> Bulk Upload
-            </Button>
-          </div>
-
-          <input
+          <Heading heading='Manage Disease' />
+          <div className="d-flex gap-2 flex-wrap">
+            <input
             className="custom-search form-control"
             style={{ width: '250px', fontSize: '13px' }}
             placeholder="Search..."
             onChange={handleSearchChange}
           />
+            <Button className="btn btn-primary" style={{ fontSize: '12px', borderRadius: '10px' }} onClick={handleShowModal2}>
+              <AddIcon style={{fontSize:'16px'}} /> Add Disease
+            </Button>
+
+            <Button className="btn btn-primary" style={{ fontSize: '12px', borderRadius: '10px' }} onClick={handleBulkUpload}>
+              <CloudUploadIcon style={{fontSize:'16px'}} /> Bulk Upload
+            </Button>
+          </div>
+
+          
         </div>
 
         {/* TABLE */}

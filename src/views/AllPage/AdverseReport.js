@@ -1,13 +1,15 @@
-import { Row, Col, Card, Form, Button, Table } from 'react-bootstrap';
-import Typography from '@mui/material/Typography';
-import { Link } from 'react-router-dom';
+import { Row, Col, Form, Button } from 'react-bootstrap';
+// import Typography from '@mui/material/Typography';
+// import { Link } from 'react-router-dom';
 import React, { useState } from 'react';
 import axios from 'axios';
 import { API_URL } from '../../config/constant';
-import Pagination from '@mui/material/Pagination';
-import Stack from '@mui/material/Stack';
+// import Pagination from '@mui/material/Pagination';
+// import Stack from '@mui/material/Stack';
 import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
+import CustomTable from 'component/common/CustomTable';
+import ImportExportIcon from '@mui/icons-material/ImportExport';
 
 function AdverseReport() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -17,8 +19,21 @@ function AdverseReport() {
   const [from_date_error, setFromDateError] = useState('');
   const [to_date_error, setToDateError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [sortConfig, setSortConfig] = useState(null);
 
-  const itemsPerPage = 10;
+  const handleSort = (key) => {
+    setSortConfig((prev) => {
+      if (!prev) return { key, direction: 'asc' };
+
+      return {
+        key,
+        direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
+      };
+    });
+  };
+
+  //   const itemsPerPage = 10;
 
   const handleSearch = (event) => {
     setSearchQuery(event.target.value);
@@ -34,14 +49,14 @@ function AdverseReport() {
     );
   });
 
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredReactions.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredReactions.length / itemsPerPage);
+  //   const indexOfLastItem = currentPage * itemsPerPage;
+  //   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  //   const currentItems = filteredReactions.slice(indexOfFirstItem, indexOfLastItem);
+  //   const totalPages = Math.ceil(filteredReactions.length / itemsPerPage);
 
-  const handlePageChange = (event, value) => {
-    setCurrentPage(value);
-  };
+  //   const handlePageChange = (event, value) => {
+  //     setCurrentPage(value);
+  //   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -103,40 +118,72 @@ function AdverseReport() {
     saveAs(blob, 'AdverseReactionReport.xlsx');
   };
 
+  const columns = [
+    {
+      label: 'S. No',
+      key: 'sr_no',
+      render: (_, index) => index + 1
+    },
+
+    { label: 'Patient Name', key: 'patient_name', sortable: true },
+    { label: 'Medicine Name', key: 'medicine_name', sortable: true },
+    { label: 'Dosage', key: 'dosage', sortable: true },
+    { label: 'Medicine Category', key: 'medicine_category', sortable: true },
+    { label: 'Symptom', key: 'symptom_name', sortable: true },
+    { label: 'Medication Start Date', key: 'medication_start_date' },
+    { label: 'Reaction Date', key: 'reaction_date' },
+    { label: 'Description', key: 'instruction' },
+
+    {
+      label: 'Created Date',
+      key: 'createtime',
+      sortable: true,
+      render: (item) => <span style={{ whiteSpace: 'nowrap' }}>{item.createtime}</span>
+    }
+  ];
+
   return (
     <>
-      <Typography style={{ marginTop: '15px', marginBottom: '30px' }} variant="h4" gutterBottom>
+      {/* <Typography style={{ marginTop: '15px', marginBottom: '30px' }} variant="h4" gutterBottom>
         <Link to={'/'} style={{ textDecoration: 'none' }}>
           <span style={{ color: '#0ccfb5' }}>Dashboard</span>
         </Link>{' '}
         / Health Report
-      </Typography>
+      </Typography> */}
 
-      <Card className="mb-4">
-        <Card.Header className="bg-white">
-          <Card.Title as="h5" className="mt-2">
-           Health Report
-          </Card.Title>
-        </Card.Header>
-        <Card.Body>
+      <div
+        className="mb-4"
+        style={{
+          background: '#fff',
+          borderRadius: 16,
+          boxShadow: '0 4px 8px rgba(0,0,0,0.05)',
+          padding: '16px'
+        }}
+      >
+        <h5 className="fw-bold mb-0" style={{ color: '#1e293b' }}>
+          Health Report
+        </h5>
+        <div className="mt-3">
           <Form onSubmit={handleSubmit}>
             <Row>
-              <Col sm={5}>
+              <Col sm={3}>
                 <Form.Group className="mb-3">
-                  <Form.Label>From Date</Form.Label>
+                  <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>From Date</Form.Label>
                   <Form.Control
                     type="date"
                     onChange={(e) => {
                       setFromDate(e.target.value);
                       setFromDateError('');
                     }}
+                    className="custom-input custom-search"
+                    style={{ fontSize: '13px' }}
                   />
-                  <p style={{ color: 'red' }}>{from_date_error}</p>
+                  <p style={{ color: 'red', fontSize: '12px' }}>{from_date_error}</p>
                 </Form.Group>
               </Col>
-              <Col sm={5}>
+              <Col sm={3}>
                 <Form.Group className="mb-3">
-                  <Form.Label>To Date</Form.Label>
+                  <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>To Date</Form.Label>
                   <Form.Control
                     type="date"
                     max={new Date().toISOString().split('T')[0]}
@@ -148,93 +195,84 @@ function AdverseReport() {
                         setToDateError('');
                       }
                     }}
+                    className="custom-input custom-search"
+                    style={{ fontSize: '13px' }}
                   />
-                  <p style={{ color: 'red' }}>{to_date_error}</p>
+                  <p style={{ color: 'red', fontSize: '12px' }}>{to_date_error}</p>
                 </Form.Group>
               </Col>
-              <Col sm={2} className="d-flex align-items-center justify-content-start">
-                <Button type="submit" className="submit-btn mt-3">
+              <Col sm={2} className="d-flex align-items-center justify-content-start" style={{ marginTop: '15px' }}>
+                <Button variant="primary" type="submit" style={{ fontSize: '12px' }}>
                   View
                 </Button>
               </Col>
             </Row>
           </Form>
-        </Card.Body>
-      </Card>
+        </div>
+      </div>
 
-      {adverseReactions.length > 0 && (
+      {/* {adverseReactions.length > 0 && (
         <div className="mb-3 text-end">
           <Button variant="success" onClick={exportToExcel} style={{ backgroundColor: '#0ccfb5', border: 'none' }}>
             Export to Excel
           </Button>
         </div>
-      )}
+      )} */}
 
-      <Card>
-        <Card.Header className="bg-white d-flex justify-content-between flex-wrap">
-          <Typography variant="h5" gutterBottom>
-            <span style={{ color: '#000' }}>Health List</span>
-          </Typography>
-          <div>
-            <Form.Control type="text" placeholder="Search..." onChange={handleSearch} style={{ width: '200px' }} />
-          </div>
-        </Card.Header>
-        <Card.Body>
-          <div className="table-container">
-            <Table hover className="fixed-header-table">
-              <thead>
-                <tr>
-                  <th style={{ textAlign: 'center', fontWeight: '500' }}>S. No</th>
-                  <th style={{ textAlign: 'center', fontWeight: '500' }}>Patient Name</th>
-                  <th style={{ textAlign: 'center', fontWeight: '500' }}>Medicine Name</th>
-                  <th style={{ textAlign: 'center', fontWeight: '500' }}>Dosage</th>
-                  <th style={{ textAlign: 'center', fontWeight: '500' }}>Medicine Category</th>
-                  <th style={{ textAlign: 'center', fontWeight: '500' }}>Symptom</th>
-                  <th style={{ textAlign: 'center', fontWeight: '500' }}>Medication Start Date</th>
-                  <th style={{ textAlign: 'center', fontWeight: '500' }}>Reaction Date</th>
-                  <th style={{ textAlign: 'center', fontWeight: '500' }}>Description</th>
-                  <th style={{ textAlign: 'center', fontWeight: '500' }}>Created Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {currentItems.length > 0 ? (
-                  currentItems.map((reaction, index) => (
-                    <tr key={reaction.adverse_reaction_id}>
-                      <td style={{ textAlign: 'center' }}>{indexOfFirstItem + index + 1}</td>
-                      <td style={{ textAlign: 'center' }}>{reaction.patient_name}</td>
-                      <td style={{ textAlign: 'center' }}>{reaction.medicine_name}</td>
-                      <td style={{ textAlign: 'center' }}>{reaction.dosage}</td>
-                      <td style={{ textAlign: 'center' }}>{reaction.medicine_category}</td>
-                      <td style={{ textAlign: 'center' }}>{reaction.symptom_name}</td>
-                      <td style={{ textAlign: 'center' }}>{reaction.medication_start_date}</td>
-                      <td style={{ textAlign: 'center' }}>{reaction.reaction_date}</td>
-                      <td style={{ textAlign: 'center' }}>{reaction.instruction}</td>
-                      <td style={{ textAlign: 'center' }}>{reaction.createtime}</td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={10} className="text-center">
-                      No Data Found
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </Table>
-          </div>
+      <div
+        style={{
+          background: '#fff',
+          borderRadius: 16,
+          boxShadow: '0 4px 8px rgba(0,0,0,0.05)',
+          padding: '16px'
+        }}
+      >
+        <div className="d-flex justify-content-between flex-wrap">
+          <h5 className="fw-bold mb-0" style={{ color: '#1e293b' }}>
+            Health List
+          </h5>
 
-          <div className="d-flex justify-content-between mt-3">
-            <p style={{ fontWeight: '500' }}>
-              {filteredReactions.length > 0
-                ? `Showing ${indexOfFirstItem + 1} to ${Math.min(indexOfLastItem, filteredReactions.length)} of ${filteredReactions.length} entries`
-                : 'Showing 0 to 0 of 0 entries'}
-            </p>
-            <Stack spacing={2}>
-              <Pagination count={totalPages} page={currentPage} onChange={handlePageChange} color="primary" />
-            </Stack>
+          <div className="d-flex gap-2">
+            <input
+              className="custom-search form-control"
+              style={{ width: '250px', fontSize: '13px' }}
+              placeholder="Search..."
+              onChange={handleSearch}
+            />
+            <div>
+              {adverseReactions.length > 0 && (
+           
+                  <Button variant="primary" onClick={exportToExcel} style={{ fontSize: '12px' }}>
+                    <ImportExportIcon style={{ fontSize: '16px' }} />
+                    Export to Excel
+                  </Button>
+              
+              )}
+            </div>
           </div>
-        </Card.Body>
-      </Card>
+        </div>
+        <div
+          style={{
+            marginTop: '16px',
+            borderRadius: '12px',
+            overflow: 'hidden'
+          }}
+        >
+          <CustomTable
+            columns={columns}
+            data={filteredReactions}
+            currentPage={currentPage}
+            rowsPerPage={rowsPerPage}
+            sortConfig={sortConfig}
+            onSort={handleSort}
+            onPageChange={(page) => setCurrentPage(page)}
+            onRowsPerPageChange={(size) => {
+              setRowsPerPage(size);
+              setCurrentPage(1);
+            }}
+          />
+        </div>
+      </div>
     </>
   );
 }

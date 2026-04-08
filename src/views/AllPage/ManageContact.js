@@ -1,24 +1,40 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Table } from 'react-bootstrap';
+// import { Card, Table } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import './managecontent.css';
-import Pagination from '@mui/material/Pagination';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
+// import Pagination from '@mui/material/Pagination';
+// import Stack from '@mui/material/Stack';
+// import Typography from '@mui/material/Typography';
 // import { Base_Url } from '../../config';
 import axios from 'axios';
 import { Button, Modal } from 'react-bootstrap';
 import { API_URL, APP_PREFIX_PATH } from 'config/constant';
+import CustomTable from 'component/common/CustomTable';
+import ReplyIcon from '@mui/icons-material/Reply';
+import Heading from 'component/common/Heading';
 
 function ManageUser() {
   const [currentPage, setCurrentPage] = useState(1);
   const [contact, setContact] = useState([]);
-  const usersPerPage = 50;
+//   const usersPerPage = 50;
   const [searchQuery, setSearchQuery] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [messages, setMessages] = useState(null);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [sortConfig, setSortConfig] = useState(null);
+
+  const handleSort = (key) => {
+    setSortConfig((prev) => {
+      if (!prev) return { key, direction: 'asc' };
+
+      return {
+        key,
+        direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
+      };
+    });
+  };
 
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
@@ -45,14 +61,14 @@ function ManageUser() {
       (user.createtime && user.createtime.includes(searchQuery))
   );
 
-  const indexOfLastUser = currentPage * usersPerPage;
-  const indexOfFirstUser = indexOfLastUser - usersPerPage;
-  const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
-  const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
+//   const indexOfLastUser = currentPage * usersPerPage;
+//   const indexOfFirstUser = indexOfLastUser - usersPerPage;
+  //   const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
+  //   const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
 
-  const handlePageChange = (event, value) => {
-    setCurrentPage(value);
-  };
+//   const handlePageChange = (event, value) => {
+//     setCurrentPage(value);
+//   };
 
   const fetchData = async () => {
     try {
@@ -78,118 +94,141 @@ function ManageUser() {
     fetchData();
   }, []);
 
+  const columns = [
+    {
+      label: 'S. No',
+      key: 'sr_no',
+      render: (_, index) => index + 1
+    },
+  
+    { label: 'User Type', key: 'user_type_label', sortable: true },
+    { label: 'Name', key: 'name', sortable: true },
+    { label: 'Email', key: 'email', sortable: true },
+
+    {
+      label: 'Message',
+      key: 'message',
+      render: (user) => (
+        <button
+          onClick={() => handleFullMessage(user.message)}
+          style={{
+            background: 'none',
+            border: 'none',
+            color: '#1ddec4',
+            cursor: 'pointer',
+            fontSize: '12px',
+            textAlign:'left'
+          }}
+        >
+          {user.message?.length > 25 ? `${user.message.substring(0, 22)}...` : user.message}
+        </button>
+      )
+    },
+
+    {
+      label: 'Reply Date',
+      key: 'reply_datetime',
+      render: (user) => (user.reply_datetime === 'Invalid date' ? '-' : user.reply_datetime)
+    },
+
+  
+
+    {
+      label: 'Created At',
+      key: 'createtime',
+      sortable: true,
+      render: (user) => <span style={{ whiteSpace: 'nowrap' }}>{user.createtime}</span>
+    },
+      {
+      label: 'Status',
+      key: 'status',
+      render: (user) => (
+        <span
+          style={{
+            padding: '4px 8px',
+            borderRadius: '6px',
+            fontSize: '11px',
+            background: user.status === 0 ? '#ea580c2e' : '#dcfce7',
+            color: user.status === 0 ? '#ea580c' : '#16a34a',
+            fontWeight: 600,
+          }}
+        >
+          {user.status === 0 ? 'Pending' : 'Replied'}
+        </span>
+      )
+    },
+      {
+      label: 'Action',
+      key: 'action',
+      render: (user) => (
+        <div className="text-center">
+          <Link
+            to={APP_PREFIX_PATH + `/send-reply?contact_id=${user.contact_id}`}
+             title="Reply" 
+            style={{
+              background: 'rgba(29, 222, 196, 0.13)',
+              color: '#1ddec4',
+              padding: '4px 8px',
+              borderRadius: '6px',
+              border: '1px solid rgba(29, 222, 196, 0.25)',
+            //   fontSize: '12px',
+              textDecoration: 'none',
+              display:'inline-flex'
+            }}
+          >
+            {/* Reply */}
+            <ReplyIcon style={{fontSize:'16px'}} />
+          </Link>
+        </div>
+      )
+    },
+  ];
+
   return (
     <>
-      <Typography style={{ marginTop: '15px', marginBottom: '30px' }} variant="h4" gutterBottom>
+      {/* <Typography style={{ marginTop: '15px', marginBottom: '30px' }} variant="h4" gutterBottom>
         <span style={{ color: '#1ddec4' }}>Dashboard</span> / Manage Contact Us
-      </Typography>
-      <Card>
-        <Card.Header className="bg-white">
-          <div>
-            <label htmlFor="search-input" style={{ marginRight: '5px' }}>
-              Search
-            </label>
-            <input
-              className="search-input"
-              type="text"
-              placeholder="Search..."
-              onChange={handleSearchChange}
-              style={{ marginTop: '8px', marginBottom: '5px', padding: '5px', width: '200px', border: '1px solid #f2f2f2' }}
-            />
-          </div>
-        </Card.Header>
-        <Card.Body>
-          <div className="table-container">
-            <Table hover className="fixed-header-table">
-              <thead>
-                <tr>
-                  <th style={{ textAlign: 'center', fontWeight: '500', minWidth: '100px' }}> S. No</th>
-                  <th style={{ textAlign: 'center', fontWeight: '500' }}>Action</th>
-                  <th style={{ textAlign: 'center', fontWeight: '500' }}>User Type</th>
-                  <th style={{ textAlign: 'center', fontWeight: '500' }}>Name</th>
-                  <th style={{ textAlign: 'center', fontWeight: '500' }}>Email</th>
-                  <th style={{ textAlign: 'center', fontWeight: '500', minWidth: '180px' }}> Message</th>
-                  <th style={{ textAlign: 'center', fontWeight: '500', minWidth: '180px' }}>Reply Date & Time</th>
-                  <th style={{ textAlign: 'center', fontWeight: '500' }}>Status</th>
-                  <th style={{ textAlign: 'center', fontWeight: '500', minWidth: '180px' }}> Create Date & Time</th>
-                </tr>
-              </thead>
-              <tbody>
-                {currentUsers.map((user, index) => (
-                  <tr key={index}>
-                    <th scope="row" style={{ textAlign: 'center' }}>
-                      {indexOfFirstUser + index + 1}
-                    </th>
-                    <td>
-                      <div className="text-center">
-                        <Link to={APP_PREFIX_PATH + `/send-reply?contact_id=${user.contact_id}`} className="btn btn-primary action-btn">
-                          Reply
-                        </Link>
-                      </div>
-                    </td>
-                    <td style={{ textAlign: 'center' }}>{user.user_type_label}</td>
-                    <td style={{ textAlign: 'center' }}>{user.name}</td>
-                    <td style={{ textAlign: 'center' }}>{user.email}</td>
-                    <td style={{ textAlign: 'center' }}>
-                      <button
-                        onClick={() => handleFullMessage(user.message)}
-                        style={{ background: 'none', border: 'none', padding: '0', color: 'blue', cursor: 'pointer' }}
-                      >
-                        {user.message.length > 25 ? `${user.message.substring(0, 22)}...` : user.message}
-                      </button>
-                    </td>
-                    <td style={{ textAlign: 'center' }}>{user.reply_datetime === 'Invalid date' ? '-' : user.reply_datetime}</td>
-
-                    <td style={{ textAlign: 'center' }}>
-                      {user.status === 0 ? (
-                        <p
-                          style={{
-                            borderRadius: '25px',
-                            background: '#ffbc34',
-                            padding: '2px 15px',
-                            width: '90px',
-                            color: '#fff',
-                            margin: 'auto',
-                            fontSize: '13px',
-                            fontWeight: '500'
-                          }}
-                        >
-                          Pending
-                        </p>
-                      ) : (
-                        <p
-                          style={{
-                            borderRadius: '25px',
-                            background: 'green',
-                            padding: '2px 15px',
-                            width: '90px',
-                            color: '#fff',
-                            margin: 'auto',
-                            fontSize: '13px',
-                            fontWeight: '500'
-                          }}
-                        >
-                          Replied
-                        </p>
-                      )}
-                    </td>
-
-                    <td style={{ textAlign: 'center' }}>{user.createtime}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          </div>
-          <div className="d-flex justify-content-between">
-            <p style={{ fontWeight: '500' }}>
-              Showing {indexOfFirstUser + 1} to {Math.min(indexOfLastUser, filteredUsers.length)} of {filteredUsers.length} entries
-            </p>
-            <Stack spacing={2} alignItems="right">
-              <Pagination count={totalPages} page={currentPage} onChange={handlePageChange} />
-            </Stack>
-          </div>
-        </Card.Body>
-      </Card>
+      </Typography> */}
+      <div
+        style={{
+          background: '#fff',
+          borderRadius: 16,
+          boxShadow: '0 4px 8px rgba(0,0,0,0.05)',
+          padding: '16px'
+        }}
+      >
+        <div className="d-flex justify-content-between align-items-center">
+          <Heading heading='Manage Contact Us' />
+          <input
+            className="custom-search form-control"
+            style={{ width: '250px', fontSize: '13px' }}
+            placeholder="Search..."
+            onChange={handleSearchChange}
+          />
+        </div>
+        {/* Table */}
+        <div
+          style={{
+            marginTop: '16px',
+            borderRadius: '12px',
+            overflow: 'hidden'
+          }}
+        >
+          <CustomTable
+            columns={columns}
+            data={filteredUsers}
+            currentPage={currentPage}
+            rowsPerPage={rowsPerPage}
+            sortConfig={sortConfig}
+            onSort={handleSort}
+            onPageChange={(page) => setCurrentPage(page)}
+            onRowsPerPageChange={(size) => {
+              setRowsPerPage(size);
+              setCurrentPage(1);
+            }}
+          />
+        </div>
+      </div>
 
       <Modal show={showModal} onHide={handleCloseModal} style={{ zIndex: '99999' }}>
         <Modal.Header closeButton>
