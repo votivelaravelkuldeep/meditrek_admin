@@ -284,7 +284,7 @@ function ManageSymptom() {
       label: 'Action',
       key: 'action',
       render: (symptom, index) => (
-        <div className="d-flex gap-2 justify-content-center">
+        <div className="d-flex gap-2">
           {/* EDIT */}
           <button
             onClick={() => handleActionChange(index, 'Edit', symptom.symptom_id, symptom.symptom_name, symptom.description)}
