@@ -1,53 +1,64 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Table, Modal, Button, Form } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Modal, Button, Form } from 'react-bootstrap';
+// import { Link } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import './managecontent.css';
-import Pagination from '@mui/material/Pagination';
-import Stack from '@mui/material/Stack';
+// import Pagination from '@mui/material/Pagination';
+// import Stack from '@mui/material/Stack';
 
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
-import Typography from '@mui/material/Typography';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+// import Typography from '@mui/material/Typography';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 import { API_URL, APP_PREFIX_PATH } from 'config/constant';
 import { useNavigate } from 'react-router-dom';
+import CustomTable from 'component/common/CustomTable';
 // import { useLocation } from 'react-router-dom';
 // import { useParams } from 'react-router-dom';
 function ManageSymptom() {
-
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [showModal2, setShowModal2] = useState(false);
-  const [symptomData, setsymptomData] = useState([])
+  const [symptomData, setsymptomData] = useState([]);
   const [selectedActions, setSelectedActions] = useState({});
-  const [name, setName] = useState('')
-  const [description, setDescription] = useState('')
-  const [syptomId, setsymptomId] = useState('')
-  const [error, setError] = useState({})
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [syptomId, setsymptomId] = useState('');
+  const [error, setError] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
 
-  const symptomsPerPage = 5; // Show 5 rows per page
-  console.log(description);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [sortConfig, setSortConfig] = useState(null);
 
+  const handleSort = (key) => {
+    setSortConfig((prev) => {
+      if (!prev) return { key, direction: 'asc' };
 
+      return {
+        key,
+        direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
+      };
+    });
+  };
 
+  //   const symptomsPerPage = 5; // Show 5 rows per page
+  //   console.log(description);
 
-
-
-  const handleActionChange = (index, action, symptom_id, name, description) => {
+  //   const handleActionChange = (index, action, symptom_id, name, description) => {
+  const handleActionChange = (index, action, symptom_id, name) => {
     setSelectedActions({ ...selectedActions, [index]: action });
     if (action === 'Delete') {
       deletesymptom(symptom_id);
       setSelectedActions({ ...selectedActions, [index]: null });
     } else if (action === 'Edit') {
-      setsymptomId(symptom_id)
-      setName(name)
-      setDescription(description)
-      handleShowModal()
+      setsymptomId(symptom_id);
+      setName(name);
+      setDescription(description);
+      handleShowModal();
       // Add your view logic here, e.g., navigate to the symptom's profile page
       setSelectedActions({ ...selectedActions, [index]: null });
     }
@@ -66,14 +77,14 @@ function ManageSymptom() {
   );
 
   // Pagination logic
-  const indexOfLastsymptom = currentPage * symptomsPerPage;
-  const indexOfFirstsymptom = indexOfLastsymptom - symptomsPerPage;
-  const currentsymptoms = filteredUsers.slice(indexOfFirstsymptom, indexOfLastsymptom);
-  const totalPages = Math.ceil(filteredUsers.length / symptomsPerPage);
+  //   const indexOfLastsymptom = currentPage * symptomsPerPage;
+  //   const indexOfFirstsymptom = indexOfLastsymptom - symptomsPerPage;
+  //   const currentsymptoms = filteredUsers.slice(indexOfFirstsymptom, indexOfLastsymptom);
+  //   const totalPages = Math.ceil(filteredUsers.length / symptomsPerPage);
 
-  const handlePageChange = (event, value) => {
-    setCurrentPage(value);
-  };
+  //   const handlePageChange = (event, value) => {
+  //     setCurrentPage(value);
+  //   };
 
   const handleShowModal = () => setShowModal(true);
   const handleCloseModal = () => setShowModal(false);
@@ -82,14 +93,15 @@ function ManageSymptom() {
   const handleCloseModal2 = () => setShowModal2(false);
 
   const getsymptom = async () => {
-    axios.get(`${API_URL}get_all_symptoms`)
+    axios
+      .get(`${API_URL}get_all_symptoms`)
       .then((response) => {
-        setsymptomData(response.data.data)
+        setsymptomData(response.data.data);
         // setUserPageCount(response.data.users.length)
       })
       .catch((error) => {
         console.error('Error get_all_user_data details:', error);
-      })
+      });
   };
 
   useEffect(() => {
@@ -107,7 +119,8 @@ function ManageSymptom() {
       confirmButtonText: 'Yes!'
     }).then(async (result) => {
       if (result.isConfirmed) {
-        axios.post(`${API_URL}delete_symptom`, { symptom_id: symptom_id })
+        axios
+          .post(`${API_URL}delete_symptom`, { symptom_id: symptom_id })
           .then((response) => {
             if (response.data.success) {
               Swal.fire({
@@ -116,54 +129,54 @@ function ManageSymptom() {
                 icon: 'success',
                 timer: 2000
               });
-              getsymptom()
-              console.log("deleted")
+              getsymptom();
+              console.log('deleted');
             }
             // setUserPageCount(response.data.users.length)
           })
           .catch((error) => {
             console.error('Error get_all_user_data details:', error);
-          })
+          });
       }
-    })
+    });
 
     // Add your delete logic here
   };
 
   const handlebulkupload = () => {
-    navigate(APP_PREFIX_PATH + '/bulk-upload-symptom')
+    navigate(APP_PREFIX_PATH + '/bulk-upload-symptom');
 
     //   <Link
-    //   to={APP_PREFIX_PATH + `/manage-user/userlist/view_user/${user.user_id}/${user.user_id}`}  
+    //   to={APP_PREFIX_PATH + `/manage-user/userlist/view_user/${user.user_id}/${user.user_id}`}
     // >
     // </Link>
-
-  }
+  };
 
   const addSymptom = async (e) => {
-    e.preventDefault()
-    let errors = {}
+    e.preventDefault();
+    let errors = {};
 
     if (!name) {
-      errors.name = 'Please enter name'
+      errors.name = 'Please enter name';
     }
     // if (!description) {
     //   errors.description = 'Please enter description'
     // }
 
     if (Object.keys(errors).length > 0) {
-      setError(errors)
-      return
+      setError(errors);
+      return;
     }
-    setError({})
+    setError({});
 
     let add_data = {
-      symptom_name: name,
-    }
-    axios.post(`${API_URL}add_symptom`, add_data)
+      symptom_name: name
+    };
+    axios
+      .post(`${API_URL}add_symptom`, add_data)
       .then((response) => {
         if (response.data.key) {
-          setError({ general: response.data.msg })
+          setError({ general: response.data.msg });
         } else if (response.data.success) {
           Swal.fire({
             title: '',
@@ -171,46 +184,47 @@ function ManageSymptom() {
             icon: 'success',
             timer: 3000
           });
-          handleCloseModal2()
-          setName('')
-          getsymptom()
+          handleCloseModal2();
+          setName('');
+          getsymptom();
         } else {
-          setName('')
-          handleCloseModal()
+          setName('');
+          handleCloseModal();
         }
       })
 
       .catch((error) => {
-        console.error('Error adding new sub category', error)
-      })
-  }
+        console.error('Error adding new sub category', error);
+      });
+  };
 
-  //edit starts from here 
+  //edit starts from here
   const editSymptom = async (e) => {
-    e.preventDefault()
-    let errors = {}
+    e.preventDefault();
+    let errors = {};
 
     if (!name) {
-      errors.name = 'Please enter name'
+      errors.name = 'Please enter name';
     }
     // if (!description) {
     //   errors.description = 'Please enter description'
     // }
 
     if (Object.keys(errors).length > 0) {
-      setError(errors)
-      return
+      setError(errors);
+      return;
     }
-    setError({})
+    setError({});
 
     let add_data = {
       symptom_id: syptomId,
-      symptom_name: name,
-    }
-    axios.post(`${API_URL}edit_symptom`, add_data)
+      symptom_name: name
+    };
+    axios
+      .post(`${API_URL}edit_symptom`, add_data)
       .then((response) => {
         if (response.data.key) {
-          setError({ general: response.data.msg })
+          setError({ general: response.data.msg });
         } else if (response.data.success) {
           Swal.fire({
             title: '',
@@ -218,20 +232,19 @@ function ManageSymptom() {
             icon: 'success',
             timer: 2000
           });
-          handleCloseModal()
-          setName('')
-          getsymptom()
+          handleCloseModal();
+          setName('');
+          getsymptom();
         } else {
-          setName('')
-          handleCloseModal()
+          setName('');
+          handleCloseModal();
         }
       })
 
       .catch((error) => {
-        console.error('Error adding new sub category', error)
-      })
-  }
-
+        console.error('Error adding new sub category', error);
+      });
+  };
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -250,131 +263,150 @@ function ManageSymptom() {
     return formattedDate;
   };
 
+  const columns = [
+    {
+      label: 'S. No',
+      key: 'sr_no',
+      render: (_, index) => index + 1
+    },
+    {
+      label: 'Symptom Name',
+      key: 'symptom_name',
+      sortable: true
+    },
+    {
+      label: 'Created At',
+      key: 'createtime',
+      sortable: true,
+      render: (s) => formatDate(s.createtime)
+    },
+    {
+      label: 'Action',
+      key: 'action',
+      render: (symptom, index) => (
+        <div className="d-flex gap-2 justify-content-center">
+          {/* EDIT */}
+          <button
+            onClick={() => handleActionChange(index, 'Edit', symptom.symptom_id, symptom.symptom_name, symptom.description)}
+            style={{
+              background: 'rgba(29, 222, 196, 0.13)',
+              color: '#1ddec4',
+              padding: '2px 8px',
+              borderRadius: '6px',
+              border: '1px solid rgba(29, 222, 196, 0.25)'
+            }}
+          >
+            <EditIcon style={{ fontSize: '16px' }} />
+          </button>
+
+          {/* DELETE */}
+          <button
+            onClick={() => handleActionChange(index, 'Delete', symptom.symptom_id)}
+            style={{
+              background: '#fee2e2',
+              color: '#dc2626',
+              padding: '2px 8px',
+              borderRadius: '6px',
+              border: '1px solid #dc262654'
+            }}
+          >
+            <DeleteIcon style={{ fontSize: '16px' }} />
+          </button>
+        </div>
+      )
+    }
+  ];
+
   return (
     <>
-      <Typography style={{ marginTop: '15px', marginBottom: '30px' }} variant="h4" gutterBottom>
+      {/* <Typography style={{ marginTop: '15px', marginBottom: '30px' }} variant="h4" gutterBottom>
         <span style={{ color: '#1ddec4' }}>Dashboard</span> / Manage Symptom
-      </Typography>
+      </Typography> */}
 
-      <Card>
-        <Card.Header className=" bg-white ">
+      <div
+        style={{
+          background: '#fff',
+          borderRadius: 16,
+          padding: '16px',
+          boxShadow: '0 4px 8px rgba(0,0,0,0.05)'
+        }}
+      >
+        <div className="d-flex justify-content-between align-items-center flex-wrap">
+          <div className="d-flex gap-2">
+            <Button className="btn btn-primary" style={{ fontSize: '12px', borderRadius: '10px' }} onClick={handleShowModal2}>
+              <AddIcon style={{ fontSize: '16px' }} /> Add Symptom
+            </Button>
 
-          <div className="d-flex justify-content-between flex-wrap">
-            <div>
-              <Button className="btn btn-primary mt-2 mb-2" style={{ marginRight: '10px' }} onClick={handleShowModal2}>
-                <AddIcon style={{ marginRight: '2px', fontWeight: '500' }} /> Add Symptom
-              </Button>
-
-              <Button className="btn btn-primary mt-2 mb-2" onClick={handlebulkupload}>
-                <AddIcon style={{ marginRight: '2px', fontWeight: '500' }} /> Bulk Upload
-              </Button>
-
-            </div>
-
-
-            <div>
-              <label htmlFor="search-input" style={{ marginRight: '5px' }}>
-                Search
-              </label>
-              <input
-                className="search-input"
-                type="text"
-                placeholder="Search..."
-                onChange={handleSearchChange}
-                style={{ marginTop: '8px', marginBottom: '5px', padding: '5px', width: '200px', border: '1px solid #f2f2f2' }}
-              />
-            </div>
+            <Button className="btn btn-primary" style={{ fontSize: '12px', borderRadius: '10px' }} onClick={handlebulkupload}>
+              <CloudUploadIcon style={{ fontSize: '16px' }} /> Bulk Upload
+            </Button>
           </div>
-        </Card.Header>
 
-        <Card.Body>
-          <div className="table-container">
-            <Table hover className="fixed-header-table">
-              <thead>
-                <tr>
-                  <th style={{ textAlign: 'center', fontWeight: '500' }}> S. No</th>
-                  <th style={{ textAlign: 'center', fontWeight: '500' }}>Action</th>
-                  <th style={{ textAlign: 'center', fontWeight: '500' }}>Symptom Name</th>
-                  {/* <th style={{ textAlign: 'center', fontWeight: '500' }}>Description</th> */}
-                  <th style={{ textAlign: 'center', fontWeight: '500' }}>Create Date & Time</th>
-                </tr>
-              </thead>
-              <tbody>
-                {currentsymptoms.map((symptom, index) => (
-                  <tr key={symptom.id}>
-                    <th scope="row" style={{ textAlign: 'center' }}>
-                      {indexOfFirstsymptom + index + 1}
-                    </th>
-                    <td>
-                      <div className="dropdown text-center">
-                        <button
-                          className="btn btn-primary dropdown-toggle action-btn"
-                          type="button"
-                          id={`dropdownMenuButton${symptom.id}`}
-                          data-bs-toggle="dropdown"
-                          aria-expanded="false"
-                        >
-                          Action
-                        </button>
-                        <ul className="dropdown-menu" aria-labelledby={`dropdownMenuButton${symptom.symptom_id}`}>
-                          <li>
-                            <Link className="dropdown-item" onClick={() => handleActionChange(index, 'Edit', symptom.symptom_id, symptom.symptom_name, symptom.description)}>
-                              <EditIcon style={{ marginRight: '8px' }} /> Edit
-                            </Link>
-                          </li>
+          <div>
+            {/* <label htmlFor="search-input" style={{ marginRight: '5px' }}>
+              Search
+            </label> */}
+            <input
+              className="search-input custom-search form-control"
+              type="text"
+              placeholder="Search..."
+              onChange={handleSearchChange}
+              //   className="custom-search form-control"
+              style={{ width: '250px', fontSize: '13px' }}
+            />
+          </div>
+        </div>
 
-                          <li>
-                            <button className="dropdown-item" onClick={() => handleActionChange(index, 'Delete', symptom.symptom_id)}>
-                              <DeleteIcon style={{ marginRight: '8px' }} /> Delete
-                            </button>
-                          </li>
-                        </ul>
-                      </div>
-                    </td>
-                    <td style={{ textAlign: 'center' }}>
-                      {symptom.symptom_name}
-                    </td>
-                    {/* <td style={{ textAlign: 'center' }}>
-                    {symptom.description}
-                  </td> */}
-                    <td style={{ textAlign: 'center' }}>{formatDate(symptom.createtime)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          </div>
-          <div className="d-flex justify-content-between">
-            <p style={{ fontWeight: '500' }} className='pagination'>Showing {indexOfFirstsymptom + 1} to {Math.min(indexOfLastsymptom, currentsymptoms.length)} of {currentsymptoms.length} entries</p>
-            <Stack spacing={2} alignItems="right">
-              <Pagination count={totalPages} page={currentPage} onChange={handlePageChange} />
-            </Stack>
-          </div>
-        </Card.Body>
+        <div
+          style={{
+            marginTop: '16px',
+            borderRadius: '12px',
+            overflow: 'hidden'
+          }}
+        >
+          <CustomTable
+            columns={columns}
+            data={filteredUsers}
+            currentPage={currentPage}
+            rowsPerPage={rowsPerPage}
+            sortConfig={sortConfig}
+            onSort={handleSort}
+            onPageChange={(page) => setCurrentPage(page)}
+            onRowsPerPageChange={(size) => {
+              setRowsPerPage(size);
+              setCurrentPage(1);
+            }}
+          />
+        </div>
 
         {/* Modal Component */}
-        <Modal show={showModal2} onHide={handleCloseModal2} style={{ zIndex: '99999' }}>
+        <Modal show={showModal2} centered onHide={handleCloseModal2} style={{ zIndex: '99999' }} className="custom-modal">
           <Modal.Header closeButton>
             <Modal.Title style={{ fontSize: '17px' }}>Add Symptom</Modal.Title>
           </Modal.Header>
           <form onSubmit={addSymptom}>
-            <Modal.Body>
+            <Modal.Body style={{ paddingTop: 0 }}>
               {/* Add your form fields here */}
-              <div className="mb-3">
-                <label htmlFor="categoryDescription" className="form-label">
+              {/* <div className="mb-3"> */}
+              <Form.Group style={{ display: 'flex', flexDirection: 'column' }}>
+                {/* <label htmlFor="categoryDescription" className="form-label">
                   Symptom Name
-                </label>
+                </label> */}
+                <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>Symptom Name</Form.Label>
 
-                <Form.Control type="text"
-                  placeholder='Enter name'
+                <Form.Control
+                  type="text"
+                  placeholder="Enter name"
                   onChange={(e) => {
-                    setName(e.target.value)
+                    setName(e.target.value);
                     setError((prev) => ({ ...prev, name: '' }));
                   }}
-                  isInvalid={error.name} />
-                <Form.Control.Feedback type="invalid">
-                  {error.name}
-                </Form.Control.Feedback>
-              </div>
+                  isInvalid={error.name}
+                  className="custom-input custom-search"
+                  style={{ fontSize: '13px' }}
+                />
+                <Form.Control.Feedback type="invalid">{error.name}</Form.Control.Feedback>
+              </Form.Group>
 
               {/* <div className="mb-3">
                 <label htmlFor="categoryDescription" className="form-label">
@@ -393,46 +425,46 @@ function ManageSymptom() {
                 </Form.Control.Feedback>
               </div> */}
               {error.general && <span className="text-danger">{error.general}</span>}
-
-
             </Modal.Body>
-            <Modal.Footer>
-              <Button variant="secondary" onClick={handleCloseModal2}>
+            <Modal.Footer style={{ borderTop: 'none', paddingTop: 0, paddingRight: 0 }}>
+              <Button variant="secondary" onClick={handleCloseModal2} style={{ fontSize: '12px' }}>
                 Close
               </Button>
-              <Button variant="primary" type="submit">
+              <Button variant="primary" type="submit" style={{ fontSize: '12px' }}>
                 Submit
               </Button>
             </Modal.Footer>
           </form>
         </Modal>
 
-
         {/* Modal Component */}
-        <Modal show={showModal} onHide={handleCloseModal} style={{ zIndex: '99999' }}>
+        <Modal show={showModal} centered onHide={handleCloseModal} style={{ zIndex: '99999' }} className="custom-modal">
           <Modal.Header closeButton>
             <Modal.Title style={{ fontSize: '17px' }}>Edit Symptom</Modal.Title>
           </Modal.Header>
           <form onSubmit={editSymptom}>
-            <Modal.Body>
+            <Modal.Body style={{ paddingTop: 0 }}>
               {/* Add your form fields here */}
-              <div className="mb-3">
-                <label htmlFor="categoryDescription" className="form-label">
+              <Form.Group style={{ display: 'flex', flexDirection: 'column' }}>
+                {/* <label htmlFor="categoryDescription" className="form-label">
                   Symptom Name
-                </label>
+                </label> */}
+                 <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>  Symptom Name</Form.Label>
 
-                <Form.Control type="text"
-                  placeholder='Please enter name'
+                <Form.Control
+                  type="text"
+                  placeholder="Please enter name"
                   value={name}
                   onChange={(e) => {
-                    setName(e.target.value)
+                    setName(e.target.value);
                     setError((prev) => ({ ...prev, name: '' }));
                   }}
-                  isInvalid={error.name} />
-                <Form.Control.Feedback type="invalid">
-                  {error.name}
-                </Form.Control.Feedback>
-              </div>
+                  isInvalid={error.name}
+                  className='custom-input custom-search'
+                  style={{ fontSize: '13px' }}
+                />
+                <Form.Control.Feedback type="invalid">{error.name}</Form.Control.Feedback>
+              </Form.Group>
 
               {/* <div className="mb-3">
                 <label htmlFor="categoryDescription" className="form-label">
@@ -452,20 +484,18 @@ function ManageSymptom() {
                 </Form.Control.Feedback>
               </div> */}
               {error.general && <span className="text-danger">{error.general}</span>}
-
-
             </Modal.Body>
-            <Modal.Footer>
-              <Button variant="secondary" onClick={handleCloseModal}>
+            <Modal.Footer style={{ borderTop: 'none',paddingTop:0,paddingRight:0 }}>
+              <Button variant="secondary" onClick={handleCloseModal} style={{ fontSize: '12px' }}>
                 Close
               </Button>
-              <Button variant="primary" type="submit">
+              <Button variant="primary" type="submit" style={{ fontSize: '12px' }}>
                 Update
               </Button>
             </Modal.Footer>
           </form>
         </Modal>
-      </Card>
+      </div>
     </>
   );
 }

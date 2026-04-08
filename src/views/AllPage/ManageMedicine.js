@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Modal, Button, Form } from 'react-bootstrap';
+import { Modal, Button, Form } from 'react-bootstrap';
 // import { Link } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
@@ -331,7 +331,7 @@ function ManageMedicine() {
       {/* <Typography style={{ marginTop: '15px', marginBottom: '30px' }} variant="h4" gutterBottom>
         <span style={{ color: '#1ddec4' }}>Dashboard</span> / Manage Medicine
       </Typography> */}
-      <Card>
+      <div>
         <div
           style={{
             background: '#fff',
@@ -482,7 +482,7 @@ function ManageMedicine() {
             </Formik>
           </Modal.Body>
         </Modal>
-      </Card>
+      </div>
     </>
   );
 }
