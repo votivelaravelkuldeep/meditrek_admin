@@ -1,5 +1,5 @@
-import { Row, Col, Card, Form, Button, Table } from 'react-bootstrap';
-import Typography from '@mui/material/Typography';
+import { Row, Col, Form, Button } from 'react-bootstrap';
+// import Typography from '@mui/material/Typography';
 // import CustomerList from 'views/AllPage/CustomerList';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { Link } from 'react-router-dom';
@@ -8,33 +8,45 @@ import axios from 'axios';
 import { API_URL, APP_PREFIX_PATH, IMAGE_PATH } from 'config/constant';
 // import Image from 'assets/images/img.jfif';
 // import {encode as base64_encode} from 'base-64'
-import Pagination from '@mui/material/Pagination';
-import Stack from '@mui/material/Stack';
+// import Pagination from '@mui/material/Pagination';
+// import Stack from '@mui/material/Stack';
 import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
-
-
+import CustomTable from 'component/common/CustomTable';
+import ImportExportIcon from '@mui/icons-material/ImportExport';
 
 function Report() {
-
   const [currentPage, setCurrentPage] = useState(1);
-  const [users, setUserData] = useState([])
-  const [from_date, setFromDate] = useState('')
-  const [to_date, setToDate] = useState('')
+  const [users, setUserData] = useState([]);
+  const [from_date, setFromDate] = useState('');
+  const [to_date, setToDate] = useState('');
   const [from_date_error, setFromDateError] = React.useState('');
   const [to_date_error, setToDateError] = React.useState('');
-  const [userPageCount, setUserPageCount] = useState('')
+  const [userPageCount, setUserPageCount] = useState('');
   const [searchQuery, setSearchQuery] = React.useState('');
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [sortConfig, setSortConfig] = useState(null);
+
+  const handleSort = (key) => {
+    setSortConfig((prev) => {
+      if (!prev) return { key, direction: 'asc' };
+
+      return {
+        key,
+        direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
+      };
+    });
+  };
 
   //page entries logic
   let entriesCount = 5;
   console.log(entriesCount);
 
   if (userPageCount < 5) {
-    entriesCount = userPageCount
+    entriesCount = userPageCount;
   }
 
-  const usersPerPage = 50; // Show 5 rows per page
+  //   const usersPerPage = 50; // Show 5 rows per page
 
   const handleSearch = (event) => {
     setSearchQuery(event.target.value);
@@ -52,14 +64,14 @@ function Report() {
   });
 
   // Pagination logic
-  const indexOfLastUser = currentPage * usersPerPage;
-  const indexOfFirstUser = indexOfLastUser - usersPerPage;
-  const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
-  const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
+  //   const indexOfLastUser = currentPage * usersPerPage;
+  //   const indexOfFirstUser = indexOfLastUser - usersPerPage;
+  //   const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
+  //   const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
 
-  const handlePageChange = (event, value) => {
-    setCurrentPage(value);
-  };
+  //   const handlePageChange = (event, value) => {
+  //     setCurrentPage(value);
+  //   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -85,25 +97,24 @@ function Report() {
       return;
     }
 
-    axios.get(`${API_URL}get_tabular_user?from_date=${from_date}&to_date=${to_date}`)
+    axios
+      .get(`${API_URL}get_tabular_user?from_date=${from_date}&to_date=${to_date}`)
       .then((response) => {
         if (response.data.success && Array.isArray(response.data.user_arr)) {
           setUserData(response.data.user_arr);
-          setUserPageCount(response.data.user_arr.length)
-          console.log("users", users);
-
+          setUserPageCount(response.data.user_arr.length);
+          console.log('users', users);
         } else {
-          setUserData([])
+          setUserData([]);
         }
       })
       .catch((error) => {
         console.error('Error get_all_user_data details:', error);
-        setUserData([])
-      })
+        setUserData([]);
+      });
   };
 
   //-------------------- show user data logic here -----------------------
-
 
   const exportToExcel = () => {
     const ws = XLSX.utils.json_to_sheet(
@@ -122,188 +133,214 @@ function Report() {
     saveAs(blob, 'UserReport.xlsx');
   };
 
+  const columns = [
+    {
+      label: 'S. No',
+      key: 'sr_no',
+      render: (_, index) => index + 1
+    },
+
+    {
+      label: 'Image',
+      key: 'image',
+      render: (user) => (
+        <img
+          src={user.image ? `${IMAGE_PATH}${user.image}?${new Date().getTime()}` : `${IMAGE_PATH}placeholder.jpg`}
+          alt=""
+          style={{
+            width: '35px',
+            height: '35px',
+            borderRadius: '50%',
+            objectFit: 'cover',
+            border: '1px solid #1ddec4'
+          }}
+        />
+      )
+    },
+
+    { label: 'Name', key: 'name', sortable: true },
+    { label: 'Mobile', key: 'mobile', sortable: true },
+    { label: 'Email', key: 'email', sortable: true },
+    {
+      label: 'Created At',
+      key: 'createtime',
+      sortable: true,
+      render: (user) => <span style={{ whiteSpace: 'nowrap' }}>{user.createtime}</span>
+    },
+
+    {
+      label: 'Status',
+      key: 'status',
+      render: () => (
+        <span
+          style={{
+            padding: '4px 8px',
+            borderRadius: '6px',
+            fontSize: '11px',
+            background: '#dcfce7',
+            color: '#16a34a',
+            fontWeight: 600
+          }}
+        >
+          Active
+        </span>
+      )
+    },
+
+    {
+      label: 'Action',
+      key: 'action',
+      render: (user) => (
+        <div className="text-center">
+          <Link
+            to={APP_PREFIX_PATH + `/manage-user/userlist/view_user/${user.user_id}/${user.user_id}`}
+            style={{
+              background: 'rgba(29, 222, 196, 0.13)',
+              color: '#1ddec4',
+              padding: '2px 8px',
+              borderRadius: '6px',
+              border: '1px solid rgba(29, 222, 196, 0.25)',
+              display: 'inline-flex'
+            }}
+          >
+            <VisibilityIcon style={{ fontSize: '16px' }} />
+          </Link>
+        </div>
+      )
+    }
+  ];
 
   return (
     <>
-      <Typography style={{ marginTop: '15px', marginBottom: '30px' }} variant="h4" gutterBottom>
+      {/* <Typography style={{ marginTop: '15px', marginBottom: '30px' }} variant="h4" gutterBottom>
         <Link to={'/'} style={{ textDecoration: 'none' }}><span style={{ color: '#f68519' }}>Dashboard</span></Link> / User Report
-      </Typography>
-      <Card className="mb-4">
-        <Card.Header className="bg-white">
-          <Card.Title as="h5" className="mt-2">
-            User Report{' '}
-          </Card.Title>
-        </Card.Header>
-        <Card.Body>
+      </Typography> */}
+      <div
+        className="mb-4"
+        style={{
+          background: '#fff',
+          borderRadius: 16,
+          boxShadow: '0 4px 8px rgba(0,0,0,0.05)',
+          padding: '16px'
+        }}
+      >
+        <h5 className="fw-bold mb-0" style={{ color: '#1e293b' }}>
+          User Report
+        </h5>
+        <div>
           <Form onSubmit={handleSubmit}>
-            <div className="container">
-              <div className="mt-3">
-                <Form.Group className="mb-3" as={Row}>
-                  <Col sm={5}>
-                    <div className="mb-2">From Date</div>
-                    <Form.Control type="date" placeholder="Enter Subject" onChange={(e) => {
+            {/* <div className="container"> */}
+            <div className="mt-3">
+              <Form.Group style={{ display: 'flex', alignItems: 'center' }} as={Row}>
+                <Col sm={3}>
+                  {/* <div className="mb-2">From Date</div> */}
+                  <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>From Date</Form.Label>
+                  <Form.Control
+                    type="date"
+                    placeholder="Enter Subject"
+                    onChange={(e) => {
                       setFromDate(e.target.value);
                       setFromDateError('');
                       setToDateError('');
-                    }} />
-                    <p style={{ color: 'red' }}>{from_date_error}</p>
-                  </Col>
-                  <Col sm={5}>
-                    <div className="mb-2">To Date</div>
-                    <Form.Control type="date" placeholder="Enter Subject"
-                      max={new Date().toISOString().split("T")[0]}
-                      onChange={(e) => {
-                        if (!from_date) {
-                          setToDateError('Please Select From Date first');
-                        } else {
-                          setToDate(e.target.value);
-                          setFromDateError('')
-                          setToDateError('');
-                        }
-                      }} />
-                    <p style={{ color: 'red' }}>{to_date_error}</p>
-                  </Col>
-                  <Col sm={2}>
-                    <Button type="submit" className="submit-btn" style={{ marginTop: '29px' }}>
+                    }}
+                    className="custom-input custom-search"
+                    style={{ fontSize: '13px' }}
+                  />
+                  <p style={{ color: 'red', fontSize: '12px' }}>{from_date_error}</p>
+                </Col>
+                <Col sm={3}>
+                  {/* <div className="mb-2">To Date</div> */}
+                  <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>To Date</Form.Label>
+                  <Form.Control
+                    type="date"
+                    placeholder="Enter Subject"
+                    max={new Date().toISOString().split('T')[0]}
+                    onChange={(e) => {
+                      if (!from_date) {
+                        setToDateError('Please Select From Date first');
+                      } else {
+                        setToDate(e.target.value);
+                        setFromDateError('');
+                        setToDateError('');
+                      }
+                    }}
+                    className="custom-input custom-search"
+                    style={{ fontSize: '13px' }}
+                  />
+                  <p style={{ color: 'red', fontSize: '12px' }}>{to_date_error}</p>
+                </Col>
+                <Col sm={3}>
+                  <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
+                    <Button variant="primary" type="submit" style={{ fontSize: '12px', height: 'fit-content' }}>
                       View
                     </Button>
-                  </Col>
-                </Form.Group>
-
-
-              </div>
+                  </div>
+                </Col>
+              </Form.Group>
             </div>
+            {/* </div> */}
           </Form>
-
-        </Card.Body>
-
-      </Card>
-      {/* <CustomerList/> */}
-      <div>
-        {users.length > 0 && (
-          <div>
-            <Button variant="success" onClick={exportToExcel} className="mb-3 btn-sm pull-right" style={{ backgroundColor: '#f68519', border: 'none' }}>
-              Export to Excel
-            </Button>
-          </div>
-        )}
+        </div>
       </div>
-      <Card>
+      {/* <CustomerList/> */}
 
-        <Card.Header className="bg-white d-flex justify-content-between flex-wrap">
-          <Typography style={{ marginTop: '15px', marginBottom: '30px' }} variant="h5" gutterBottom>
+      <div
+        style={{
+          background: '#fff',
+          borderRadius: 16,
+          boxShadow: '0 4px 8px rgba(0,0,0,0.05)',
+          padding: '16px'
+        }}
+      >
+        <div className="bg-white d-flex justify-content-between flex-wrap">
+          {/* <Typography style={{ marginTop: '15px', marginBottom: '30px' }} variant="h5" gutterBottom>
             <span style={{ color: '#000' }}>Customer List</span>
-          </Typography>
-          <div className=''>
-            <label htmlFor="search-input" style={{ marginRight: '5px' }}>
-              Search
-            </label>
+          </Typography> */}
+          <h5 className="fw-bold mb-0" style={{ color: '#1e293b' }}>
+            Customer List
+          </h5>
+          <div className="d-flex gap-2">
             <input
-              className="search-input"
-              type="text"
+              className="custom-search form-control"
+              style={{ width: '250px', fontSize: '13px' }}
               placeholder="Search..."
               onChange={handleSearch}
-              style={{ marginTop: '8px', marginBottom: '5px', padding: '5px', width: '200px', border: '1px solid #f2f2f2' }}
             />
+            <div>
+              {users.length > 0 && (
+                <div>
+                  <Button variant="primary" onClick={exportToExcel} style={{ fontSize: '12px', background: '#1ddec4', border: 'none' }}>
+                    <ImportExportIcon style={{fontSize:'16px'}} />
+                    Export to Excel
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
-
-
-        </Card.Header>
-        <Card.Body>
-          <div className="table-container">
-            <Table hover className="fixed-header-table">
-              <thead>
-                <tr>
-                  <th style={{ textAlign: 'center', fontWeight: '500' }}> S. No</th>
-                  <th style={{ textAlign: 'center', fontWeight: '500' }}>Action</th>
-                  <th style={{ textAlign: 'center', fontWeight: '500' }}>Image</th>
-                  <th style={{ textAlign: 'center', fontWeight: '500' }}> Name</th>
-                  <th style={{ textAlign: 'center', fontWeight: '500' }}> Mobile No.</th>
-                  <th style={{ textAlign: 'center', fontWeight: '500' }}> Email</th>
-                  <th style={{ textAlign: 'center', fontWeight: '500' }}> Status</th>
-                  <th style={{ textAlign: 'center', fontWeight: '500', minWidth: '200px' }}>Create Date & Time</th>
-                </tr>
-              </thead>
-              <tbody>
-                {currentUsers.length > 0 ? (
-                  currentUsers.map((user, index) => (
-                    <tr key={user.id}>
-                      <th scope="row" style={{ textAlign: 'center' }}>
-                        {indexOfFirstUser + index + 1}
-                      </th>
-                      <td>
-                        <div className="dropdown text-center">
-                          <button
-                            className="btn btn-primary dropdown-toggle action-btn"
-                            type="button"
-                            id={`dropdownMenuButton${user.id}`}
-                            data-bs-toggle="dropdown"
-                            aria-expanded="false"
-                          >
-                            Action
-                          </button>
-                          <ul className="dropdown-menu" aria-labelledby={`dropdownMenuButton${user.id}`}>
-                            <li>
-                              <Link to={APP_PREFIX_PATH + `/manage-user/userlist/view_user/${user.user_id}/${user.user_id}`} className="dropdown-item">
-                                <VisibilityIcon style={{ marginRight: '8px' }} /> View
-                              </Link>
-                            </li>
-
-                          </ul>
-                        </div>
-                      </td>
-                      <td style={{ textAlign: 'center' }}>
-                        <img
-                                                  src={user.image ? `${IMAGE_PATH}${user.image}?${new Date().getTime()}` : `${IMAGE_PATH}placeholder.jpg`}
-                                                  alt="Logo"
-                                                  style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }}
-                                                ></img>
-                      </td>
-                      <td style={{ textAlign: 'center' }}>{user.name}</td>
-                      <td style={{ textAlign: 'center' }}>{user.mobile}</td>
-                      <td style={{ textAlign: 'center' }}>{user.email}</td>
-                      <td style={{ textAlign: 'center' }}>
-                        <p
-                          style={{
-                            borderRadius: '25px',
-                            background: '#28c76f',
-                            padding: '0px 15px',
-                            width: '80px',
-                            color: '#fff',
-                            margin: 'auto'
-                          }}
-                        >
-                          Active
-                        </p>
-                      </td>
-                      <td style={{ textAlign: 'center' }}>{user.createtime}</td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={8}>
-                      <p style={{ marginBottom: '0px', textAlign: 'center' }}> No Data Found</p>
-                    </td>
-                  </tr>
-                )
-                }
-
-              </tbody>
-            </Table>
-          </div>
-          <div className="d-flex justify-content-between">
-            {/* <p style={{ fontWeight: '500' }} className='pagination'>Showing 1 to {entriesCount} of {userPageCount} entries</p> */}
-            <p style={{ fontWeight: '500' }} className='pagination'>
-              {filteredUsers.length > 0
-                ? `Showing ${indexOfFirstUser + 1} to ${Math.min(indexOfLastUser, filteredUsers.length)} of ${filteredUsers.length} entries`
-                : "Showing 0 to 0 of 0 entries"}
-            </p>
-            <Stack spacing={2} alignItems="right">
-              <Pagination count={totalPages} page={currentPage} onChange={handlePageChange} />
-            </Stack>
-          </div>
-        </Card.Body>
-      </Card>
+        </div>
+        {/* Table */}
+        <div
+          style={{
+            marginTop: '16px',
+            borderRadius: '12px',
+            overflow: 'hidden'
+          }}
+        >
+          <CustomTable
+            columns={columns}
+            data={filteredUsers}
+            currentPage={currentPage}
+            rowsPerPage={rowsPerPage}
+            sortConfig={sortConfig}
+            onSort={handleSort}
+            onPageChange={(page) => setCurrentPage(page)}
+            onRowsPerPageChange={(size) => {
+              setRowsPerPage(size);
+              setCurrentPage(1);
+            }}
+          />
+        </div>
+      </div>
     </>
     // </>
   );
