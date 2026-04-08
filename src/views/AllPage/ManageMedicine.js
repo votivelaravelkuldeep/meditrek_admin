@@ -65,42 +65,42 @@ function ManageMedicine() {
     setSelectAll(!selectAll);
   };
 
-  //   const deleteSelectedMedicines = () => {
-  //     if (selectedMedicines.length === 0) {
-  //       Swal.fire('Please select at least one medicine');
-  //       return;
-  //     }
+    const deleteSelectedMedicines = () => {
+      if (selectedMedicines.length === 0) {
+        Swal.fire('Please select at least one medicine');
+        return;
+      }
 
-  //     Swal.fire({
-  //       title: 'Are you sure?',
-  //       text: 'You want to delete selected medicines?',
-  //       icon: 'warning',
-  //       showCancelButton: true,
-  //       confirmButtonText: 'Yes, delete!'
-  //     }).then(async (result) => {
-  //       if (result.isConfirmed) {
-  //         try {
-  //           const response = await axios.post(`${API_URL}delete_medicine_bulk`, {
-  //             medicine_ids: selectedMedicines
-  //           });
-  //           // const response = await axios.post("http://localhost:3001/meditrek/server/adminAPI/delete_medicine_bulk", {
-  //           //   medicine_ids: selectedMedicines
-  //           // });
+      Swal.fire({
+        title: 'Are you sure?',
+        text: 'You want to delete selected medicines?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete!'
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          try {
+            const response = await axios.post(`${API_URL}delete_medicine_bulk`, {
+              medicine_ids: selectedMedicines
+            });
+            // const response = await axios.post("http://localhost:3001/meditrek/server/adminAPI/delete_medicine_bulk", {
+            //   medicine_ids: selectedMedicines
+            // });
 
-  //           if (response.data.success) {
-  //             Swal.fire('Deleted!', response.data.msg, 'success');
-  //             setSelectedMedicines([]);
-  //             setSelectAll(false);
-  //             fetchData();
-  //           } else {
-  //             Swal.fire('Error', response.data.msg, 'error');
-  //           }
-  //         } catch (error) {
-  //           console.error(error);
-  //         }
-  //       }
-  //     });
-  //   };
+            if (response.data.success) {
+              Swal.fire('Deleted!', response.data.msg, 'success');
+              setSelectedMedicines([]);
+              setSelectAll(false);
+              fetchData();
+            } else {
+              Swal.fire('Error', response.data.msg, 'error');
+            }
+          } catch (error) {
+            console.error(error);
+          }
+        }
+      });
+    };
 
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
@@ -344,7 +344,7 @@ function ManageMedicine() {
           <div className="d-flex justify-content-between align-items-center flex-wrap">
             <div className="d-flex gap-2">
               <Button className="btn btn-primary" style={{ fontSize: '12px', borderRadius: '10px' }} onClick={handleShowModal2}>
-                <AddIcon /> Add Medicine
+                <AddIcon style={{fontSize:'16px'}} /> Add Medicine
               </Button>
 
               <Button
@@ -352,12 +352,12 @@ function ManageMedicine() {
                 style={{ fontSize: '12px', borderRadius: '10px' }}
                 onClick={() => navigate(APP_PREFIX_PATH + '/bulk_upload_medicine')}
               >
-                <CloudUploadIcon /> Bulk Upload
+                <CloudUploadIcon style={{fontSize:'16px'}} /> Bulk Upload
               </Button>
 
-              {/* <Button className="btn btn-danger" style={{ fontSize: '12px', borderRadius: '10px' }} onClick={deleteSelectedMedicines}>
-                <DeleteIcon /> Delete Selected
-              </Button> */}
+              <Button className="btn btn-danger" style={{ fontSize: '12px', borderRadius: '10px' }} onClick={deleteSelectedMedicines}>
+                <DeleteIcon style={{fontSize:'16px'}} /> Delete Selected
+              </Button>
             </div>
 
             <input

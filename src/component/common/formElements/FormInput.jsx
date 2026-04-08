@@ -1,4 +1,6 @@
 import React from "react";
+import '../../../views/AllPage/managecontent.css'
+
 
 const FormInput = ({
   label,
@@ -20,7 +22,7 @@ const FormInput = ({
     <div className="w-full">
       {/* Label */}
       {label && (
-        <label className="block text-[13px] font-medium text-gray-700 mb-1">
+        <label className="block text-[13px] font-medium text-gray-700 mb-1" style={{fontSize:'13px',}}>
           {label} {required && <span className="text-red-600">*</span>}
         </label>
       )}
@@ -36,14 +38,15 @@ const FormInput = ({
           placeholder={placeholder}
           disabled={disabled}
           readOnly={readOnly}
-          className={`
-            w-full rounded-[10px] px-[14px] py-[10px] text-[13px]
+          className={`form-control
+            w-100 rounded-[10px]
             border 
             ${error && touched ? "border-red-600" : "border-gray-200"}
             ${disabled ? "bg-gray-100 cursor-not-allowed" : "bg-white"}
             focus:border-[#1ddec4] focus:outline-none focus:ring-0
             transition-all
           `}
+          style={{fontSize:'13px',}}
         />
 
         {/* Right Icon (for password etc.) */}
