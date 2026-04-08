@@ -15,6 +15,7 @@ import axios from 'axios';
 import { API_URL, IMAGE_PATH } from 'config/constant';
 import Swal from 'sweetalert2';
 import CustomTable from 'component/common/CustomTable';
+import Heading from 'component/common/Heading';
 
 function ManageReportCategory() {
   const [selectedActions, setSelectedActions] = useState({});
@@ -371,14 +372,10 @@ function ManageReportCategory() {
           boxShadow: '0 4px 8px rgba(0,0,0,0.05)'
         }}
       >
-        <div className="d-flex justify-content-between flex-wrap">
-          <div>
-            <Button className="btn btn-primary" style={{ fontSize: '12px', borderRadius: '10px' }} onClick={handleShowModal}>
-              <AddIcon style={{ fontSize: '16px' }} /> Add Report Category
-            </Button>
-          </div>
-
-          <div>
+        <div className="d-flex justify-content-between flex-wrap align-items-center">
+          <Heading heading='Manage Report Category' />
+          <div className='d-flex gap-2 flex-wrap'>
+            <div>
             <input
               className="search-input custom-search form-control"
               type="text"
@@ -387,6 +384,12 @@ function ManageReportCategory() {
               style={{ width: '250px', fontSize: '13px' }}
             />
           </div>
+            <Button className="btn btn-primary" style={{ fontSize: '12px', borderRadius: '10px' }} onClick={handleShowModal}>
+              <AddIcon style={{ fontSize: '16px' }} /> Add Report Category
+            </Button>
+          </div>
+
+          
         </div>
 
         <div

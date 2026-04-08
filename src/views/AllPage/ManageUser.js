@@ -18,6 +18,7 @@ import { API_URL, APP_PREFIX_PATH, IMAGE_PATH } from 'config/constant';
 
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import Heading from 'component/common/Heading';
 
 function ManageUser() {
   const [userList, setUserList] = useState([]);
@@ -141,7 +142,7 @@ function ManageUser() {
       key: 'sr_no',
       render: (_, index) => index + 1
     },
-   
+
     {
       label: 'Image',
       key: 'image',
@@ -163,7 +164,7 @@ function ManageUser() {
     { label: 'Full Name', sortable: true, key: 'name' },
     { label: 'Mobile No.', sortable: true, key: 'mobile' },
     { label: 'Email', sortable: true, key: 'email' },
-       {
+    {
       label: 'Action',
       sortable: true,
       key: 'action',
@@ -182,16 +183,16 @@ function ManageUser() {
             Action
           </Button>
 
-          <ul className="dropdown-menu" style={{fontSize:'12px'}}>
+          <ul className="dropdown-menu" style={{ fontSize: '12px' }}>
             <li>
               <Link to={`${APP_PREFIX_PATH}/manage-user/userlist/view_user/${user.user_id}/${user.user_id}`} className="dropdown-item">
-                <VisibilityIcon style={{marginRight:"2px"}} /> View
+                <VisibilityIcon style={{ marginRight: '2px' }} /> View
               </Link>
             </li>
 
             <li>
               <Link className="dropdown-item" onClick={() => handleActionChange(index, 'Activate/Deactivate', user)}>
-                {user.active_flag == 1 ? <ToggleOffIcon style={{marginRight:"2px"}} /> : <ToggleOnIcon style={{marginRight:"2px"}} />}
+                {user.active_flag == 1 ? <ToggleOffIcon style={{ marginRight: '2px' }} /> : <ToggleOnIcon style={{ marginRight: '2px' }} />}
                 Activate/Deactivate
               </Link>
             </li>
@@ -226,7 +227,7 @@ function ManageUser() {
         </p>
       )
     },
-  
+
     { label: 'Create Date & Time', sortable: true, key: 'createtime' }
   ];
 
@@ -239,14 +240,20 @@ function ManageUser() {
       </Typography> */}
 
       <div style={{ background: '#fff', borderRadius: 16, boxShadow: '0 4px 8px rgba(0,0,0,0.05)', padding: '16px' }}>
-        <div className="d-flex justify-content-end w-100">
-          <input
-            className="custom-search form-control"
-            style={{ width: '250px', fontSize: '13px' }}
-            type="text"
-            placeholder="Search..."
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+        <div className="d-flex justify-content-between gap-2 align-items-center flex-wrap w-100">
+          {/* <h5 className="fw-bold mb-0" style={{ color: '#1e293b' }}>
+            User List
+          </h5> */}
+          <Heading heading='User List' />
+          <div>
+            <input
+              className="custom-search form-control"
+              style={{ width: '250px', fontSize: '13px' }}
+              type="text"
+              placeholder="Search..."
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
         </div>
 
         <div
@@ -254,7 +261,7 @@ function ManageUser() {
             background: '#fff',
             borderRadius: '12px',
             overflow: 'hidden', // ⭐ IMPORTANT
-            marginTop:'16px'
+            marginTop: '16px'
           }}
         >
           <CustomTable

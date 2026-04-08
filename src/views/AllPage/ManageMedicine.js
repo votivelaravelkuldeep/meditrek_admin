@@ -18,6 +18,7 @@ import * as Yup from 'yup';
 import { API_URL, APP_PREFIX_PATH } from 'config/constant';
 import { useNavigate } from 'react-router-dom';
 import CustomTable from 'component/common/CustomTable';
+import Heading from 'component/common/Heading';
 
 function ManageMedicine() {
   const navigate = useNavigate();
@@ -342,30 +343,32 @@ function ManageMedicine() {
         >
           {/* HEADER */}
           <div className="d-flex justify-content-between align-items-center flex-wrap">
+            <Heading heading='Manage Medicine' />
             <div className="d-flex gap-2">
-              <Button className="btn btn-primary" style={{ fontSize: '12px', borderRadius: '10px' }} onClick={handleShowModal2}>
-                <AddIcon style={{fontSize:'16px'}} /> Add Medicine
-              </Button>
-
-              <Button
-                className="btn btn-primary"
-                style={{ fontSize: '12px', borderRadius: '10px' }}
-                onClick={() => navigate(APP_PREFIX_PATH + '/bulk_upload_medicine')}
-              >
-                <CloudUploadIcon style={{fontSize:'16px'}} /> Bulk Upload
-              </Button>
-
-              <Button className="btn btn-danger" style={{ fontSize: '12px', borderRadius: '10px' }} onClick={deleteSelectedMedicines}>
-                <DeleteIcon style={{fontSize:'16px'}} /> Delete Selected
-              </Button>
-            </div>
-
-            <input
+               <input
               className="custom-search form-control"
               style={{ width: '250px', fontSize: '13px' }}
               placeholder="Search..."
               onChange={handleSearchChange}
             />
+              <Button className="btn btn-primary" style={{ fontSize: '12px', borderRadius: '10px',padding:'4px 8px' }} onClick={handleShowModal2}>
+                <AddIcon style={{fontSize:'13px'}} /> Add Medicine
+              </Button>
+
+              <Button
+                className="btn btn-primary"
+                style={{ fontSize: '12px', borderRadius: '10px',padding:'4px 8px' }}
+                onClick={() => navigate(APP_PREFIX_PATH + '/bulk_upload_medicine')}
+              >
+                <CloudUploadIcon style={{fontSize:'13px'}} /> Bulk Upload
+              </Button>
+
+              <Button className="btn btn-danger" style={{ fontSize: '12px', borderRadius: '10px',padding:'4px 8px' }} onClick={deleteSelectedMedicines}>
+                <DeleteIcon style={{fontSize:'13px'}} /> Delete Selected
+              </Button>
+            </div>
+
+           
           </div>
 
           {/* TABLE */}

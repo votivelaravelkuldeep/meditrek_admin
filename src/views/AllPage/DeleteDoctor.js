@@ -15,6 +15,7 @@ import { API_URL, APP_PREFIX_PATH, IMAGE_PATH } from 'config/constant';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { useNavigate } from 'react-router';
 import CustomTable from 'component/common/CustomTable';
+import Heading from 'component/common/Heading';
 
 function DeleteDoctor() {
   const [showAddModal, setShowAddModal] = useState(false);
@@ -441,7 +442,12 @@ function DeleteDoctor() {
         }}
       >
         {/* Search */}
-        <div className="d-flex justify-content-end">
+        <div className="d-flex justify-content-between align-items-center gap-2 flex-wrap">
+          {/* <h5 className="fw-bold mb-0" style={{ color: '#1e293b' }}>
+            Deleted Doctor
+          </h5> */}
+          <Heading heading='Deleted Doctor' />
+          
           <input
             className="custom-search form-control"
             style={{ width: '250px', fontSize: '13px' }}

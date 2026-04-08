@@ -17,6 +17,7 @@ import axios from 'axios';
 import { API_URL, APP_PREFIX_PATH } from 'config/constant';
 import { useNavigate } from 'react-router-dom';
 import CustomTable from 'component/common/CustomTable';
+import Heading from 'component/common/Heading';
 // import { useLocation } from 'react-router-dom';
 // import { useParams } from 'react-router-dom';
 function ManageSymptom() {
@@ -332,20 +333,9 @@ function ManageSymptom() {
         }}
       >
         <div className="d-flex justify-content-between align-items-center flex-wrap">
-          <div className="d-flex gap-2">
-            <Button className="btn btn-primary" style={{ fontSize: '12px', borderRadius: '10px' }} onClick={handleShowModal2}>
-              <AddIcon style={{ fontSize: '16px' }} /> Add Symptom
-            </Button>
-
-            <Button className="btn btn-primary" style={{ fontSize: '12px', borderRadius: '10px' }} onClick={handlebulkupload}>
-              <CloudUploadIcon style={{ fontSize: '16px' }} /> Bulk Upload
-            </Button>
-          </div>
-
-          <div>
-            {/* <label htmlFor="search-input" style={{ marginRight: '5px' }}>
-              Search
-            </label> */}
+          <Heading heading='Manage Symptom' />
+          <div className="d-flex gap-2 flex-wrap">
+             <div>
             <input
               className="search-input custom-search form-control"
               type="text"
@@ -355,6 +345,16 @@ function ManageSymptom() {
               style={{ width: '250px', fontSize: '13px' }}
             />
           </div>
+            <Button className="btn btn-primary" style={{ fontSize: '12px', borderRadius: '10px' }} onClick={handleShowModal2}>
+              <AddIcon style={{ fontSize: '16px' }} /> Add Symptom
+            </Button>
+
+            <Button className="btn btn-primary" style={{ fontSize: '12px', borderRadius: '10px' }} onClick={handlebulkupload}>
+              <CloudUploadIcon style={{ fontSize: '16px' }} /> Bulk Upload
+            </Button>
+          </div>
+
+         
         </div>
 
         <div

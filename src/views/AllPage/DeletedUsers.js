@@ -9,6 +9,7 @@ import CustomTable from 'component/common/CustomTable';
 
 import { API_URL, APP_PREFIX_PATH, IMAGE_PATH } from 'config/constant';
 import axios from 'axios';
+import Heading from 'component/common/Heading';
 
 function DeleteUser() {
   const [users, setDeleteUsers] = useState([]);
@@ -46,8 +47,7 @@ function DeleteUser() {
 
       return {
         key,
-        direction:
-          prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
+        direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
       };
     });
   };
@@ -55,9 +55,7 @@ function DeleteUser() {
   // ================= HELPER =================
   const truncateText = (text, maxLength = 20) => {
     if (!text) return '-';
-    return text.length > maxLength
-      ? text.substring(0, maxLength) + '...'
-      : text;
+    return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
   };
 
   // ================= COLUMNS =================
@@ -73,11 +71,7 @@ function DeleteUser() {
       key: 'image',
       render: (user) => (
         <img
-          src={
-            user.image
-              ? `${IMAGE_PATH}${user.image}?${new Date().getTime()}`
-              : `${IMAGE_PATH}placeholder.jpg`
-          }
+          src={user.image ? `${IMAGE_PATH}${user.image}?${new Date().getTime()}` : `${IMAGE_PATH}placeholder.jpg`}
           alt=""
           style={{
             width: '35px',
@@ -114,11 +108,12 @@ function DeleteUser() {
           <Link
             to={`${APP_PREFIX_PATH}/manage-user/userlist/view_user/${user.user_id}/${user.user_id}`}
             // className="btn btn-sm btn-primary"
-            style={{background:"  rgba(29, 222, 196, 0.13)",
-                color:"#1ddec4",
-                padding:'2px 8px',
-                borderRadius:'6px',
-                border:'1px solid rgba(29, 222, 196, 0.25)'
+            style={{
+              background: '  rgba(29, 222, 196, 0.13)',
+              color: '#1ddec4',
+              padding: '2px 8px',
+              borderRadius: '6px',
+              border: '1px solid rgba(29, 222, 196, 0.25)'
             }}
           >
             <VisibilityIcon style={{ fontSize: '16px' }} />
@@ -139,9 +134,13 @@ function DeleteUser() {
       }}
     >
       {/* SEARCH */}
-      <div className="d-flex justify-content-end">
+      <div className="d-flex justify-content-between gap-2 flex-wrap align-items-center">
+        {/* <h5 className="fw-bold mb-0" style={{ color: '#1e293b' }}>
+          Deleted User
+        </h5> */}
+        <Heading heading='Deleted User' />
         <input
-          className="form-control"
+          className="custom-search form-control"
           style={{ width: '250px', fontSize: '13px' }}
           placeholder="Search..."
           onChange={(e) => setSearchQuery(e.target.value)}

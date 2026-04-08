@@ -13,6 +13,7 @@ import { Button, Modal } from 'react-bootstrap';
 import { API_URL, APP_PREFIX_PATH } from 'config/constant';
 import CustomTable from 'component/common/CustomTable';
 import ReplyIcon from '@mui/icons-material/Reply';
+import Heading from 'component/common/Heading';
 
 function ManageUser() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -196,7 +197,8 @@ function ManageUser() {
           padding: '16px'
         }}
       >
-        <div className="d-flex justify-content-end">
+        <div className="d-flex justify-content-between align-items-center">
+          <Heading heading='Manage Contact Us' />
           <input
             className="custom-search form-control"
             style={{ width: '250px', fontSize: '13px' }}
