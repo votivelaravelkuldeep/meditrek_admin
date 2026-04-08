@@ -449,7 +449,7 @@ function ManageSymptom() {
                 {/* <label htmlFor="categoryDescription" className="form-label">
                   Symptom Name
                 </label> */}
-                 <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>  Symptom Name</Form.Label>
+                <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}> Symptom Name</Form.Label>
 
                 <Form.Control
                   type="text"
@@ -460,7 +460,7 @@ function ManageSymptom() {
                     setError((prev) => ({ ...prev, name: '' }));
                   }}
                   isInvalid={error.name}
-                  className='custom-input custom-search'
+                  className="custom-input custom-search"
                   style={{ fontSize: '13px' }}
                 />
                 <Form.Control.Feedback type="invalid">{error.name}</Form.Control.Feedback>
@@ -485,7 +485,7 @@ function ManageSymptom() {
               </div> */}
               {error.general && <span className="text-danger">{error.general}</span>}
             </Modal.Body>
-            <Modal.Footer style={{ borderTop: 'none',paddingTop:0,paddingRight:0 }}>
+            <Modal.Footer style={{ borderTop: 'none', paddingTop: 0, paddingRight: 0 }}>
               <Button variant="secondary" onClick={handleCloseModal} style={{ fontSize: '12px' }}>
                 Close
               </Button>

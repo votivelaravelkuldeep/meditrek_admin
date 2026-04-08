@@ -1,432 +1,47 @@
-// import React, { useEffect, useState } from 'react';
-// import { Card, Table, Modal, Button, Form } from 'react-bootstrap';
-// import { Link } from 'react-router-dom';
-// import 'bootstrap/dist/css/bootstrap.min.css';
-// import 'bootstrap/dist/js/bootstrap.bundle.min.js';
-// import './managecontent.css';
-// import Pagination from '@mui/material/Pagination';
-// import Stack from '@mui/material/Stack';
-
-// import DeleteIcon from '@mui/icons-material/Delete';
-// import EditIcon from '@mui/icons-material/Edit';
-// import AddIcon from '@mui/icons-material/Add';
-// import Typography from '@mui/material/Typography';
-// import axios from 'axios';
-// import { API_URL } from 'config/constant';
-// import Swal from 'sweetalert2';
-
-// function ManageReportCategory() {
-//   const [selectedActions, setSelectedActions] = useState({});
-//   const [reportData, setReportData] = useState([])
-//   const [currentPage, setCurrentPage] = useState(1);
-//   const [showModal, setShowModal] = useState(false);
-//   const [showModal2, setShowModal2] = useState(false);
-//   const [categoryName, setCategoryName] = useState('')
-//   const [nameError, setNameError] = useState('')
-//   const [reportId, setReportId] = useState('')
-//   const usersPerPage = 50; // Show 5 rows per page
-
-
-//   const deleteReportCategory = (report_category_id) => {
-//     Swal.fire({
-//       title: 'Delete doctor',
-//       text: 'Are you sure you want to delete this Category?',
-//       icon: 'warning',
-//       showCancelButton: true,
-//       confirmButtonColor: '#3085d6',
-//       cancelButtonColor: '#d33',
-//       confirmButtonText: 'Yes!'
-//     }).then(async (result) => {
-//       if (result.isConfirmed) {
-//         axios.post(`${API_URL}delete_report_category`, { report_category_id: report_category_id })
-//           .then((response) => {
-//             if (response.data.success) {
-
-//               getreportCategory()
-//               console.log("deleted");
-//               Swal.fire({
-//                 title: '',
-//                 text: 'Category deleted successfully',
-//                 icon: 'success',
-//                 timer: 2000
-//               });
-//             }
-//             // setUserPageCount(response.data.users.length)
-//           })
-//           .catch((error) => {
-//             console.error('Error get_all_user_data details:', error);
-//           })
-//       }
-//     })
-//     console.log(`Delete user with ID: ${report_category_id}`);
-
-//     // Add your delete logic here
-//   };
-
-//   const handleActionChange = (index, action, report_category_id, name) => {
-//     setSelectedActions({ ...selectedActions, [index]: action });
-//     if (action === 'Delete') {
-//       console.log("id", report_category_id)
-//       deleteReportCategory(report_category_id);
-//       setSelectedActions({ ...selectedActions, [index]: null });
-//     } else if (action === 'Edit') {
-//       setCategoryName(name)
-//       setReportId(report_category_id)
-//       handleShowModal2()
-//       setSelectedActions({ ...selectedActions, [index]: null });
-//     }
-//   };
-
-//   const [searchQuery, setSearchQuery] = useState('');
-//   const handleSearchChange = (event) => {
-//     setSearchQuery(event.target.value);
-//   };
-
-//   const filteredUsers = reportData.filter(
-//     (user) =>
-//       (user.category_name && user.category_name.toLowerCase().includes(searchQuery.toLowerCase())) ||
-//       (user.createtime && user.createtime.includes(searchQuery))
-//   );
-
-//   // Pagination logic 
-//   const indexOfLastUser = currentPage * usersPerPage;
-//   const indexOfFirstUser = indexOfLastUser - usersPerPage;
-//   const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
-//   const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
-
-//   const handlePageChange = (event, value) => {
-//     setCurrentPage(value);
-//   };
-
-//   const getreportCategory = async () => {
-//     axios.get(`${API_URL}get_report_category`)
-//       .then((response) => {
-//         setReportData(response.data.data)
-//         // setUserPageCount(response.data.users.length)
-//       })
-//       .catch((error) => {
-//         console.error('Error get_all_user_data details:', error);
-//       })
-//   };
-
-//   useEffect(() => {
-//     getreportCategory();
-//   }, []);
-
-//   const formatDate = (dateString) => {
-//     const date = new Date(dateString);
-
-//     const options = {
-//       day: '2-digit',
-//       month: '2-digit',
-//       year: '2-digit',
-//       hour: '2-digit',
-//       minute: '2-digit',
-//       hour12: true
-//     };
-
-//     const formattedDate = date.toLocaleString('en-GB', options).replace(/\//g, '-');
-
-//     return formattedDate;
-//   };
-
-
-
-//   const addReportCategory = async (e) => {
-//     e.preventDefault()
-//     let errors = {}
-
-//     if (!categoryName) {
-//       errors.categoryName = 'Please enter category name'
-//     }
-
-//     if (Object.keys(errors).length > 0) {
-//       setNameError(errors)
-//       return
-//     }
-//     setNameError({})
-
-//     let category_data = {
-//       category_name: categoryName
-//     }
-//     axios.post(`${API_URL}add_report_category`, category_data)
-//       .then((response) => {
-//         if (response.data.key) {
-//           setSubCategoryError({ general: response.data.msg })
-//         } else if (response.data.success) {
-//           Swal.fire({
-//             title: '',
-//             text: 'Category added successfully',
-//             icon: 'success',
-//             timer: 3000
-//           });
-//           handleCloseModal()
-//           setCategoryName('')
-//           getreportCategory()
-//         } else {
-//           setCategoryName('')
-//           handleCloseModal()
-//         }
-//       })
-
-//       .catch((error) => {
-//         console.error('Error adding new sub category', error)
-//       })
-//   }
-
-//   //edit category starts here 
-//   const editReportCategory = async (e) => {
-//     e.preventDefault()
-//     let errors = {}
-
-//     if (!categoryName) {
-//       errors.categoryName = 'Please enter category name'
-//     }
-
-
-//     if (Object.keys(errors).length > 0) {
-//       setNameError(errors)
-//       return
-//     }
-//     setNameError({})
-
-//     let category_data = {
-//       category_name: categoryName,
-//       report_category_id: reportId
-//     }
-//     axios.post(`${API_URL}edit_report_category`, category_data)
-//       .then((response) => {
-//         if (response.data.key) {
-//           setSubCategoryError({ general: response.data.msg })
-//         } else if (response.data.success) {
-//           Swal.fire({
-//             title: '',
-//             text: 'Category updated successfully',
-//             icon: 'success',
-//             timer: 2000
-//           });
-//           handleCloseModal2()
-//           setCategoryName('')
-//           getreportCategory()
-//         } else {
-//           setCategoryName('')
-//           handleCloseModal2()
-//         }
-//       })
-
-//       .catch((error) => {
-//         console.error('Error adding new sub category', error)
-//       })
-//   }
-
-
-//   const handleShowModal = () => setShowModal(true);
-//   const handleCloseModal = () => setShowModal(false);
-
-//   const handleShowModal2 = () => setShowModal2(true);
-//   const handleCloseModal2 = () => setShowModal2(false);
-//   return (
-//     <>
-//       <Typography style={{ marginTop: '15px', marginBottom: '30px' }} variant="h4" gutterBottom>
-//         <span style={{ color: '#1ddec4' }}>Dashboard</span> / Manage Report Category
-//       </Typography>
-//       <Card>
-//         <Card.Header className=" bg-white">
-//           <div className="d-flex justify-content-between flex-wrap">
-//             <div>
-//               <Button className="btn btn-primary mt-2 mb-2" onClick={handleShowModal}>
-//                 <AddIcon style={{ marginRight: '2px', fontWeight: '500' }} /> Add Report Category
-//               </Button>
-//             </div>
-
-//             <div>
-//               <label htmlFor="search-input" style={{ marginRight: '5px' }}>
-//                 Search
-//               </label>
-//               <input
-//                 className="search-input"
-//                 type="text"
-//                 placeholder="Search..."
-//                 onChange={handleSearchChange}
-//                 style={{ marginTop: '8px', marginBottom: '5px', padding: '5px', width: '200px', border: '1px solid #f2f2f2' }}
-//               />
-//             </div>
-//           </div>
-//         </Card.Header>
-//         <Card.Body>
-//           <div className="table-container">
-//             <Table hover className="fixed-header-table">
-//               <thead>
-//                 <tr>
-//                   <th style={{ textAlign: 'center', fontWeight: '500' }}> S. No</th>
-//                   <th style={{ textAlign: 'center', fontWeight: '500' }}>Action</th>
-//                   <th style={{ textAlign: 'center', fontWeight: '500' }}> Category Name</th>
-//                   <th style={{ textAlign: 'center', fontWeight: '500' }}>Create Date & Time</th>
-//                 </tr>
-//               </thead>
-//               <tbody>
-//                 {currentUsers.map((user, index) => (
-//                   <tr key={user.id}>
-//                     <th scope="row" style={{ textAlign: 'center' }}>
-//                       {indexOfFirstUser + index + 1}
-//                     </th>
-//                     <td>
-//                       <div className="dropdown text-center">
-//                         <button
-//                           className="btn btn-primary dropdown-toggle action-btn"
-//                           type="button"
-//                           id={`dropdownMenuButton${user.id}`}
-//                           data-bs-toggle="dropdown"
-//                           aria-expanded="false"
-//                         >
-//                           Action
-//                         </button>
-//                         <ul className="dropdown-menu" aria-labelledby={`dropdownMenuButton${user.id}`}>
-//                           <li>
-//                             <Link className="dropdown-item" onClick={() => handleActionChange(index, 'Edit', user.report_category_id, user.category_name)}>
-//                               <EditIcon style={{ marginRight: '8px' }} /> Edit
-//                             </Link>
-//                           </li>
-//                           <li>
-//                             <button className="dropdown-item" onClick={() => handleActionChange(index, 'Delete', user.report_category_id)}>
-//                               <DeleteIcon style={{ marginRight: '8px' }} /> Delete
-//                             </button>
-//                           </li>
-//                         </ul>
-//                       </div>
-//                     </td>
-//                     <td style={{ textAlign: 'center' }}>{user.category_name}</td>
-
-//                     <td style={{ textAlign: 'center' }}>{formatDate(user.createtime)}</td>
-//                   </tr>
-//                 ))}
-//               </tbody>
-//             </Table>
-//           </div>
-//           <div className="d-flex justify-content-between">
-//             <p style={{ fontWeight: '500' }} className='pagination'>Showing {indexOfFirstUser + 1} to {Math.min(indexOfLastUser, currentUsers.length)} of {currentUsers.length} entries</p>
-//             <Stack spacing={2} alignItems="right">
-//               <Pagination count={totalPages} page={currentPage} onChange={handlePageChange} />
-//             </Stack>
-//           </div>
-//         </Card.Body>
-
-//         {/* Modal Component */}
-//         <Modal show={showModal} onHide={handleCloseModal} style={{ zIndex: '99999' }}>
-//           <Modal.Header closeButton>
-//             <Modal.Title style={{ fontSize: '17px' }}>Add Category </Modal.Title>
-//           </Modal.Header>
-//           <form onSubmit={addReportCategory}>
-//             <Modal.Body>
-//               {/* Add your form fields here */}
-//               <div className="mb-3">
-//                 <label htmlFor="categoryDescription" className="form-label">
-//                   Category Name
-//                 </label>
-
-//                 <Form.Control type="text"
-//                   placeholder='Enter name'
-//                   onChange={(e) => {
-//                     setCategoryName(e.target.value)
-//                     setNameError((prev) => ({ ...prev, categoryName: '' }));
-//                   }}
-//                   isInvalid={nameError.categoryName} />
-//                 <Form.Control.Feedback type="invalid">
-//                   {nameError.categoryName}
-//                 </Form.Control.Feedback>
-//               </div>
-//               {nameError.general && <span className="text-danger">{nameError.general}</span>}
-
-//             </Modal.Body>
-//             <Modal.Footer>
-//               <Button variant="secondary" onClick={handleCloseModal}>
-//                 Close
-//               </Button>
-//               <Button variant="primary" type="submit">
-//                 Add
-//               </Button>
-//             </Modal.Footer>
-//           </form>
-//         </Modal>
-
-
-//         {/* edit modal */}
-//         <Modal show={showModal2} onHide={handleCloseModal2} style={{ zIndex: '99999' }}>
-//           <Modal.Header closeButton>
-//             <Modal.Title style={{ fontSize: '17px' }}>Edit Category</Modal.Title>
-//           </Modal.Header>
-//           <form onSubmit={editReportCategory}>
-//             <Modal.Body>
-//               {/* Add your form fields here */}
-//               <div className="mb-3">
-//                 <label htmlFor="categoryDescription" className="form-label">
-//                   Category Name
-//                 </label>
-
-//                 <Form.Control type="text"
-//                   placeholder='Enter name'
-//                   value={categoryName}
-//                   onChange={(e) => {
-//                     setCategoryName(e.target.value)
-//                     setNameError((prev) => ({ ...prev, categoryName: '' }));
-//                   }}
-//                   isInvalid={nameError.categoryName} />
-//                 <Form.Control.Feedback type="invalid">
-//                   {nameError.categoryName}
-//                 </Form.Control.Feedback>
-//               </div>
-//               {nameError.general && <span className="text-danger">{nameError.general}</span>}
-
-//             </Modal.Body>
-//             <Modal.Footer>
-//               <Button variant="secondary" onClick={handleCloseModal2}>
-//                 Close
-//               </Button>
-//               <Button variant="primary" type="submit">
-//                 Save Changes
-//               </Button>
-//             </Modal.Footer>
-//           </form>
-//         </Modal>
-//       </Card>
-//     </>
-//   );
-// }
-
-// export default ManageReportCategory;
-
-
-
 import React, { useEffect, useState } from 'react';
-import { Card, Table, Modal, Button, Form } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Modal, Button, Form } from 'react-bootstrap';
+// import { Link } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import './managecontent.css';
-import Pagination from '@mui/material/Pagination';
-import Stack from '@mui/material/Stack';
+// import Pagination from '@mui/material/Pagination';
+// import Stack from '@mui/material/Stack';
 
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
-import Typography from '@mui/material/Typography';
+// import Typography from '@mui/material/Typography';
 import axios from 'axios';
 import { API_URL, IMAGE_PATH } from 'config/constant';
 import Swal from 'sweetalert2';
+import CustomTable from 'component/common/CustomTable';
 
 function ManageReportCategory() {
   const [selectedActions, setSelectedActions] = useState({});
-  const [reportData, setReportData] = useState([])
+  const [reportData, setReportData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
   const [showModal2, setShowModal2] = useState(false);
-  const [categoryName, setCategoryName] = useState('')
-  const [nameError, setNameError] = useState('')
-  const [reportId, setReportId] = useState('')
+  const [categoryName, setCategoryName] = useState('');
+  const [nameError, setNameError] = useState('');
+  const [reportId, setReportId] = useState('');
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [editImagePreview, setEditImagePreview] = useState(null);
-  const usersPerPage = 50; // Show 5 rows per page
+  //   const usersPerPage = 50; // Show 5 rows per page
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [sortConfig, setSortConfig] = useState(null);
+
+  const handleSort = (key) => {
+    setSortConfig((prev) => {
+      if (!prev) return { key, direction: 'asc' };
+
+      return {
+        key,
+        direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
+      };
+    });
+  };
 
   const deleteReportCategory = (report_category_id) => {
     Swal.fire({
@@ -439,11 +54,12 @@ function ManageReportCategory() {
       confirmButtonText: 'Yes!'
     }).then(async (result) => {
       if (result.isConfirmed) {
-        axios.post(`${API_URL}delete_report_category`, { report_category_id: report_category_id })
+        axios
+          .post(`${API_URL}delete_report_category`, { report_category_id: report_category_id })
           .then((response) => {
             if (response.data.success) {
-              getreportCategory()
-              console.log("deleted");
+              getreportCategory();
+              console.log('deleted');
               Swal.fire({
                 title: '',
                 text: 'Category deleted successfully',
@@ -454,9 +70,9 @@ function ManageReportCategory() {
           })
           .catch((error) => {
             console.error('Error get_all_user_data details:', error);
-          })
+          });
       }
-    })
+    });
     console.log(`Delete user with ID: ${report_category_id}`);
   };
 
@@ -466,10 +82,11 @@ function ManageReportCategory() {
       deleteReportCategory(report_category_id);
       setSelectedActions({ ...selectedActions, [index]: null });
     } else if (action === 'Edit') {
-      setCategoryName(name)
-      setReportId(report_category_id)
-      setEditImagePreview(image ? `${API_URL}uploads/report_category/${image}` : null)
-      handleShowModal2()
+      setCategoryName(name);
+      setReportId(report_category_id);
+      //   setEditImagePreview(image ? `${API_URL}uploads/report_category/${image}` : null);
+      setEditImagePreview(image ? `${IMAGE_PATH}${image}` : null);
+      handleShowModal2();
       setSelectedActions({ ...selectedActions, [index]: null });
     }
   };
@@ -485,24 +102,25 @@ function ManageReportCategory() {
       (user.createtime && user.createtime.includes(searchQuery))
   );
 
-  // Pagination logic 
-  const indexOfLastUser = currentPage * usersPerPage;
-  const indexOfFirstUser = indexOfLastUser - usersPerPage;
-  const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
-  const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
+  // Pagination logic
+  //   const indexOfLastUser = currentPage * usersPerPage;
+  //   const indexOfFirstUser = indexOfLastUser - usersPerPage;
+  //   const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
+  //   const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
 
-  const handlePageChange = (event, value) => {
-    setCurrentPage(value);
-  };
+  //   const handlePageChange = (event, value) => {
+  //     setCurrentPage(value);
+  //   };
 
   const getreportCategory = async () => {
-    axios.get(`${API_URL}get_report_category`)
+    axios
+      .get(`${API_URL}get_report_category`)
       .then((response) => {
-        setReportData(response.data.data)
+        setReportData(response.data.data);
       })
       .catch((error) => {
         console.error('Error get_all_user_data details:', error);
-      })
+      });
   };
 
   useEffect(() => {
@@ -540,18 +158,18 @@ function ManageReportCategory() {
   };
 
   const addReportCategory = async (e) => {
-    e.preventDefault()
-    let errors = {}
+    e.preventDefault();
+    let errors = {};
 
     if (!categoryName) {
-      errors.categoryName = 'Please enter category name'
+      errors.categoryName = 'Please enter category name';
     }
 
     if (Object.keys(errors).length > 0) {
-      setNameError(errors)
-      return
+      setNameError(errors);
+      return;
     }
-    setNameError({})
+    setNameError({});
 
     const formData = new FormData();
     formData.append('category_name', categoryName);
@@ -559,14 +177,15 @@ function ManageReportCategory() {
       formData.append('image', image);
     }
 
-    axios.post(`${API_URL}add_report_category`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    })
+    axios
+      .post(`${API_URL}add_report_category`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
       .then((response) => {
         if (response.data.key) {
-          setNameError({ general: response.data.msg })
+          setNameError({ general: response.data.msg });
         } else if (response.data.success) {
           Swal.fire({
             title: '',
@@ -574,34 +193,34 @@ function ManageReportCategory() {
             icon: 'success',
             timer: 3000
           });
-          handleCloseModal()
-          setCategoryName('')
-          setImage(null)
-          setImagePreview(null)
-          getreportCategory()
+          handleCloseModal();
+          setCategoryName('');
+          setImage(null);
+          setImagePreview(null);
+          getreportCategory();
         } else {
-          setCategoryName('')
-          handleCloseModal()
+          setCategoryName('');
+          handleCloseModal();
         }
       })
       .catch((error) => {
-        console.error('Error adding new category', error)
-      })
-  }
+        console.error('Error adding new category', error);
+      });
+  };
 
   const editReportCategory = async (e) => {
-    e.preventDefault()
-    let errors = {}
+    e.preventDefault();
+    let errors = {};
 
     if (!categoryName) {
-      errors.categoryName = 'Please enter category name'
+      errors.categoryName = 'Please enter category name';
     }
 
     if (Object.keys(errors).length > 0) {
-      setNameError(errors)
-      return
+      setNameError(errors);
+      return;
     }
-    setNameError({})
+    setNameError({});
 
     const formData = new FormData();
     formData.append('category_name', categoryName);
@@ -610,14 +229,15 @@ function ManageReportCategory() {
       formData.append('image', image);
     }
 
-    axios.post(`${API_URL}edit_report_category`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    })
+    axios
+      .post(`${API_URL}edit_report_category`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
       .then((response) => {
         if (response.data.key) {
-          setNameError({ general: response.data.msg })
+          setNameError({ general: response.data.msg });
         } else if (response.data.success) {
           Swal.fire({
             title: '',
@@ -625,26 +245,26 @@ function ManageReportCategory() {
             icon: 'success',
             timer: 2000
           });
-          handleCloseModal2()
-          setCategoryName('')
-          setImage(null)
-          setEditImagePreview(null)
-          getreportCategory()
+          handleCloseModal2();
+          setCategoryName('');
+          setImage(null);
+          setEditImagePreview(null);
+          getreportCategory();
         } else {
-          setCategoryName('')
-          handleCloseModal2()
+          setCategoryName('');
+          handleCloseModal2();
         }
       })
       .catch((error) => {
-        console.error('Error updating category', error)
-      })
-  }
+        console.error('Error updating category', error);
+      });
+  };
 
   const handleShowModal = () => {
     setShowModal(true);
     setImage(null);
     setImagePreview(null);
-  }
+  };
 
   const handleCloseModal = () => {
     setShowModal(false);
@@ -652,7 +272,7 @@ function ManageReportCategory() {
     setImage(null);
     setImagePreview(null);
     setNameError({});
-  }
+  };
 
   const handleShowModal2 = () => setShowModal2(true);
   const handleCloseModal2 = () => {
@@ -661,157 +281,187 @@ function ManageReportCategory() {
     setImage(null);
     setEditImagePreview(null);
     setNameError({});
-  }
+  };
+
+  const columns = [
+    {
+      label: 'S. No',
+      key: 'sr_no',
+      render: (_, index) => index + 1
+    },
+    {
+      label: 'Category Name',
+      key: 'category_name',
+      sortable: true
+    },
+    {
+      label: 'Image',
+      key: 'image',
+      render: (user) =>
+        user.image ? (
+          <img
+            src={`${IMAGE_PATH}${user.image}`}
+            alt="Category"
+            // style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '6px' }}
+            style={{
+              width: '35px',
+              height: '35px',
+              borderRadius: '50%',
+              objectFit: 'cover',
+              border: '1px solid rgb(29, 222, 196)'
+            }}
+          />
+        ) : (
+          'NA'
+        )
+    },
+    {
+      label: 'Created At',
+      key: 'createtime',
+      sortable: true,
+      render: (u) => formatDate(u.createtime)
+    },
+    {
+      label: 'Action',
+      key: 'action',
+      render: (user, index) => (
+        <div className="d-flex gap-2 justify-content-center">
+          {/* EDIT */}
+          <button
+            onClick={() => handleActionChange(index, 'Edit', user.report_category_id, user.category_name, user.image)}
+            style={{
+              background: 'rgba(29, 222, 196, 0.13)',
+              color: '#1ddec4',
+              padding: '2px 8px',
+              borderRadius: '6px',
+              border: '1px solid rgba(29, 222, 196, 0.25)'
+            }}
+          >
+            <EditIcon style={{ fontSize: '16px' }} />
+          </button>
+
+          {/* DELETE */}
+          <button
+            onClick={() => handleActionChange(index, 'Delete', user.report_category_id)}
+            style={{
+              background: '#fee2e2',
+              color: '#dc2626',
+              padding: '2px 8px',
+              borderRadius: '6px',
+              border: '1px solid #dc262654'
+            }}
+          >
+            <DeleteIcon style={{ fontSize: '16px' }} />
+          </button>
+        </div>
+      )
+    }
+  ];
 
   return (
     <>
-      <Typography style={{ marginTop: '15px', marginBottom: '30px' }} variant="h4" gutterBottom>
+      {/* <Typography style={{ marginTop: '15px', marginBottom: '30px' }} variant="h4" gutterBottom>
         <span style={{ color: '#1ddec4' }}>Dashboard</span> / Manage Report Category
-      </Typography>
-      <Card>
-        <Card.Header className=" bg-white">
-          <div className="d-flex justify-content-between flex-wrap">
-            <div>
-              <Button className="btn btn-primary mt-2 mb-2" onClick={handleShowModal}>
-                <AddIcon style={{ marginRight: '2px', fontWeight: '500' }} /> Add Report Category
-              </Button>
-            </div>
+      </Typography> */}
+      <div
+        style={{
+          background: '#fff',
+          borderRadius: 16,
+          padding: '16px',
+          boxShadow: '0 4px 8px rgba(0,0,0,0.05)'
+        }}
+      >
+        <div className="d-flex justify-content-between flex-wrap">
+          <div>
+            <Button className="btn btn-primary" style={{ fontSize: '12px', borderRadius: '10px' }} onClick={handleShowModal}>
+              <AddIcon style={{ fontSize: '16px' }} /> Add Report Category
+            </Button>
+          </div>
 
-            <div>
-              <label htmlFor="search-input" style={{ marginRight: '5px' }}>
-                Search
-              </label>
-              <input
-                className="search-input"
-                type="text"
-                placeholder="Search..."
-                onChange={handleSearchChange}
-                style={{ marginTop: '8px', marginBottom: '5px', padding: '5px', width: '200px', border: '1px solid #f2f2f2' }}
-              />
-            </div>
+          <div>
+            <input
+              className="search-input custom-search form-control"
+              type="text"
+              placeholder="Search..."
+              onChange={handleSearchChange}
+              style={{ width: '250px', fontSize: '13px' }}
+            />
           </div>
-        </Card.Header>
-        <Card.Body>
-          <div className="table-container">
-            <Table hover className="fixed-header-table">
-              <thead>
-                <tr>
-                  <th style={{ textAlign: 'center', fontWeight: '500' }}> S. No</th>
-                  <th style={{ textAlign: 'center', fontWeight: '500' }}>Action</th>
-                  <th style={{ textAlign: 'center', fontWeight: '500' }}> Category Name</th>
-                  <th style={{ textAlign: 'center', fontWeight: '500' }}>Image</th>
-                  <th style={{ textAlign: 'center', fontWeight: '500' }}>Create Date & Time</th>
-                </tr>
-              </thead>
-              <tbody>
-                {currentUsers.map((user, index) => (
-                  <tr key={user.id}>
-                    <th scope="row" style={{ textAlign: 'center' }}>
-                      {indexOfFirstUser + index + 1}
-                    </th>
-                    <td>
-                      <div className="dropdown text-center">
-                        <button
-                          className="btn btn-primary dropdown-toggle action-btn"
-                          type="button"
-                          id={`dropdownMenuButton${user.id}`}
-                          data-bs-toggle="dropdown"
-                          aria-expanded="false"
-                        >
-                          Action
-                        </button>
-                        <ul className="dropdown-menu" aria-labelledby={`dropdownMenuButton${user.id}`}>
-                          <li>
-                            <Link className="dropdown-item" onClick={() => handleActionChange(index, 'Edit', user.report_category_id, user.category_name, user.image)}>
-                              <EditIcon style={{ marginRight: '8px' }} /> Edit
-                            </Link>
-                          </li>
-                          <li>
-                            <button className="dropdown-item" onClick={() => handleActionChange(index, 'Delete', user.report_category_id)}>
-                              <DeleteIcon style={{ marginRight: '8px' }} /> Delete
-                            </button>
-                          </li>
-                        </ul>
-                      </div>
-                    </td>
-                    <td style={{ textAlign: 'center' }}>{user.category_name}</td>
-                    <td style={{ textAlign: 'center' }}>
-                      {user.image && (
-                        <img 
-                          src={`${IMAGE_PATH}${user.image}`} 
-                          alt="Category" 
-                          style={{ width: '50px', height: '50px', objectFit: 'cover' }} 
-                        />
-                      )}
-                    </td>
-                    <td style={{ textAlign: 'center' }}>{formatDate(user.createtime)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          </div>
-          <div className="d-flex justify-content-between">
-            <p style={{ fontWeight: '500' }} className='pagination'>Showing {indexOfFirstUser + 1} to {Math.min(indexOfLastUser, currentUsers.length)} of {currentUsers.length} entries</p>
-            <Stack spacing={2} alignItems="right">
-              <Pagination count={totalPages} page={currentPage} onChange={handlePageChange} />
-            </Stack>
-          </div>
-        </Card.Body>
+        </div>
+
+        <div
+          style={{
+            marginTop: '16px',
+            borderRadius: '12px',
+            overflow: 'hidden'
+          }}
+        >
+          <CustomTable
+            columns={columns}
+            data={filteredUsers}
+            currentPage={currentPage}
+            rowsPerPage={rowsPerPage}
+            sortConfig={sortConfig}
+            onSort={handleSort}
+            onPageChange={(page) => setCurrentPage(page)}
+            onRowsPerPageChange={(size) => {
+              setRowsPerPage(size);
+              setCurrentPage(1);
+            }}
+          />
+        </div>
 
         {/* Add Modal */}
-        <Modal show={showModal} onHide={handleCloseModal} style={{ zIndex: '99999' }}>
+        <Modal show={showModal} centered onHide={handleCloseModal} style={{ zIndex: '99999' }} className="custom-modal">
           <Modal.Header closeButton>
             <Modal.Title style={{ fontSize: '17px' }}>Add Category </Modal.Title>
           </Modal.Header>
           <form onSubmit={addReportCategory}>
-            <Modal.Body>
-              <div className="mb-3">
-                <label htmlFor="categoryDescription" className="form-label">
-                  Category Name
-                </label>
-                <Form.Control 
+            <Modal.Body style={{ paddingTop: 0 }}>
+              <Form.Group style={{ display: 'flex', flexDirection: 'column' }}>
+                <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>Category Name</Form.Label>
+                <Form.Control
                   type="text"
-                  placeholder='Enter name'
+                  placeholder="Enter name"
                   onChange={(e) => {
-                    setCategoryName(e.target.value)
+                    setCategoryName(e.target.value);
                     setNameError((prev) => ({ ...prev, categoryName: '' }));
                   }}
-                  isInvalid={nameError.categoryName} 
+                  isInvalid={nameError.categoryName}
+                  className="custom-input custom-search"
+                  style={{ fontSize: '13px' }}
                 />
-                <Form.Control.Feedback type="invalid">
-                  {nameError.categoryName}
-                </Form.Control.Feedback>
-              </div>
+                <Form.Control.Feedback type="invalid">{nameError.categoryName}</Form.Control.Feedback>
+              </Form.Group>
 
-              <div className="mb-3">
-                <label htmlFor="categoryImage" className="form-label">
+              <Form.Group style={{ display: 'flex', flexDirection: 'column', marginTop: '10px' }}>
+                {/* <label htmlFor="categoryImage" className="form-label">
                   Category Image
-                </label>
-                <Form.Control 
-                  type="file" 
+                </label> */}
+                <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}> Category Image</Form.Label>
+                <Form.Control
+                  type="file"
                   accept="image/*"
                   onChange={handleImageChange}
+                  className="custom-input custom-search"
+                  style={{ fontSize: '13px' }}
                 />
                 {imagePreview && (
                   <div className="mt-2">
-                    <img 
-                      src={imagePreview} 
-                      alt="Preview" 
-                      style={{ width: '100px', height: '100px', objectFit: 'cover' }} 
-                    />
+                    <img src={imagePreview} alt="Preview" style={{ width: '100px', height: '100px', objectFit: 'cover' }} />
                   </div>
                 )}
-              </div>
+              </Form.Group>
 
-              <span style={{color: "red"}}>Image size must be 1200x1200 px</span>
+              <span style={{ color: 'red', fontSize: '12px' }}>Image size must be 1200x1200 px</span>
 
               {nameError.general && <span className="text-danger">{nameError.general}</span>}
             </Modal.Body>
-            <Modal.Footer>
-              <Button variant="secondary" onClick={handleCloseModal}>
+            <Modal.Footer style={{ borderTop: 'none', paddingTop: 0, paddingRight: 0 }}>
+              <Button variant="secondary" onClick={handleCloseModal} style={{ fontSize: '12px' }}>
                 Close
               </Button>
-              <Button variant="primary" type="submit">
+              <Button variant="primary" type="submit" style={{ fontSize: '12px' }}>
                 Add
               </Button>
             </Modal.Footer>
@@ -819,64 +469,57 @@ function ManageReportCategory() {
         </Modal>
 
         {/* Edit Modal */}
-        <Modal show={showModal2} onHide={handleCloseModal2} style={{ zIndex: '99999' }}>
+        <Modal show={showModal2} centered onHide={handleCloseModal2} style={{ zIndex: '99999' }} className="custom-modal">
           <Modal.Header closeButton>
             <Modal.Title style={{ fontSize: '17px' }}>Edit Category</Modal.Title>
           </Modal.Header>
           <form onSubmit={editReportCategory}>
-            <Modal.Body>
-              <div className="mb-3">
-                <label htmlFor="categoryDescription" className="form-label">
-                  Category Name
-                </label>
-                <Form.Control 
+            <Modal.Body style={{ paddingTop: 0 }}>
+              <Form.Group style={{ display: 'flex', flexDirection: 'column' }}>
+                <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>Category Name</Form.Label>
+                <Form.Control
                   type="text"
-                  placeholder='Enter name'
+                  placeholder="Enter name"
                   value={categoryName}
                   onChange={(e) => {
-                    setCategoryName(e.target.value)
+                    setCategoryName(e.target.value);
                     setNameError((prev) => ({ ...prev, categoryName: '' }));
                   }}
-                  isInvalid={nameError.categoryName} 
+                  isInvalid={nameError.categoryName}
+                  className="custom-input custom-search"
+                  style={{ fontSize: '13px' }}
                 />
-                <Form.Control.Feedback type="invalid">
-                  {nameError.categoryName}
-                </Form.Control.Feedback>
-              </div>
-
-              <div className="mb-3">
-                <label htmlFor="categoryImage" className="form-label">
-                  Category Image
-                </label>
-                <Form.Control 
-                  type="file" 
+                <Form.Control.Feedback type="invalid">{nameError.categoryName}</Form.Control.Feedback>
+              </Form.Group>
+              <Form.Group style={{ display: 'flex', flexDirection: 'column' }}>
+                <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>Category Image</Form.Label>
+                <Form.Control
+                  type="file"
                   accept="image/*"
                   onChange={handleEditImageChange}
+                  className="custom-input custom-search"
+                  style={{ fontSize: '13px' }}
                 />
                 {editImagePreview && (
                   <div className="mt-2">
-                    <img 
-                      src={editImagePreview} 
-                      alt="Preview" 
-                      style={{ width: '100px', height: '100px', objectFit: 'cover' }} 
-                    />
+                    <img src={editImagePreview} alt="Preview" style={{ width: '100px', height: '100px', objectFit: 'cover' }} />
                   </div>
                 )}
-              </div>
-                <span style={{color: "red"}}>Image size must be 1200x1200 px</span>
+              </Form.Group>
+              <span style={{ color: 'red', fontSize: '12px' }}>Image size must be 1200x1200 px</span>
               {nameError.general && <span className="text-danger">{nameError.general}</span>}
             </Modal.Body>
-            <Modal.Footer>
-              <Button variant="secondary" onClick={handleCloseModal2}>
+            <Modal.Footer style={{ borderTop: 'none', paddingTop: 0, paddingRight: 0 }}>
+              <Button variant="secondary" onClick={handleCloseModal2} style={{ fontSize: '12px' }}>
                 Close
               </Button>
-              <Button variant="primary" type="submit">
+              <Button variant="primary" type="submit" style={{ fontSize: '12px' }}>
                 Save Changes
               </Button>
             </Modal.Footer>
           </form>
         </Modal>
-      </Card>
+      </div>
     </>
   );
 }
