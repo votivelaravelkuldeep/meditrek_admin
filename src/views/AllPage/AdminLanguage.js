@@ -108,7 +108,7 @@ const AdminLanguage = () => {
   return (
     <Grid container spacing={2}>
       <Grid item xs={12}>
-        <div style={{background:'#fff', padding:'24px'}}>
+        <div style={{background:'#fff', padding:'24px', boxShadow: '0 4px 8px rgba(0,0,0,0.05)',borderRadius: 16,}}>
           <Typography variant="h5">Language Settings</Typography>
 
           {/* ===== MULTI SELECT ===== */}
