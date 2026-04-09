@@ -1,14 +1,4 @@
-/**
- * AdminAnalytics.jsx  —  Super-admin version of the Analytics page.
- *
- * Patient data is fully anonymised throughout:
- *   - No patient names
- *   - No exact ages (age group shown instead)
- *   - Each row gets an auto-generated Patient Ref # (P-001, P-002…)
- *   - A 🔒 banner explains the anonymisation to the admin
- */
-
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import TagSearch from "./Analytics/TagSearch";
 import AgeRangeFilter from "./Analytics/AgeRangeFilter";
 import GenderFilter from "./Analytics/GenderFilter";
@@ -17,10 +7,8 @@ import { PiHospitalFill } from "react-icons/pi";
 import { GiMedicines, GiPillDrop } from "react-icons/gi";
 import { FaStethoscope } from "react-icons/fa";
 import { BiSolidCustomize } from "react-icons/bi";
+import { fetchDoctors } from "services/analyticsAPI";
 
-/* ============================================================
-   STATIC MOCK DATA
-   ============================================================ */
 const MOCK_PATIENTS = [
   { id:1,  age:45, gender:"Male",   diseases:[{name:"Hypertension"},{name:"Type 2 Diabetes"}], medications:[{name:"Lisinopril"},{name:"Metformin"}],    symptoms:"headache, fatigue" },
   { id:2,  age:32, gender:"Female", diseases:[{name:"Migraine"}],                               medications:[{name:"Sumatriptan"}],                      symptoms:"severe headache, nausea" },
@@ -45,33 +33,32 @@ const MOCK_DEMOGRAPHICS = [
   {age_group:"46+",   gender:"Female", count:8},
 ];
 
-const MOCK_DOCTORS  = [{value:1,label:"Dr. Smith"},{value:2,label:"Dr. Johnson"},{value:3,label:"Dr. Williams"}];
+// const MOCK_DOCTORS  = [{value:1,label:"Dr. Smith"},{value:2,label:"Dr. Johnson"},{value:3,label:"Dr. Williams"}];
 const MOCK_DISEASES = ["Hypertension","Type 2 Diabetes","Migraine","COPD","Anxiety","Depression","Asthma","Osteoarthritis","Heart Failure","Hyperlipidemia"].map(l=>({label:l}));
 const MOCK_MEDICINES= ["Lisinopril","Metformin","Sumatriptan","Albuterol","Sertraline","Ibuprofen","Amlodipine","Fluticasone","Furosemide","Spiriva","Escitalopram","Atorvastatin","Rizatriptan"].map(l=>({label:l}));
 const MOCK_SYMPTOMS = ["headache","fatigue","nausea","shortness of breath","wheezing","joint pain","coughing","edema","insomnia"].map(l=>({label:l}));
 
-/* ============================================================
-   ANONYMISATION HELPERS
-   ============================================================ */
 const AGE_GROUPS = {
-  "0-18":  a => a <= 18,
+  "0-18": a => a >= 0 && a <= 18,
   "19-30": a => a >= 19 && a <= 30,
-  "31-45": a => a >= 31 && a <= 45,
-  "46+":   a => a >= 46,
+  "31-44": a => a >= 31 && a <= 44,
+  "45-64": a => a >= 45 && a <= 64,
+  "65-74": a => a >= 65 && a <= 74,
+  "75-84": a => a >= 75 && a <= 84,
+  "85+": a => a >= 85,
 };
 
 /** Convert exact age → age-group label */
 const toAgeGroup = age => {
   if (age <= 18) return "0-18";
   if (age <= 30) return "19-30";
-  if (age <= 45) return "31-45";
-  return "46+";
+  if (age <= 44) return "31-44";
+  if (age <= 64) return "45-64";
+  if (age <= 74) return "65-74";
+  if (age <= 84) return "75-84";
+  return "85+";
 };
 
-/**
- * Anonymise a patient array for admin display.
- * Removes name / exact age; replaces with Patient Ref and age group.
- */
 const anonymise = (patients) =>
   patients.map((p, i) => ({
     ref:       `P-${String(i + 1).padStart(3, "0")}`,   // P-001, P-002 …
@@ -82,16 +69,10 @@ const anonymise = (patients) =>
     symptoms:  p.symptoms ? p.symptoms.split(", ") : [],
   }));
 
-/* ============================================================
-   CONSTANTS
-   ============================================================ */
 const ACCENT    = "#1ddec4";
 const ACCENT_BG = "rgba(29,222,196,0.13)";
 const GCOLORS   = { Male:ACCENT, Female:"#60a5fa", Other:"#8b5cf6", "Not Specified":"#94a3b8" };
 
-/* ============================================================
-   STYLES
-   ============================================================ */
 const S = {
   wrap:        { display:"flex", fontFamily:"'DM Sans',sans-serif", minHeight:"100vh", background:"#f4f6fb" },
   nav:         { width:230, minWidth:210, background:"#fff", borderRight:"1px solid #eaecf2", display:"flex", flexDirection:"column", flexShrink:0 },
@@ -106,15 +87,12 @@ const S = {
     transition:"all .15s", display:"flex", alignItems:"center", gap:9,
   }),
   main:        { flex:1, padding:"28px 28px 40px", overflowX:"hidden", minWidth:0 },
-  /* admin banners */
   adminBanner: { background:`linear-gradient(135deg,${ACCENT_BG},rgba(96,165,250,0.08))`, border:`1px solid rgba(29,222,196,0.25)`, borderRadius:12, padding:"12px 18px", marginBottom:20, display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:10 },
   adminBannerLeft: { display:"flex", alignItems:"center", gap:10 },
   adminBadge:  { background:ACCENT, color:"#fff", fontSize:10, fontWeight:700, padding:"3px 8px", borderRadius:6, letterSpacing:.5, textTransform:"uppercase" },
   adminBannerText: { fontSize:12, color:"#374151", fontWeight:500 },
   doctorSelect:{ padding:"7px 12px", borderRadius:8, border:"1px solid #dde1ec", fontSize:12, outline:"none", background:"#fff", minWidth:200, cursor:"pointer" },
-  /* anonymisation notice */
   anonBanner:  { background:"rgba(245,158,11,0.08)", border:"1px solid rgba(245,158,11,0.25)", borderRadius:10, padding:"9px 14px", marginBottom:16, display:"flex", alignItems:"center", gap:8, fontSize:12, color:"#92400e" },
-  /* page */
   pageHead:    { marginBottom:20 },
   pageTitle:   { fontSize:18, fontWeight:800, color:"#1a202c", margin:0 },
   pageSub:     { fontSize:13, color:"#64748b", marginTop:4 },
@@ -157,10 +135,6 @@ const S = {
 };
 
 function pct(n, d) { return d===0?"0.0":((n/d)*100).toFixed(1); }
-
-/* ============================================================
-   SHARED UI COMPONENTS
-   ============================================================ */
 function Chip({label,teal}) { return <span style={S.chip(teal)}>{label}</span>; }
 function DChips({arr}) { return <>{(arr||[]).map((c,i)=><Chip key={i} label={c} teal={false}/>)}</>; }
 function MChips({arr}) { return <>{(arr||[]).map((m,i)=><Chip key={i} label={m} teal={true}/>)}</>; }
@@ -229,12 +203,6 @@ function DataTable({cols,rows,empty="No data found"}) {
   );
 }
 
-/* ============================================================
-   ANONYMISED EXPAND PANEL
-   Used in every section — shows the anonymised patient breakdown
-   so the admin can verify that the analytics above are correct,
-   without exposing any personally identifiable information.
-   ============================================================ */
 function AnonExpandPanel({patients, showSymptoms=false}) {
   const [open, setOpen] = useState(false);
 
@@ -296,31 +264,38 @@ function AnonExpandPanel({patients, showSymptoms=false}) {
   );
 }
 
-/* ============================================================
-   ADMIN DOCTOR FILTER BANNER
-   ============================================================ */
-function AdminDoctorBanner({selectedDoctor,doctors,onChange}) {
+function AdminDoctorBanner({ selectedDoctors, doctors, onToggle }) {
+  const doctorOptions = doctors.map(d => d.label);
+
   return (
     <div style={S.adminBanner}>
       <div style={S.adminBannerLeft}>
         <span style={S.adminBadge}>Admin</span>
+
         <span style={S.adminBannerText}>
-          {selectedDoctor
-            ? `Viewing data for: ${doctors.find(d=>d.value===selectedDoctor)?.label||"Doctor"}`
+          {selectedDoctors.length > 0
+            ? `Viewing data for: ${
+                selectedDoctors.length === 1
+                  ? selectedDoctors[0]
+                  : `${selectedDoctors.length} doctors selected`
+              }`
             : "Viewing data across all doctors"}
         </span>
       </div>
-      <select style={S.doctorSelect} value={selectedDoctor||""} onChange={e=>onChange(e.target.value||null)}>
-        <option value="">All Doctors</option>
-        {doctors.map(d=><option key={d.value} value={d.value}>{d.label}</option>)}
-      </select>
+
+      <div style={{ minWidth: 260 }}>
+        <TagSearch
+          label="Doctor"
+          all={doctorOptions}
+          selected={selectedDoctors}
+          onToggle={onToggle}
+          searchPlaceholder="Search doctors..."
+        />
+      </div>
     </div>
   );
 }
 
-/* ============================================================
-   1. DEMOGRAPHICS
-   ============================================================ */
 function Demographics() {
   const [ageGroup,setAgeGroup] = useState("All");
   const [gender,  setGender]   = useState("All");
@@ -883,9 +858,22 @@ const NAV = [
    ============================================================ */
 export default function AdminAnalytics() {
   const [active,         setActive]         = useState("demographics");
-  const [selectedDoctor, setSelectedDoctor] = useState(null);
+  const [doctors, setDoctors] = useState([]);
+const [selectedDoctors, setSelectedDoctors] = useState([]);
 
   const sharedProps = {diseases:MOCK_DISEASES, medicines:MOCK_MEDICINES, symptoms:MOCK_SYMPTOMS};
+
+useEffect(() => {
+  const loadDoctors = async () => {
+    const data = await fetchDoctors();
+    setDoctors(data);
+
+    const allDoctorNames = data.map(d => d.label);
+    setSelectedDoctors(allDoctorNames);
+  };
+
+  loadDoctors();
+}, []);
 
   const VIEWS = {
     demographics: <Demographics/>,
@@ -896,6 +884,14 @@ export default function AdminAnalytics() {
     medhealth:    <MedicationHealth {...sharedProps}/>,
     customize:    <CustomizeTable {...sharedProps}/>,
   };
+
+  const toggleDoctor = (doctorName) => {
+  setSelectedDoctors(prev =>
+    prev.includes(doctorName)
+      ? prev.filter(d => d !== doctorName)
+      : [...prev, doctorName]
+  );
+};
 
   return (
     <div style={S.wrap}>
@@ -918,7 +914,11 @@ export default function AdminAnalytics() {
         })}
       </nav>
       <main style={S.main}>
-        <AdminDoctorBanner selectedDoctor={selectedDoctor} doctors={MOCK_DOCTORS} onChange={setSelectedDoctor}/>
+<AdminDoctorBanner
+  selectedDoctors={selectedDoctors}
+  doctors={doctors}
+  onToggle={toggleDoctor}
+/>
         {VIEWS[active]}
       </main>
     </div>
