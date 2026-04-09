@@ -304,3 +304,8 @@
   align-items: center;
   gap: 4px;
 }
+
+.custom-modal-width{
+  max-width: 600px;
+  width: 100%;
+}

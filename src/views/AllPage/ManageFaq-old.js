@@ -1,22 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Button, Form } from 'react-bootstrap';
-// import { Link } from 'react-router-dom';
+import { Card, Table, Modal, Button, Form } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import './managecontent.css';
-// import Pagination from '@mui/material/Pagination';
-// import Stack from '@mui/material/Stack';
+import Pagination from '@mui/material/Pagination';
+import Stack from '@mui/material/Stack';
 
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
 import VisibilityIcon from '@mui/icons-material/Visibility';
-// import Typography from '@mui/material/Typography';
+import Typography from '@mui/material/Typography';
 import axios from 'axios';
 import { API_URL } from 'config/constant';
 import Swal from 'sweetalert2';
-import Heading from 'component/common/Heading';
-import CustomTable from 'component/common/CustomTable';
 
 function ManageFaq() {
   const [selectedActions, setSelectedActions] = useState({});
@@ -31,20 +29,7 @@ function ManageFaq() {
   const [faqId, setFaqId] = useState('');
   const [errors, setErrors] = useState({});
   const [viewData, setViewData] = useState({});
-  //   const usersPerPage = 50;
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [sortConfig, setSortConfig] = useState(null);
-
-  const handleSort = (key) => {
-    setSortConfig((prev) => {
-      if (!prev) return { key, direction: 'asc' };
-
-      return {
-        key,
-        direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
-      };
-    });
-  };
+  const usersPerPage = 50;
 
   const deleteFaq = (faq_id) => {
     Swal.fire({
@@ -110,14 +95,14 @@ function ManageFaq() {
   );
 
   // Pagination logic
-  //   const indexOfLastUser = currentPage * usersPerPage;
-  //   const indexOfFirstUser = indexOfLastUser - usersPerPage;
-  //   const currentFaqs = filteredFaqs.slice(indexOfFirstUser, indexOfLastUser);
-  //   const totalPages = Math.ceil(filteredFaqs.length / usersPerPage);
+  const indexOfLastUser = currentPage * usersPerPage;
+  const indexOfFirstUser = indexOfLastUser - usersPerPage;
+  const currentFaqs = filteredFaqs.slice(indexOfFirstUser, indexOfLastUser);
+  const totalPages = Math.ceil(filteredFaqs.length / usersPerPage);
 
-  //   const handlePageChange = (event, value) => {
-  //     setCurrentPage(value);
-  //   };
+  const handlePageChange = (event, value) => {
+    setCurrentPage(value);
+  };
 
   const getFaqs = async () => {
     axios
@@ -175,14 +160,9 @@ function ManageFaq() {
     }
     setErrors({});
 
-    // let faqData = {
-    //   question: question,
-    //   answer: answer,
-    //   userType: userType
-    // };
     let faqData = {
-      question: faqDataqa[activeLang].question,
-      answer: faqDataqa[activeLang].answer,
+      question: question,
+      answer: answer,
       userType: userType
     };
 
@@ -198,18 +178,6 @@ function ManageFaq() {
             icon: 'success',
             timer: 3000
           });
-          setFaqDataqa({
-            en: { question: '', answer: '' },
-            fr: { question: '', answer: '' },
-            es: { question: '', answer: '' },
-            ar: { question: '', answer: '' },
-            it: { question: '', answer: '' },
-            de: { question: '', answer: '' },
-            pt: { question: '', answer: '' }
-          });
-          // optional: reset active language
-          setActiveLang('en');
-
           handleCloseAddModal();
           setQuestion('');
           setAnswer('');
@@ -230,17 +198,10 @@ function ManageFaq() {
     e.preventDefault();
     let validationErrors = {};
 
-    // if (!question) {
-    //   validationErrors.question = 'Please enter question';
-    // }
-    // if (!answer) {
-    //   validationErrors.answer = 'Please enter answer';
-    // }
-    if (!faqDataqa[activeLang].question) {
+    if (!question) {
       validationErrors.question = 'Please enter question';
     }
-
-    if (!faqDataqa[activeLang].answer) {
+    if (!answer) {
       validationErrors.answer = 'Please enter answer';
     }
     if (!userType) {
@@ -307,193 +268,111 @@ function ManageFaq() {
   const handleShowViewModal = () => setShowViewModal(true);
   const handleCloseViewModal = () => setShowViewModal(false);
 
-  const columns = [
-    {
-      label: 'S. No',
-      key: 'sr_no',
-      render: (_, index) => index + 1
-    },
-    {
-      label: 'User Type',
-      sortable: true,
-      key: 'user_type_label'
-    },
-    {
-      label: 'Question',
-      key: 'question',
-      sortable: true,
-      render: (faq) => truncateText(faq.question, 35)
-    },
-    {
-      label: 'Answer',
-      key: 'answer',
-      sortable: true,
-      render: (faq) => truncateText(faq.answer, 35)
-    },
-    {
-      label: 'Created At',
-      key: 'createtime',
-      render: (faq) => <span style={{ whiteSpace: 'nowrap' }}>{faq.createtime}</span>
-    },
-
-    // ✅ ACTION LAST COLUMN
-    {
-      label: 'Action',
-      key: 'action',
-      render: (faq, index) => (
-        <div className="d-flex gap-2 justify-content-center">
-          {/* VIEW */}
-          <button
-            onClick={() => handleActionChange(index, 'View', faq.faq_id, faq)}
-            style={{
-              background: '#e0f2fe',
-              color: '#0284c7',
-              padding: '3px 6px',
-              borderRadius: '6px',
-              border: '1px solid #0284c733',
-              display: 'inline-flex'
-            }}
-          >
-            <VisibilityIcon style={{ fontSize: '14px' }} />
-          </button>
-
-          {/* EDIT */}
-          <button
-            onClick={() => handleActionChange(index, 'Edit', faq.faq_id, faq)}
-            style={{
-              background: 'rgba(29, 222, 196, 0.13)',
-              color: '#1ddec4',
-              padding: '3px 6px',
-              borderRadius: '6px',
-              border: '1px solid rgba(29, 222, 196, 0.25)',
-              display: 'inline-flex'
-            }}
-          >
-            <EditIcon style={{ fontSize: '14px' }} />
-          </button>
-
-          {/* DELETE */}
-          <button
-            onClick={() => handleActionChange(index, 'Delete', faq.faq_id)}
-            style={{
-              background: '#fee2e2',
-              color: '#dc2626',
-              padding: '3px 6px',
-              borderRadius: '6px',
-              border: '1px solid #dc262654',
-              display: 'inline-flex'
-            }}
-          >
-            <DeleteIcon style={{ fontSize: '14px' }} />
-          </button>
-        </div>
-      )
-    }
-  ];
-
-  //   add modal faq languages
-
-  const languages = [
-    { id: 'en', name: 'English', default: true },
-    { id: 'fr', name: 'Français' },
-    { id: 'es', name: 'Español' },
-    { id: 'ar', name: 'العربية' },
-    { id: 'it', name: 'Italiano' },
-    { id: 'de', name: 'Deutsch' },
-    { id: 'pt', name: 'Português' }
-  ];
-
-  const [activeLang, setActiveLang] = useState('en');
-
-  const [faqDataqa, setFaqDataqa] = useState({
-    en: { question: '', answer: '' },
-    fr: { question: '', answer: '' },
-    es: { question: '', answer: '' },
-    ar: { question: '', answer: '' },
-    it: { question: '', answer: '' },
-    de: { question: '', answer: '' },
-    pt: { question: '', answer: '' }
-  });
-
-  //   const handleLangToggle = (langId) => {
-  //     if (langId === 'en') return; // English always enabled
-
-  //     setActiveLangs((prev) => (prev.includes(langId) ? prev.filter((l) => l !== langId) : [...prev, langId]));
-  //   };
-
-  const handleLangChange = (field, value) => {
-    setFaqDataqa((prev) => ({
-      ...prev,
-      [activeLang]: {
-        ...prev[activeLang],
-        [field]: value
-      }
-    }));
-  };
-
   return (
     <>
-      {/* <Typography style={{ marginTop: '15px', marginBottom: '30px' }} variant="h4" gutterBottom>
+      <Typography style={{ marginTop: '15px', marginBottom: '30px' }} variant="h4" gutterBottom>
         <span style={{ color: '#1ddec4' }}>Dashboard</span> / Manage FAQs
-      </Typography> */}
-      <div
-        style={{
-          background: '#fff',
-          borderRadius: 16,
-          padding: '16px 24px',
-          boxShadow: '0 4px 8px rgba(0,0,0,0.05)'
-        }}
-      >
-        <div className="d-flex justify-content-between align-items-center flex-wrap">
-          <Heading heading="Manage FAQs" />
-          <div className="d-flex gap-2 justify-content-between flex-wrap">
+      </Typography>
+      <Card>
+        <Card.Header className=" bg-white">
+          <div className="d-flex justify-content-between flex-wrap">
             <div>
+              <Button className="btn btn-primary mt-2 mb-2" onClick={handleShowAddModal}>
+                <AddIcon style={{ marginRight: '2px', fontWeight: '500' }} /> Add FAQ
+              </Button>
+            </div>
+
+            <div>
+              <label htmlFor="search-input" style={{ marginRight: '5px' }}>
+                Search
+              </label>
               <input
-                className="search-input custom-search form-control"
-                style={{ width: '250px', fontSize: '13px' }}
+                className="search-input"
                 type="text"
                 placeholder="Search..."
                 onChange={handleSearchChange}
+                style={{ marginTop: '8px', marginBottom: '5px', padding: '5px', width: '200px', border: '1px solid #f2f2f2' }}
               />
             </div>
-            <div>
-              <Button className="btn btn-primary" onClick={handleShowAddModal} style={{ fontSize: '12px', borderRadius: '10px' }}>
-                <AddIcon /> Add FAQ
-              </Button>
-            </div>
           </div>
-        </div>
-        <div
-          style={{
-            marginTop: '16px',
-            borderRadius: '12px',
-            overflow: 'hidden'
-          }}
-        >
-          <CustomTable
-            columns={columns}
-            data={filteredFaqs}
-            currentPage={currentPage}
-            sortConfig={sortConfig}
-            onSort={handleSort}
-            rowsPerPage={rowsPerPage}
-            onPageChange={(page) => setCurrentPage(page)}
-            onRowsPerPageChange={(size) => {
-              setRowsPerPage(size);
-              setCurrentPage(1);
-            }}
-          />
-        </div>
+        </Card.Header>
+        <Card.Body>
+          <div className="table-container">
+            <Table hover className="fixed-header-table">
+              <thead>
+                <tr>
+                  <th style={{ textAlign: 'center', fontWeight: '500' }}> S. No</th>
+                  <th style={{ textAlign: 'center', fontWeight: '500' }}>Action</th>
+                  <th style={{ textAlign: 'center', fontWeight: '500', width: '210px' }}> User Type</th>
+                  <th style={{ textAlign: 'center', fontWeight: '500', width: '210px' }}> Question</th>
+                  <th style={{ textAlign: 'center', fontWeight: '500', width: '210px' }}> Answer</th>
+                  <th style={{ textAlign: 'center', fontWeight: '500' }}>Create Date & Time</th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentFaqs.map((faq, index) => (
+                  <tr key={faq.id}>
+                    <th scope="row" style={{ textAlign: 'center' }}>
+                      {indexOfFirstUser + index + 1}
+                    </th>
+                    <td>
+                      <div className="dropdown text-center">
+                        <button
+                          className="btn btn-primary dropdown-toggle action-btn"
+                          type="button"
+                          id={`dropdownMenuButton${faq.id}`}
+                          data-bs-toggle="dropdown"
+                          aria-expanded="false"
+                        >
+                          Action
+                        </button>
+                        <ul className="dropdown-menu" aria-labelledby={`dropdownMenuButton${faq.id}`}>
+                          <li>
+                            <Link className="dropdown-item" onClick={() => handleActionChange(index, 'View', faq.faq_id, faq)}>
+                              <VisibilityIcon style={{ marginRight: '8px' }} /> View
+                            </Link>
+                          </li>
+                          <li>
+                            <Link className="dropdown-item" onClick={() => handleActionChange(index, 'Edit', faq.faq_id, faq)}>
+                              <EditIcon style={{ marginRight: '8px' }} /> Edit
+                            </Link>
+                          </li>
+                          <li>
+                            <button className="dropdown-item" onClick={() => handleActionChange(index, 'Delete', faq.faq_id)}>
+                              <DeleteIcon style={{ marginRight: '8px' }} /> Delete
+                            </button>
+                          </li>
+                        </ul>
+                      </div>
+                    </td>
+                    <td style={{ textAlign: 'center' }}>{faq.user_type_label}</td>
+                    <td style={{ textAlign: 'center' }}>{truncateText(faq.question, 35)}</td>
+                    <td style={{ textAlign: 'center' }}>{truncateText(faq.answer, 35)}</td>
+                    <td style={{ textAlign: 'center' }}>{faq.createtime}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </div>
+          <div className="d-flex justify-content-between">
+            <p style={{ fontWeight: '500' }} className="pagination">
+              Showing {indexOfFirstUser + 1} to {Math.min(indexOfLastUser, currentFaqs.length)} of {currentFaqs.length} entries
+            </p>
+            <Stack spacing={2} alignItems="right">
+              <Pagination count={totalPages} page={currentPage} onChange={handlePageChange} />
+            </Stack>
+          </div>
+        </Card.Body>
 
         {/* Add FAQ Modal */}
-        <Modal show={showAddModal} centered onHide={handleCloseAddModal} style={{ zIndex: '99999' }} dialogClassName="custom-modal-width">
-          <Modal.Header closeButton style={{borderBottom:0,paddingBottom:0}}>
+        <Modal show={showAddModal} onHide={handleCloseAddModal} style={{ zIndex: '99999' }}>
+          <Modal.Header closeButton>
             <Modal.Title style={{ fontSize: '17px' }}>Add FAQ</Modal.Title>
           </Modal.Header>
           <form onSubmit={addFaq}>
             <Modal.Body>
               <div className="mb-3">
-                <label htmlFor="userType" className="form-label" style={{ fontSize: '13px', fontWeight: 500 }}>
+                <label htmlFor="userType" className="form-label">
                   Select User Type
                 </label>
                 <Form.Select
@@ -504,8 +383,6 @@ function ManageFaq() {
                     setErrors((prev) => ({ ...prev, userType: '' }));
                   }}
                   isInvalid={errors.userType}
-                  className="custom-search form-control"
-                  style={{ fontSize: '13px' }}
                 >
                   <option value="">Select User Type </option>
                   <option value="1">User</option>
@@ -514,7 +391,7 @@ function ManageFaq() {
                 <Form.Control.Feedback type="invalid">{errors.userType}</Form.Control.Feedback>
               </div>
 
-              {/* <div className="mb-3">
+              <div className="mb-3">
                 <label htmlFor="question" className="form-label">
                   Question
                 </label>
@@ -547,82 +424,14 @@ function ManageFaq() {
                   isInvalid={errors.answer}
                 />
                 <Form.Control.Feedback type="invalid">{errors.answer}</Form.Control.Feedback>
-              </div> */}
+              </div>
               {errors.general && <span className="text-danger">{errors.general}</span>}
-
-              <div className="mb-3">
-                <label htmlFor="language" className="form-label" style={{ fontSize: '13px', fontWeight: 500 }}>
-                  Languages
-                </label>
-
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                  {languages.map((lang) => (
-                    <button
-                      type="button"
-                      key={lang.id}
-                      onClick={() => setActiveLang(lang.id)}
-                      style={{
-                        borderRadius: '999px',
-                        padding: '8px 12px',
-                        fontSize: '12px',
-                        border: activeLang === lang.id ? '1px solid #1ddec4' : '1px solid #e5e7eb',
-                        background: activeLang === lang.id ? '#1ddec4' : '#f8fafc',
-                        color: activeLang === lang.id ? '#fff' : '#64748b',
-                        transition: '0.2s'
-                      }}
-                    >
-                      {lang.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* LANGUAGE FIELDS */}
-              <div className="mb-3">
-                <label htmlFor="question" className="form-label" style={{ fontSize: '13px', fontWeight: 500 }}>
-                  Question ({languages.find((l) => l.id === activeLang)?.name})
-                </label>
-
-                <Form.Control
-                  as="textarea"
-                  rows={3}
-                  placeholder="Enter question"
-                  value={faqDataqa[activeLang].question}
-                  onChange={(e) => handleLangChange('question', e.target.value)}
-                  className="custom-search form-control"
-                  style={{ fontSize: '13px' }}
-                />
-              </div>
-
-              <div className="mb-3">
-                <label htmlFor="answer" className="form-label" style={{ fontSize: '13px', fontWeight: 500 }}>
-                  Answer ({languages.find((l) => l.id === activeLang)?.name})
-                </label>
-
-                <Form.Control
-                  as="textarea"
-                  rows={5}
-                  placeholder="Enter answer"
-                  value={faqDataqa[activeLang].answer}
-                  onChange={(e) => handleLangChange('answer', e.target.value)}
-                  // style={{
-                  //   borderRadius: '10px',
-                  //   fontSize: '13px',
-                  //   padding: '10px 12px',
-                  //   border: '1px solid #e5e7eb'
-                  // }}
-                  // onFocus={(e) => (e.target.style.border = '1px solid #1ddec4')}
-                  // onBlur={(e) => (e.target.style.border = '1px solid #e5e7eb')}
-                  className="custom-search form-control"
-                  style={{ fontSize: '13px' }}
-                />
-              </div>
             </Modal.Body>
-            <Modal.Footer style={{borderTop:0,paddingTop:0}}>
-              <Button variant="secondary" onClick={handleCloseAddModal}  style={{ fontSize: '12px' }}>
+            <Modal.Footer>
+              <Button variant="secondary" onClick={handleCloseAddModal}>
                 Close
               </Button>
-              <Button variant="primary" type="submit"  style={{ fontSize: '12px' }}>
+              <Button variant="primary" type="submit">
                 Add
               </Button>
             </Modal.Footer>
@@ -727,7 +536,7 @@ function ManageFaq() {
             </Button>
           </Modal.Footer>
         </Modal>
-      </div>
+      </Card>
     </>
   );
 }
