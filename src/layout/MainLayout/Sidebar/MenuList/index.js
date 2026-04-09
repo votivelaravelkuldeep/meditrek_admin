@@ -212,22 +212,22 @@ const menu = [
     ]
   },
 
-  {
-    title: "Analytical Report",
-    icon: <AutoGraphIcon />,
-    children: [
-      {
-        title: "User Analytics",
-        icon : <PersonAddAltIcon />,
-        url: APP_PREFIX_PATH + "/analytic-report/user-ana-report"
-      },
-      {
-        title: "Doctor Analytics",
-        icon : <MedicationIcon />,
-        url: APP_PREFIX_PATH + "/analytic-report/doctor-ana-report"
-      }
-    ]
-  },
+  // {
+  //   title: "Analytical Report",
+  //   icon: <AutoGraphIcon />,
+  //   children: [
+  //     {
+  //       title: "User Analytics",
+  //       icon : <PersonAddAltIcon />,
+  //       url: APP_PREFIX_PATH + "/analytic-report/user-ana-report"
+  //     },
+  //     {
+  //       title: "Doctor Analytics",
+  //       icon : <MedicationIcon />,
+  //       url: APP_PREFIX_PATH + "/analytic-report/doctor-ana-report"
+  //     }
+  //   ]
+  // },
 
 //   {
 //     title: "New Insights",

@@ -1,188 +1,6 @@
-// import React, { useState } from 'react';
-// import { Row, Col, Card, Form, Button, Modal } from 'react-bootstrap';
-// import Typography from '@mui/material/Typography';
-// import './managecontent.css';
-
-// function Managebroadcast() {
-//   const [content, setContent] = useState(0);
-//   const [activeButton, setActiveButton] = useState('all');
-//   const [title, setTitle] = useState('');
-//   const [message, setMessage] = useState('');
-//   const [selectedCustomer, setSelectedCustomer] = useState('');
-//   const [showPopup, setShowPopup] = useState(false);
-//   const [errors, setErrors] = useState({});
-
-//   const contentTypes = {
-//     all: 0,
-//     specific: 1
-//   };
-
-//   const handleButtonClick = (contentType) => {
-//     setContent(contentTypes[contentType]);
-//     setActiveButton(contentType);
-//   };
-
-//   const handleSubmit = (e) => {
-//     e.preventDefault();
-//     let errors = {};
-//     if (!title) errors.title = 'Title is required';
-//     if (!message) errors.message = 'Message is required';
-//     if (content === 1 && !selectedCustomer) errors.selectedCustomer = 'Please select a customer';
-
-//     setErrors(errors);
-
-//     if (Object.keys(errors).length === 0) {
-//       setShowPopup(true);
-//     }
-//   };
-
-//   return (
-//     <>
-//       <Typography style={{ marginTop: '15px', marginBottom: '30px' }} variant="h4" gutterBottom>
-//         <span style={{ color: '#1ddec4' }}>Dashboard</span> / Manage Broadcast
-//       </Typography>
-//       <Card>
-//         <Card.Body>
-//           <Form onSubmit={handleSubmit}>
-//             <nav className="">
-//               <div className="container" id="container-div">
-//                 <button
-//                   className={`btn me-2 mb-2 btn-content ${activeButton === 'all' ? 'active' : ''}`}
-//                   style={{ width: '11rem', fontSize: '16px' }}
-//                   type="button"
-//                   onClick={() => handleButtonClick('all')}
-//                 >
-//                   All Customer
-//                 </button>
-//                 <button
-//                   className={`btn me-2 mb-2 btn-content ${activeButton === 'specific' ? 'active' : ''}`}
-//                   style={{ width: '13rem', fontSize: '16px' }}
-//                   type="button"
-//                   onClick={() => handleButtonClick('specific')}
-//                 >
-//                   Select Customer
-//                 </button>
-//               </div>
-//             </nav>
-
-//             {content === 0 && (
-//               <div className="container">
-//                 <div className="mt-3">
-//                   <Form.Group className="mb-3" as={Row}>
-//                     <div>Title</div>
-//                     <Col sm={12}>
-//                       <Form.Control
-//                         type="text"
-//                         placeholder="Title"
-//                         value={title}
-//                         onChange={(e) => setTitle(e.target.value)}
-//                       />
-//                       {errors.title && <span className="error-text">{errors.title}</span>}
-//                     </Col>
-//                   </Form.Group>
-
-//                   <Form.Group className="mb-3" as={Row}>
-//                     <div>Message</div>
-//                     <Col sm={12}>
-//                       <Form.Control
-//                         as="textarea"
-//                         placeholder="Enter your message"
-//                         rows={3}
-//                         value={message}
-//                         onChange={(e) => setMessage(e.target.value)}
-//                       />
-//                       {errors.message && <span className="error-text">{errors.message}</span>}
-//                     </Col>
-//                   </Form.Group>
-
-//                   <Form.Group className="mb-3" as={Row}>
-//                     <Col sm={{ span: 10 }}>
-//                       <Button type="submit" className="mt-2 submit-btn">
-//                         Submit
-//                       </Button>
-//                     </Col>
-//                   </Form.Group>
-//                 </div>
-//               </div>
-//             )}
-
-//             {content === 1 && (
-//               <div className="container">
-//                 <div className="mt-3">
-//                   <Form.Group className="mb-3" as={Row}>
-//                     <Col sm={6}>
-//                       <div>Select Customers</div>
-//                       <Form.Control as="select" value={selectedCustomer} onChange={(e) => setSelectedCustomer(e.target.value)}>
-//                         <option value="">Select</option>
-//                         <option>Lisa</option>
-//                         <option>John</option>
-//                         <option>Mark</option>
-//                         <option>Arika</option>
-//                         <option>Andrew</option>
-//                       </Form.Control>
-//                       {errors.selectedCustomer && <span className="error-text">{errors.selectedCustomer}</span>}
-//                     </Col>
-
-//                     <Col sm={6}>
-//                       <div>Title</div>
-//                       <Form.Control
-//                         type="text"
-//                         placeholder="Title"
-//                         value={title}
-//                         onChange={(e) => setTitle(e.target.value)}
-//                       />
-//                       {errors.title && <span className="error-text">{errors.title}</span>}
-//                     </Col>
-//                   </Form.Group>
-
-//                   <Form.Group className="mb-3" as={Row}>
-//                     <div>Message</div>
-//                     <Col sm={12}>
-//                       <Form.Control
-//                         as="textarea"
-//                         placeholder="Enter your message"
-//                         rows={3}
-//                         value={message}
-//                         onChange={(e) => setMessage(e.target.value)}
-//                       />
-//                       {errors.message && <span className="error-text">{errors.message}</span>}
-//                     </Col>
-//                   </Form.Group>
-
-//                   <Form.Group className="mb-3" as={Row}>
-//                     <Col sm={{ span: 10 }}>
-//                       <Button type="submit" className="mt-2 submit-btn">
-//                         Submit
-//                       </Button>
-//                     </Col>
-//                   </Form.Group>
-//                 </div>
-//               </div>
-//             )}
-//           </Form>
-//         </Card.Body>
-//       </Card>
-
-//       <Modal show={showPopup} className='mt-5' onHide={() => setShowPopup(false)}>
-//         <Modal.Header closeButton>
-//           <Modal.Title>Broadcast Sent</Modal.Title>
-//         </Modal.Header>
-//         <Modal.Body>Broadcast sent successfully!</Modal.Body>
-//         <Modal.Footer>
-//           <Button variant="secondary" onClick={() => setShowPopup(false)}>
-//             Close
-//           </Button>
-//         </Modal.Footer>
-//       </Modal>
-//     </>
-//   );
-// }
-
-// export default Managebroadcast;
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from 'react';
-import { Row, Col, Card, Form, Button, Modal } from 'react-bootstrap';
-import Typography from '@mui/material/Typography';
+import { Row, Col, Form, Button, Modal } from 'react-bootstrap';
+// import Typography from '@mui/material/Typography';
 import './managecontent.css';
 import axios from 'axios';
 import { API_URL, APP_PREFIX_PATH } from 'config/constant';
@@ -190,6 +8,7 @@ import Select from 'react-select';
 import { useNavigate } from 'react-router';
 // import Loader from 'views/AllPage/loaderComponent';
 import { FadeLoader } from 'react-spinners';
+import './managecontent.css';
 
 function Managebroadcast() {
   const [content, setContent] = useState(0);
@@ -320,16 +139,25 @@ function Managebroadcast() {
         </div>
       ) : (
         <>
-          <Typography style={{ marginTop: '15px', marginBottom: '30px' }} variant="h4" gutterBottom>
+          {/* <Typography style={{ marginTop: '15px', marginBottom: '30px' }} variant="h4" gutterBottom>
             <span style={{ color: '#1ddec4' }}>Dashboard</span> / Manage Broadcast
-          </Typography>
-          <Card>
-            <Card.Body>
+          </Typography> */}
+          <div>
+            <div>
               <Form>
-                <nav className="container">
+                <div className="d-flex gap-2 mb-4 flex-wrap">
                   <button
-                    className={`btn me-2 mb-2 btn-content ${activeButton === 'all' ? 'active' : ''}`}
-                    style={{ width: '11rem', fontSize: '16px' }}
+                    className={`btn ${activeButton === 'all' ? 'btn-content-active' : ''}`}
+                    style={{
+                      borderRadius: '999px',
+                      padding: '8px 24px',
+                      fontSize: '13px',
+                      background: activeButton === 'all' ? '#1ddec4' : '#eef2f7',
+                      color: activeButton === 'all' ? '#fff' : '#64748b',
+                      cursor: 'pointer',
+                      border: 0,
+                      fontWeight: 500
+                    }}
                     type="button"
                     onClick={() => {
                       handleButtonClick('all');
@@ -343,8 +171,17 @@ function Managebroadcast() {
                     All User
                   </button>
                   <button
-                    className={`btn me-2 mb-2 btn-content ${activeButton === 'specific' ? 'active' : ''}`}
-                    style={{ width: '13rem', fontSize: '16px' }}
+                    className={`btn ${activeButton === 'specific' ? 'btn-content-active' : ''}`}
+                    style={{
+                      borderRadius: '999px',
+                      padding: '8px 24px',
+                      fontSize: '13px',
+                      background: activeButton === 'specific' ? '#1ddec4' : '#eef2f7',
+                      color: activeButton === 'specific' ? '#fff' : '#64748b',
+                      cursor: 'pointer',
+                      border: 0,
+                      fontWeight: 500
+                    }}
                     type="button"
                     onClick={() => {
                       handleButtonClick('specific');
@@ -357,133 +194,198 @@ function Managebroadcast() {
                   >
                     Select User
                   </button>
-                </nav>
+                </div>
 
                 {content === 0 && (
-                  <div className="container">
-                    <div className="mt-3">
-                      <Form.Group className="mb-3" as={Row} controlId="formHorizontalEmail">
-                        <div>Title</div>
-                        <Col sm={12}>
-                          <Form.Control
-                            type="text"
-                            placeholder="Title"
-                            value={title}
-                            onChange={(e) => {
-                              setTitle(e.target.value);
-                              setErrors((prevErrors) => ({ ...prevErrors, title: '' }));
-                            }}
-                            isInvalid={!!errors.title}
-                          />
-                          {errors.title && <div style={{ color: 'red', marginTop: '0.25rem' }}>{errors.title}</div>}
-                        </Col>
-                        {/* {errors.title && <Form.Control.Feedback type="invalid">{errors.title}</Form.Control.Feedback>} */}
-                      </Form.Group>
+                  <div
+                    className="mt-3"
+                    style={{
+                      background: '#fff',
+                      borderRadius: 16,
+                      boxShadow: '0 4px 8px rgba(0,0,0,0.05)',
+                      padding: '24px'
+                    }}
+                  >
+                    <Form.Group className="mb-3" as={Row} controlId="formHorizontalEmail">
+                      {/* <div>Title</div> */}
+                      <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>Title</Form.Label>
+                      <Col sm={12}>
+                        <Form.Control
+                          type="text"
+                          placeholder="Title"
+                          value={title}
+                          onChange={(e) => {
+                            setTitle(e.target.value);
+                            setErrors((prevErrors) => ({ ...prevErrors, title: '' }));
+                          }}
+                          isInvalid={!!errors.title}
+                          className="custom-input custom-search"
+                          style={{ fontSize: '13px' }}
+                        />
+                        {errors.title && <div style={{ color: 'red', marginTop: '0.25rem' }}>{errors.title}</div>}
+                      </Col>
+                      {/* {errors.title && <Form.Control.Feedback type="invalid">{errors.title}</Form.Control.Feedback>} */}
+                    </Form.Group>
 
-                      <Form.Group className="mb-3" as={Row} controlId="formHorizontalMessage">
-                        <div>Message</div>
-                        <Col sm={12}>
-                          <Form.Control
-                            as="textarea"
-                            placeholder="Enter your message"
-                            rows={3}
-                            value={message}
-                            onChange={(e) => {
-                              setMessage(e.target.value);
-                              setErrors((prevErrors) => ({ ...prevErrors, message: '' }));
-                            }}
-                            isInvalid={!!errors.message}
-                          />
-                          {errors.message && <div style={{ color: 'red', marginTop: '0.25rem' }}>{errors.message}</div>}
-                        </Col>
-                      </Form.Group>
+                    <Form.Group className="mb-3" as={Row} controlId="formHorizontalMessage">
+                      <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>Message</Form.Label>
+                      <Col sm={12}>
+                        <Form.Control
+                          as="textarea"
+                          placeholder="Enter your message"
+                          rows={3}
+                          value={message}
+                          onChange={(e) => {
+                            setMessage(e.target.value);
+                            setErrors((prevErrors) => ({ ...prevErrors, message: '' }));
+                          }}
+                          isInvalid={!!errors.message}
+                          className="custom-input custom-search"
+                          style={{ fontSize: '13px' }}
+                        />
+                        {errors.message && <div style={{ color: 'red', marginTop: '0.25rem' }}>{errors.message}</div>}
+                      </Col>
+                    </Form.Group>
 
-                      <Form.Group className="mb-3" as={Row}>
-                        <Col sm={{ span: 10 }}>
-                          <Button type="submit" onClick={SendBroadcastAllUser} className="mt-2 submit-btn">
-                            Submit
-                          </Button>
-                        </Col>
-                      </Form.Group>
-                    </div>
+                    <Form.Group className="mb-3" as={Row}>
+                      <Col sm={{ span: 10 }}>
+                        <Button
+                          variant="primary"
+                          type="submit"
+                          onClick={SendBroadcastAllUser}
+                          className="mt-1"
+                          style={{ fontSize: '12px' }}
+                        >
+                          Submit
+                        </Button>
+                      </Col>
+                    </Form.Group>
                   </div>
                 )}
 
                 {content === 1 && (
-                  <div className="container">
-                    <div className="mt-3">
-                      <Form.Group className="mb-3" as={Row} controlId="formHorizontalEmail">
-                        <Col sm={6}>
-                          <div>Select User</div>
-                          <Select
-                            isMulti
-                            options={users}
-                            value={selectedUsers}
-                            onChange={(selectedOptions) => {
-                              setSelectedUsers(selectedOptions || []);
-                              setErrors({ ...errors, selectedUsers: '' });
-                            }}
-                            placeholder="Select users"
-                            isInvalid={!!errors.selectedUsers}
-                          />
-                          {errors.selectedUsers && <div style={{ color: 'red', marginTop: '0.25rem' }}>{errors.selectedUsers}</div>}
-                        </Col>
+                  <div
+                    className="mt-3"
+                    style={{
+                      background: '#fff',
+                      borderRadius: 16,
+                      boxShadow: '0 4px 8px rgba(0,0,0,0.05)',
+                      padding: '24px'
+                    }}
+                  >
+                    <Form.Group className="mb-3" as={Row} controlId="formHorizontalEmail">
+                      <Col sm={6}>
+                        <Form.Label style={{ fontSize: '13px', fontWeight: 500,marginBottom:'4px' }}>
+                          Select User
+                        </Form.Label>
+                        <Select
+                          isMulti
+                          options={users}
+                          value={selectedUsers}
+                          onChange={(selectedOptions) => {
+                            setSelectedUsers(selectedOptions || []);
+                            setErrors({ ...errors, selectedUsers: '' });
+                          }}
+                          placeholder="Select users"
+                          isInvalid={!!errors.selectedUsers}
+                          styles={{
+                            control: (base, state) => ({
+                              ...base,
+                              borderRadius: '10px',
+                              border: state.isFocused ? '1.5px solid #1ddec4' : '1px solid #e5e7eb',
+                              boxShadow: 'none',
+                            //   minHeight: '40px',
+                              fontSize: '13px'
+                            }),
+                            multiValue: (base) => ({
+                              ...base,
+                              backgroundColor: '#e6f9f6',
+                              borderRadius: '6px'
+                            }),
+                            multiValueLabel: (base) => ({
+                              ...base,
+                              color: '#1ddec4',
+                              fontSize: '12px'
+                            }),
+                            multiValueRemove: (base) => ({
+                              ...base,
+                              color: '#1ddec4',
+                              ':hover': {
+                                backgroundColor: '#1ddec4',
+                                color: '#fff'
+                              }
+                            })
+                          }}
+                        />
+                        {errors.selectedUsers && <div style={{ color: 'red', marginTop: '0.25rem', fontSize: '12px', }}>{errors.selectedUsers}</div>}
+                      </Col>
 
-                        <Col sm={6}>
-                          <div>Title</div>
-                          <Form.Control
-                            type="text"
-                            placeholder="Title"
-                            value={title}
-                            onChange={(e) => {
-                              setTitle(e.target.value);
-                              setErrors({ ...errors, title: '' });
-                            }}
-                            isInvalid={!!errors.title}
-                          />
-                          {errors.title && <div style={{ color: 'red', marginTop: '0.25rem' }}>{errors.title}</div>}
-                        </Col>
-                      </Form.Group>
+                      <Col sm={6}>
+                        {/* <div>Title</div> */}
+                        <Form.Label style={{ fontSize: '13px', fontWeight: 500,marginBottom:'4px' }}>
+                         Title
+                        </Form.Label>
+                        <Form.Control
+                          type="text"
+                          placeholder="Title"
+                          value={title}
+                          onChange={(e) => {
+                            setTitle(e.target.value);
+                            setErrors({ ...errors, title: '' });
+                          }}
+                          isInvalid={!!errors.title}
+                          className="custom-input custom-search"
+                          style={{ fontSize: '13px',padding:'8px 10px' }}
+                        />
+                        {errors.title && <div style={{ color: 'red', marginTop: '0.25rem', fontSize: '12px', }}>{errors.title}</div>}
+                      </Col>
+                    </Form.Group>
 
-                      <Form.Group className="mb-3" as={Row} controlId="formHorizontalMessage">
-                        <div>Message</div>
-                        <Col sm={12}>
-                          <Form.Control
-                            as="textarea"
-                            placeholder="Enter your message"
-                            rows={3}
-                            value={message}
-                            onChange={(e) => {
-                              setMessage(e.target.value);
-                              setErrors({ ...errors, message: '' });
-                            }}
-                            isInvalid={!!errors.message}
-                          />
-                          {errors.message && <div style={{ color: 'red', marginTop: '0.25rem' }}>{errors.message}</div>}
-                        </Col>
-                      </Form.Group>
+                    <Form.Group className="mb-3" as={Row} controlId="formHorizontalMessage">
+                      {/* <div>Message</div> */}
+                      <Form.Label style={{ fontSize: '13px', fontWeight: 500,marginBottom:'4px' }}>
+                         Message
+                        </Form.Label>
+                      <Col sm={12}>
+                        <Form.Control
+                          as="textarea"
+                          placeholder="Enter your message"
+                          rows={3}
+                          value={message}
+                          onChange={(e) => {
+                            setMessage(e.target.value);
+                            setErrors({ ...errors, message: '' });
+                          }}
+                          isInvalid={!!errors.message}
+                          className="custom-input custom-search"
+                          style={{ fontSize: '13px' }}
+                        />
+                        {errors.message && <div style={{ color: 'red', marginTop: '0.25rem', fontSize: '12px', }}>{errors.message}</div>}
+                      </Col>
+                    </Form.Group>
 
-                      <Form.Group className="mb-3" as={Row}>
-                        <Col sm={{ span: 10 }}>
-                          <Button type="submit" onClick={SendBroadcastAllUser} className="mt-2 submit-btn">
-                            Submit
-                          </Button>
-                        </Col>
-                      </Form.Group>
-                    </div>
+                    <Form.Group className="mb-3" as={Row}>
+                      <Col sm={{ span: 10 }}>
+                        <Button variant='primary' type="submit" onClick={SendBroadcastAllUser} className="mt-2" style={{ fontSize: '12px' }}>
+                          Submit
+                        </Button>
+                      </Col>
+                    </Form.Group>
                   </div>
                 )}
               </Form>
-            </Card.Body>
+            </div>
 
-            <Modal show={modalShow} onHide={() => setModalShow(false)} style={{ marginTop: '108px' }}>
-              <Modal.Header>
-                <Modal.Title>{modalTitle}</Modal.Title>
+            <Modal show={modalShow} centered onHide={() => setModalShow(false)}>
+              <Modal.Header style={{borderBottom:'0',margin:0,padding:'12px 15px 0'}}>
+                <Modal.Title style={{ fontSize: '17px' }}>{modalTitle}</Modal.Title>
               </Modal.Header>
-              <Modal.Body>{modalMessage}</Modal.Body>
-              <Modal.Footer>{/* <Button onClick={() => setModalShow(false)}>Close</Button> */}</Modal.Footer>
+              <Modal.Body style={{fontSize:'13px',borderTop:'0'}}>{modalMessage}</Modal.Body>
+              {/* <Modal.Footer style={{borderTop:'0'}}> */}
+                {/* <Button onClick={() => setModalShow(false)}>Close</Button> */}
+                {/* </Modal.Footer> */}
             </Modal>
-          </Card>
+          </div>
         </>
       )}
     </>
