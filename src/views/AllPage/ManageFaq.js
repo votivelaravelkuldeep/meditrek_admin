@@ -763,7 +763,7 @@ function ManageFaq() {
               {errors.general && <span className="text-danger">{errors.general}</span>}
 
               <div className="mb-1">
-                <label htmlFor="language" className="form-label" style={{ fontSize: '13px', fontWeight: 500 }}>
+                <label htmlFor="language" className="form-label" style={{ fontSize: '13px', fontWeight: 500,marginBottom:'4px' }}>
                   Languages
                 </label>
 
@@ -775,11 +775,12 @@ function ManageFaq() {
                       onClick={() => setActiveLang(lang.id)}
                       style={{
                         borderRadius: '999px',
-                        padding: '8px 12px',
+                        padding: '2px 12px',
                         fontSize: '12px',
                         border: activeLang === lang.id ? '1px solid #1ddec4' : '1px solid #e5e7eb',
                         background: activeLang === lang.id ? '#1ddec4' : '#f8fafc',
                         color: activeLang === lang.id ? '#fff' : '#64748b',
+                        fontWeight:activeLang === lang.id ? '500' : '400',
                         transition: '0.2s'
                       }}
                     >
@@ -790,8 +791,8 @@ function ManageFaq() {
               </div>
 
               {/* LANGUAGE FIELDS */}
-              <div className="mb-1">
-                <label htmlFor="question" className="form-label" style={{ fontSize: '13px', fontWeight: 500 }}>
+              <div className="mb-1 mt-2">
+                <label htmlFor="question" className="form-label" style={{ fontSize: '13px', fontWeight: 500,marginBottom:'4px' }}>
                   Question ({languages.find((l) => l.id === activeLang)?.name})
                 </label>
 
@@ -806,8 +807,8 @@ function ManageFaq() {
                 />
               </div>
 
-              <div>
-                <label htmlFor="answer" className="form-label" style={{ fontSize: '13px', fontWeight: 500 }}>
+              <div className='mt-2'>
+                <label htmlFor="answer" className="form-label" style={{ fontSize: '13px', fontWeight: 500,marginBottom:'4px' }}>
                   Answer ({languages.find((l) => l.id === activeLang)?.name})
                 </label>
 
@@ -848,8 +849,8 @@ function ManageFaq() {
           </Modal.Header>
           <form onSubmit={editFaq}>
             <Modal.Body>
-              <div className="mb-1">
-                <label htmlFor="userType" className="form-label" style={{ fontSize: '13px', fontWeight: 500 }}>
+              <div className="mb-2">
+                <label htmlFor="userType" className="form-label" style={{ fontSize: '13px', fontWeight: 500,marginBottom:'4px' }}>
                   Select User Type
                 </label>
                 <Form.Select
@@ -909,8 +910,8 @@ function ManageFaq() {
               </div> */}
               {/* {errors.general && <span className="text-danger">{errors.general}</span>} */}
 
-              <div className="mb-1">
-                <label htmlFor="language" className="form-label" style={{ fontSize: '13px', fontWeight: 500 }}>
+              <div className="mb-2">
+                <label htmlFor="language" className="form-label" style={{ fontSize: '13px', fontWeight: 500,marginBottom:'4px' }}>
                   Languages
                 </label>
 
@@ -922,11 +923,12 @@ function ManageFaq() {
                       onClick={() => setActiveLang(lang.id)}
                       style={{
                         borderRadius: '999px',
-                        padding: '8px 12px',
+                        padding: '2px 12px',
                         fontSize: '12px',
                         border: activeLang === lang.id ? '1px solid #1ddec4' : '1px solid #e5e7eb',
                         background: activeLang === lang.id ? '#1ddec4' : '#f8fafc',
                         color: activeLang === lang.id ? '#fff' : '#64748b',
+                        fontWeight:activeLang === lang.id ? '500' : '400',
                         transition: '0.2s'
                       }}
                     >
@@ -937,8 +939,8 @@ function ManageFaq() {
               </div>
 
               {/* LANGUAGE FIELDS */}
-              <div className="mb-1">
-                <label htmlFor="question" className="form-label" style={{ fontSize: '13px', fontWeight: 500 }}>
+              <div className="mb-2">
+                <label htmlFor="question" className="form-label" style={{ fontSize: '13px', fontWeight: 500,marginBottom:'4px' }}>
                   Question ({languages.find((l) => l.id === activeLang)?.name})
                 </label>
 
@@ -960,7 +962,7 @@ function ManageFaq() {
               </div>
 
               <div>
-                <label htmlFor="answer" className="form-label" style={{ fontSize: '13px', fontWeight: 500 }}>
+                <label htmlFor="answer" className="form-label" style={{ fontSize: '13px', fontWeight: 500,marginBottom:'4px' }}>
                   Answer ({languages.find((l) => l.id === activeLang)?.name})
                 </label>
 
