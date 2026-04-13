@@ -34,6 +34,7 @@ function ManageDisease() {
 
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [sortConfig, setSortConfig] = useState(null);
+  const [activeLang, setActiveLang] = useState('en');
 
   const handleSort = (key) => {
     setSortConfig((prev) => {
@@ -262,7 +263,7 @@ function ManageDisease() {
             background: 'none',
             border: 'none',
             // color: '#2563eb',
-            color:'#1DDEC4',
+            color: '#1DDEC4',
             cursor: 'pointer'
           }}
         >
@@ -315,6 +316,16 @@ function ManageDisease() {
     }
   ];
 
+  const languages = [
+    { id: 'en', name: 'English', default: true },
+    { id: 'fr', name: 'Français' },
+    { id: 'es', name: 'Español' },
+    { id: 'ar', name: 'العربية' },
+    { id: 'it', name: 'Italiano' },
+    { id: 'de', name: 'Deutsch' },
+    { id: 'pt', name: 'Português' }
+  ];
+
   return (
     <>
       {/* <Typography style={{ marginTop: '15px', marginBottom: '30px' }} variant="h4" gutterBottom>
@@ -331,24 +342,22 @@ function ManageDisease() {
       >
         {/* HEADER */}
         <div className="d-flex justify-content-between align-items-center flex-wrap">
-          <Heading heading='Manage Disease' />
+          <Heading heading="Manage Disease" />
           <div className="d-flex gap-2 flex-wrap">
             <input
-            className="custom-search form-control"
-            style={{ width: '250px', fontSize: '13px' }}
-            placeholder="Search..."
-            onChange={handleSearchChange}
-          />
+              className="custom-search form-control"
+              style={{ width: '250px', fontSize: '13px' }}
+              placeholder="Search..."
+              onChange={handleSearchChange}
+            />
             <Button className="btn btn-primary" style={{ fontSize: '12px', borderRadius: '10px' }} onClick={handleShowModal2}>
-              <AddIcon style={{fontSize:'16px'}} /> Add Disease
+              <AddIcon style={{ fontSize: '16px' }} /> Add Disease
             </Button>
 
             <Button className="btn btn-primary" style={{ fontSize: '12px', borderRadius: '10px' }} onClick={handleBulkUpload}>
-              <CloudUploadIcon style={{fontSize:'16px'}} /> Bulk Upload
+              <CloudUploadIcon style={{ fontSize: '16px' }} /> Bulk Upload
             </Button>
           </div>
-
-          
         </div>
 
         {/* TABLE */}
@@ -411,18 +420,41 @@ function ManageDisease() {
             </Formik>
           </Modal.Body>
         </Modal> */}
-        <Modal show={showModal2} centered onHide={handleCloseModal2} className="custom-modal">
+        <Modal show={showModal2} centered onHide={handleCloseModal2} className="custom-modal" dialogClassName="custom-modal-width">
           <Modal.Header closeButton>
             <Modal.Title>Add Disease</Modal.Title>
           </Modal.Header>
 
-          <Modal.Body style={{ paddingTop: 0 }}>
+          <Modal.Body style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: 0, paddingBottom: 0 }}>
             <Formik initialValues={{ name: '', description: '' }} validationSchema={validationSchema} onSubmit={handleSubmitAddDisease}>
               {({ handleSubmit, errors, touched }) => (
                 <FormikForm onSubmit={handleSubmit}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '16px' }}>
+                    {languages.map((lang) => (
+                      <button
+                        type="button"
+                        key={lang.id}
+                        onClick={() => setActiveLang(lang.id)}
+                        style={{
+                          borderRadius: '999px',
+                          padding: '2px 12px',
+                          fontSize: '12px',
+                          border: activeLang === lang.id ? '1px solid #1ddec4' : '1px solid #e5e7eb',
+                          background: activeLang === lang.id ? '#1ddec4' : '#f8fafc',
+                          color: activeLang === lang.id ? '#fff' : '#64748b',
+                          fontWeight: activeLang === lang.id ? '500' : '400',
+                          transition: '0.2s'
+                        }}
+                      >
+                        {lang.name}
+                      </button>
+                    ))}
+                  </div>
                   {/* Disease Name */}
                   <Form.Group style={{ display: 'flex', flexDirection: 'column' }}>
-                    <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>Disease Name</Form.Label>
+                    <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>
+                      Disease Name ({languages.find((l) => l.id === activeLang)?.name})
+                    </Form.Label>
 
                     <Field
                       name="name"
@@ -437,7 +469,9 @@ function ManageDisease() {
 
                   {/* Description */}
                   <div className="mb-3 mt-2">
-                    <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>Description</Form.Label>
+                    <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>
+                      Description ({languages.find((l) => l.id === activeLang)?.name})
+                    </Form.Label>
 
                     <Field
                       name="description"
@@ -452,7 +486,7 @@ function ManageDisease() {
 
                   <Modal.Footer style={{ borderTop: 'none', paddingTop: 0, paddingRight: 0 }}>
                     <Button variant="primary" type="submit" style={{ fontSize: '12px' }}>
-                      Add Disease 
+                      Add Disease
                     </Button>
                   </Modal.Footer>
                 </FormikForm>
@@ -501,12 +535,12 @@ function ManageDisease() {
             </Formik>
           </Modal.Body>
         </Modal> */}
-        <Modal show={showModal} centered onHide={handleCloseModal} className="custom-modal">
+        <Modal show={showModal} centered onHide={handleCloseModal} className="custom-modal" dialogClassName="custom-modal-width">
           <Modal.Header closeButton>
             <Modal.Title>Edit Disease</Modal.Title>
           </Modal.Header>
 
-          <Modal.Body style={{ paddingTop: 0 }}>
+          <Modal.Body style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: 0, paddingBottom: 0 }}>
             <Formik
               initialValues={{
                 name: editingFaq?.disease_name,
@@ -518,9 +552,33 @@ function ManageDisease() {
             >
               {({ handleSubmit, errors, touched }) => (
                 <FormikForm onSubmit={handleSubmit}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '16px' }}>
+                    {languages.map((lang) => (
+                      <button
+                        type="button"
+                        key={lang.id}
+                        onClick={() => setActiveLang(lang.id)}
+                        style={{
+                          borderRadius: '999px',
+                          padding: '2px 12px',
+                          fontSize: '12px',
+                          border: activeLang === lang.id ? '1px solid #1ddec4' : '1px solid #e5e7eb',
+                          background: activeLang === lang.id ? '#1ddec4' : '#f8fafc',
+                          color: activeLang === lang.id ? '#fff' : '#64748b',
+                          fontWeight: activeLang === lang.id ? '500' : '400',
+                          transition: '0.2s'
+                        }}
+                      >
+                        {lang.name}
+                      </button>
+                    ))}
+                  </div>
+
                   {/* Disease Name */}
                   <Form.Group style={{ display: 'flex', flexDirection: 'column' }}>
-                    <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>Disease Name</Form.Label>
+                    <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>
+                      Disease Name ({languages.find((l) => l.id === activeLang)?.name})
+                    </Form.Label>
 
                     <Field
                       name="name"
@@ -535,7 +593,9 @@ function ManageDisease() {
 
                   {/* Description */}
                   <div className="mb-3 mt-2">
-                    <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>Description</Form.Label>
+                    <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>
+                      Description ({languages.find((l) => l.id === activeLang)?.name})
+                    </Form.Label>
 
                     <Field
                       name="description"

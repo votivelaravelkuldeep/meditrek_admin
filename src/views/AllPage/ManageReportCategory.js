@@ -24,14 +24,14 @@ function ManageReportCategory() {
   const [showModal, setShowModal] = useState(false);
   const [showModal2, setShowModal2] = useState(false);
   const [categoryData, setCategoryData] = useState({
-  en: '',
-  fr: '',
-  es: '',
-  ar: '',
-  it: '',
-  de: '',
-  pt: ''
-});
+    en: '',
+    fr: '',
+    es: '',
+    ar: '',
+    it: '',
+    de: '',
+    pt: ''
+  });
   const [nameError, setNameError] = useState('');
   const [reportId, setReportId] = useState('');
   const [image, setImage] = useState(null);
@@ -43,22 +43,22 @@ function ManageReportCategory() {
   const [activeLang, setActiveLang] = useState('en');
 
   const resetForm = () => {
-  setCategoryData({
-    en: '',
-    fr: '',
-    es: '',
-    ar: '',
-    it: '',
-    de: '',
-    pt: ''
-  });
+    setCategoryData({
+      en: '',
+      fr: '',
+      es: '',
+      ar: '',
+      it: '',
+      de: '',
+      pt: ''
+    });
 
-  setImage(null);
-  setImagePreview(null);
-  setEditImagePreview(null);
-  setActiveLang('en');
-  setNameError({});
-};
+    setImage(null);
+    setImagePreview(null);
+    setEditImagePreview(null);
+    setActiveLang('en');
+    setNameError({});
+  };
 
   const handleSort = (key) => {
     setSortConfig((prev) => {
@@ -104,41 +104,38 @@ function ManageReportCategory() {
     console.log(`Delete user with ID: ${report_category_id}`);
   };
 
- const handleActionChange = (index, action, report_category_id, name, image) => {
-  setSelectedActions({ ...selectedActions, [index]: action });
+  const handleActionChange = (index, action, report_category_id, name, image) => {
+    setSelectedActions({ ...selectedActions, [index]: action });
 
-  if (action === 'Delete') {
-    deleteReportCategory(report_category_id);
-    setSelectedActions({ ...selectedActions, [index]: null });
-  } else if (action === 'Edit') {
+    if (action === 'Delete') {
+      deleteReportCategory(report_category_id);
+      setSelectedActions({ ...selectedActions, [index]: null });
+    } else if (action === 'Edit') {
+      const selectedItem = reportData.find((r) => r.report_category_id === report_category_id);
 
-    const selectedItem = reportData.find(
-      (r) => r.report_category_id === report_category_id
-    );
+      const translationsMap = {};
 
-    const translationsMap = {};
+      selectedItem?.translations?.forEach((t) => {
+        translationsMap[t.language_code] = t.category_name;
+      });
 
-    selectedItem?.translations?.forEach((t) => {
-      translationsMap[t.language_code] = t.category_name;
-    });
+      setCategoryData({
+        en: translationsMap.en || '',
+        fr: translationsMap.fr || '',
+        es: translationsMap.es || '',
+        ar: translationsMap.ar || '',
+        it: translationsMap.it || '',
+        de: translationsMap.de || '',
+        pt: translationsMap.pt || ''
+      });
 
-    setCategoryData({
-      en: translationsMap.en || '',
-      fr: translationsMap.fr || '',
-      es: translationsMap.es || '',
-      ar: translationsMap.ar || '',
-      it: translationsMap.it || '',
-      de: translationsMap.de || '',
-      pt: translationsMap.pt || ''
-    });
+      setReportId(report_category_id);
+      setEditImagePreview(image ? `${IMAGE_PATH}${image}` : null);
 
-    setReportId(report_category_id);
-    setEditImagePreview(image ? `${IMAGE_PATH}${image}` : null);
-
-    handleShowModal2();
-    setSelectedActions({ ...selectedActions, [index]: null });
-  }
-};
+      handleShowModal2();
+      setSelectedActions({ ...selectedActions, [index]: null });
+    }
+  };
 
   const [searchQuery, setSearchQuery] = useState('');
   const handleSearchChange = (event) => {
@@ -206,106 +203,106 @@ function ManageReportCategory() {
     }
   };
 
-const addReportCategory = async (e) => {
-  e.preventDefault();
+  const addReportCategory = async (e) => {
+    e.preventDefault();
 
-  let errors = {};
+    let errors = {};
 
-  if (!categoryData.en) {
-    setActiveLang('en');
-    errors.categoryName = 'English category name required';
-  }
-
-  if (!image) {
-    errors.image = 'Image required';
-  }
-
-  if (Object.keys(errors).length > 0) {
-    setNameError(errors);
-    return;
-  }
-
-  setNameError({});
-
-  const translations = Object.entries(categoryData).map(([lang, name]) => ({
-    language_code: lang,
-    category_name: name
-  }));
-
-  const formData = new FormData();
-  formData.append('category_name', categoryData.en);
-  formData.append('translations', JSON.stringify(translations));
-
-  if (image) formData.append('image', image);
-
-  try {
-    const response = await axios.post(`${API_URL}add_report_category`, formData);
-
-    if (response.data.success) {
-      Swal.fire({
-        text: 'Category added successfully',
-        icon: 'success',
-        timer: 2000
-      });
-
-      resetForm();
-      handleCloseModal();
-      getreportCategory();
+    if (!categoryData.en) {
+      setActiveLang('en');
+      errors.categoryName = 'English category name required';
     }
-  } catch (error) {
-    console.error(error);
-  }
-};
 
-const editReportCategory = async (e) => {
-  e.preventDefault();
-
-  let errors = {};
-
-  if (!categoryData.en) {
-    setActiveLang('en');
-    errors.categoryName = 'English category name required';
-  }
-
-  if (Object.keys(errors).length > 0) {
-    setNameError(errors);
-    return;
-  }
-
-  setNameError({});
-
-  const translations = Object.entries(categoryData).map(([lang, name]) => ({
-    language_code: lang,
-    category_name: name
-  }));
-
-  const formData = new FormData();
-  formData.append('report_category_id', reportId);
-  formData.append('category_name', categoryData.en);
-  formData.append('translations', JSON.stringify(translations));
-
-  if (image) {
-    formData.append('image', image);
-  }
-
-  try {
-    const response = await axios.post(`${API_URL}edit_report_category`, formData);
-
-    if (response.data.success) {
-      Swal.fire({
-        text: 'Category updated successfully',
-        icon: 'success',
-        timer: 2000
-      });
-
-      resetForm();
-      handleCloseModal2();
-      getreportCategory();
+    if (!image) {
+      errors.image = 'Image required';
     }
-  } catch (error) {
-    console.error(error);
-  }
-};
+
+    if (Object.keys(errors).length > 0) {
+      setNameError(errors);
+      return;
+    }
+
+    setNameError({});
+
+    const translations = Object.entries(categoryData).map(([lang, name]) => ({
+      language_code: lang,
+      category_name: name
+    }));
+
+    const formData = new FormData();
+    formData.append('category_name', categoryData.en);
+    formData.append('translations', JSON.stringify(translations));
+
+    if (image) formData.append('image', image);
+
+    try {
+      const response = await axios.post(`${API_URL}add_report_category`, formData);
+
+      if (response.data.success) {
+        Swal.fire({
+          text: 'Category added successfully',
+          icon: 'success',
+          timer: 2000
+        });
+
+        resetForm();
+        handleCloseModal();
+        getreportCategory();
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const editReportCategory = async (e) => {
+    e.preventDefault();
+
+    let errors = {};
+
+    if (!categoryData.en) {
+      setActiveLang('en');
+      errors.categoryName = 'English category name required';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setNameError(errors);
+      return;
+    }
+
+    setNameError({});
+
+    const translations = Object.entries(categoryData).map(([lang, name]) => ({
+      language_code: lang,
+      category_name: name
+    }));
+
+    const formData = new FormData();
+    formData.append('report_category_id', reportId);
+    formData.append('category_name', categoryData.en);
+    formData.append('translations', JSON.stringify(translations));
+
+    if (image) {
+      formData.append('image', image);
+    }
+
+    try {
+      const response = await axios.post(`${API_URL}edit_report_category`, formData);
+
+      if (response.data.success) {
+        Swal.fire({
+          text: 'Category updated successfully',
+          icon: 'success',
+          timer: 2000
+        });
+
+        resetForm();
+        handleCloseModal2();
+        getreportCategory();
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const handleShowModal = () => {
     setShowModal(true);
@@ -313,16 +310,16 @@ const editReportCategory = async (e) => {
     setImagePreview(null);
   };
 
-const handleCloseModal = () => {
-  setShowModal(false);
-  resetForm();
-};
+  const handleCloseModal = () => {
+    setShowModal(false);
+    resetForm();
+  };
 
   const handleShowModal2 = () => setShowModal2(true);
-const handleCloseModal2 = () => {
-  setShowModal2(false);
-  resetForm();
-};
+  const handleCloseModal2 = () => {
+    setShowModal2(false);
+    resetForm();
+  };
 
   const columns = [
     {
@@ -331,17 +328,15 @@ const handleCloseModal2 = () => {
       render: (_, index) => index + 1
     },
     {
-  label: 'Category Name',
-  key: 'category_name',
-  sortable: true,
-  render: (user) => {
-    const t = user.translations?.find(
-      (t) => t.language_code === activeLang
-    );
+      label: 'Category Name',
+      key: 'category_name',
+      sortable: true,
+      render: (user) => {
+        const t = user.translations?.find((t) => t.language_code === activeLang);
 
-    return t?.category_name || 'N/A';
-  }
-},
+        return t?.category_name || 'N/A';
+      }
+    },
     {
       label: 'Image',
       key: 'image',
@@ -470,107 +465,20 @@ const handleCloseModal2 = () => {
         </div>
 
         {/* Add Modal */}
-        <Modal show={showModal} centered onHide={handleCloseModal} style={{ zIndex: '99999' }} className="custom-modal" dialogClassName="custom-modal-width">
+        <Modal
+          show={showModal}
+          centered
+          onHide={handleCloseModal}
+          style={{ zIndex: '99999' }}
+          className="custom-modal"
+          dialogClassName="custom-modal-width"
+        >
           <Modal.Header closeButton>
             <Modal.Title style={{ fontSize: '17px' }}>Add Category </Modal.Title>
           </Modal.Header>
           <form onSubmit={addReportCategory}>
-            <Modal.Body style={{ paddingLeft: '10px',paddingRight:'10px',paddingTop:0,paddingBottom:0 }}>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px',marginBottom:'16px' }}>
-                {languages.map((lang) => (
-                  <button
-                    type="button"
-                    key={lang.id}
-                    onClick={() => setActiveLang(lang.id)}
-                    style={{
-                      borderRadius: '999px',
-                      padding: '2px 12px',
-                      fontSize: '12px',
-                      border: activeLang === lang.id ? '1px solid #1ddec4' : '1px solid #e5e7eb',
-                      background: activeLang === lang.id ? '#1ddec4' : '#f8fafc',
-                      color: activeLang === lang.id ? '#fff' : '#64748b',
-                      fontWeight: activeLang === lang.id ? '500' : '400',
-                      transition: '0.2s'
-                    }}
-                  >
-                    {lang.name}
-                  </button>
-                ))}
-              </div>
-            <Form.Group style={{ display: 'flex', flexDirection: 'column' }}>
-  <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>
-    Category Name ({languages.find((l) => l.id === activeLang)?.name})
-  </Form.Label>
-
-  <Form.Control
-    type="text"
-    placeholder="Enter name"
-    value={categoryData[activeLang] || ''}
-    onChange={(e) => {
-      setCategoryData((prev) => ({
-        ...prev,
-        [activeLang]: e.target.value
-      }));
-
-      if (activeLang === 'en') {
-        setNameError((prev) => ({ ...prev, categoryName: '' }));
-      }
-    }}
-    isInvalid={activeLang === 'en' && nameError.categoryName}
-  />
-
-  <Form.Control.Feedback type="invalid">
-    {nameError.categoryName}
-  </Form.Control.Feedback>
-</Form.Group>
-
-             <Form.Group style={{ display: 'flex', flexDirection: 'column', marginTop: '10px' }}>
-  <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>
-    Category Image
-  </Form.Label>
-
-  <Form.Control
-    type="file"
-    accept="image/*"
-    onChange={handleImageChange}
-    className="custom-input custom-search"
-    style={{ fontSize: '13px' }}
-  />
-
-  {imagePreview && (
-    <div className="mt-2">
-      <img
-        src={imagePreview}
-        alt="Preview"
-        style={{ width: '100px', height: '100px', objectFit: 'cover' }}
-      />
-    </div>
-  )}
-</Form.Group>
-
-              <span style={{ color: 'red', fontSize: '12px' }}>Image size must be 1200x1200 px</span>
-
-              {nameError.general && <span className="text-danger">{nameError.general}</span>}
-            </Modal.Body>
-            <Modal.Footer style={{ borderTop: 'none', paddingTop: 0, paddingRight: 0 }}>
-              <Button variant="secondary" onClick={handleCloseModal} style={{ fontSize: '12px' }}>
-                Close
-              </Button>
-              <Button variant="primary" type="submit" style={{ fontSize: '12px' }}>
-                Add
-              </Button>
-            </Modal.Footer>
-          </form>
-        </Modal>
-
-        {/* Edit Modal */}
-        <Modal show={showModal2} centered onHide={handleCloseModal2} style={{ zIndex: '99999' }} className="custom-modal" dialogClassName="custom-modal-width">
-          <Modal.Header closeButton>
-            <Modal.Title style={{ fontSize: '17px' }}>Edit Category</Modal.Title>
-          </Modal.Header>
-          <form onSubmit={editReportCategory}>
-            <Modal.Body style={{ paddingLeft: '10px',paddingRight:'10px',paddingTop:0,paddingBottom:0 }}>
-               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px',marginBottom:'16px' }}>
+            <Modal.Body style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: 0, paddingBottom: 0 }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '16px' }}>
                 {languages.map((lang) => (
                   <button
                     type="button"
@@ -592,8 +500,103 @@ const handleCloseModal2 = () => {
                 ))}
               </div>
               <Form.Group style={{ display: 'flex', flexDirection: 'column' }}>
-                <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>Category Name
-                   ({languages.find((l) => l.id === activeLang)?.name})
+                <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>
+                  Category Name ({languages.find((l) => l.id === activeLang)?.name})
+                </Form.Label>
+
+                <Form.Control
+                  type="text"
+                  placeholder="Enter name"
+                  value={categoryData[activeLang] || ''}
+                  onChange={(e) => {
+                    setCategoryData((prev) => ({
+                      ...prev,
+                      [activeLang]: e.target.value
+                    }));
+
+                    if (activeLang === 'en') {
+                      setNameError((prev) => ({ ...prev, categoryName: '' }));
+                    }
+                  }}
+                  isInvalid={activeLang === 'en' && nameError.categoryName}
+                  className="custom-input custom-search"
+                  style={{ fontSize: '13px' }}
+                />
+
+                <Form.Control.Feedback type="invalid">{nameError.categoryName}</Form.Control.Feedback>
+              </Form.Group>
+
+              <Form.Group style={{ display: 'flex', flexDirection: 'column', marginTop: '10px' }}>
+                <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>Category Image</Form.Label>
+
+                <Form.Control
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="custom-input custom-search"
+                  style={{ fontSize: '13px' }}
+                />
+
+                {imagePreview && (
+                  <div className="mt-2">
+                    <img src={imagePreview} alt="Preview" style={{ width: '100px', height: '100px', objectFit: 'cover' }} />
+                  </div>
+                )}
+              </Form.Group>
+
+              <span style={{ color: 'red', fontSize: '12px' }}>Image size must be 1200x1200 px</span>
+
+              {nameError.general && <span className="text-danger">{nameError.general}</span>}
+            </Modal.Body>
+            <Modal.Footer style={{ borderTop: 'none', paddingTop: 0, paddingRight: 0 }}>
+              <Button variant="secondary" onClick={handleCloseModal} style={{ fontSize: '12px' }}>
+                Close
+              </Button>
+              <Button variant="primary" type="submit" style={{ fontSize: '12px' }}>
+                Add
+              </Button>
+            </Modal.Footer>
+          </form>
+        </Modal>
+
+        {/* Edit Modal */}
+        <Modal
+          show={showModal2}
+          centered
+          onHide={handleCloseModal2}
+          style={{ zIndex: '99999' }}
+          className="custom-modal"
+          dialogClassName="custom-modal-width"
+        >
+          <Modal.Header closeButton>
+            <Modal.Title style={{ fontSize: '17px' }}>Edit Category</Modal.Title>
+          </Modal.Header>
+          <form onSubmit={editReportCategory}>
+            <Modal.Body style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: 0, paddingBottom: 0 }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '16px' }}>
+                {languages.map((lang) => (
+                  <button
+                    type="button"
+                    key={lang.id}
+                    onClick={() => setActiveLang(lang.id)}
+                    style={{
+                      borderRadius: '999px',
+                      padding: '2px 12px',
+                      fontSize: '12px',
+                      border: activeLang === lang.id ? '1px solid #1ddec4' : '1px solid #e5e7eb',
+                      background: activeLang === lang.id ? '#1ddec4' : '#f8fafc',
+                      color: activeLang === lang.id ? '#fff' : '#64748b',
+                      fontWeight: activeLang === lang.id ? '500' : '400',
+                      transition: '0.2s'
+                    }}
+                  >
+                    {lang.name}
+                  </button>
+                ))}
+              </div>
+              <Form.Group style={{ display: 'flex', flexDirection: 'column' }}>
+                <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>
+                  Category Name ({languages.find((l) => l.id === activeLang)?.name})
                 </Form.Label>
                 <Form.Control
                   type="text"
@@ -601,9 +604,9 @@ const handleCloseModal2 = () => {
                   value={categoryData[activeLang] || ''}
                   onChange={(e) => {
                     setCategoryData((prev) => ({
-  ...prev,
-  [activeLang]: e.target.value
-}));
+                      ...prev,
+                      [activeLang]: e.target.value
+                    }));
                     setNameError((prev) => ({ ...prev, categoryName: '' }));
                   }}
                   isInvalid={nameError.categoryName}

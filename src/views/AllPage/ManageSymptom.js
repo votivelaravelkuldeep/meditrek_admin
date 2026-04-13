@@ -34,6 +34,7 @@ function ManageSymptom() {
 
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [sortConfig, setSortConfig] = useState(null);
+   const [activeLang, setActiveLang] = useState('en');
 
   const handleSort = (key) => {
     setSortConfig((prev) => {
@@ -318,6 +319,16 @@ function ManageSymptom() {
     }
   ];
 
+   const languages = [
+    { id: 'en', name: 'English', default: true },
+    { id: 'fr', name: 'Français' },
+    { id: 'es', name: 'Español' },
+    { id: 'ar', name: 'العربية' },
+    { id: 'it', name: 'Italiano' },
+    { id: 'de', name: 'Deutsch' },
+    { id: 'pt', name: 'Português' }
+  ];
+
   return (
     <>
       {/* <Typography style={{ marginTop: '15px', marginBottom: '30px' }} variant="h4" gutterBottom>
@@ -380,19 +391,42 @@ function ManageSymptom() {
         </div>
 
         {/* Modal Component */}
-        <Modal show={showModal2} centered onHide={handleCloseModal2} style={{ zIndex: '99999' }} className="custom-modal">
+        <Modal show={showModal2} centered onHide={handleCloseModal2} style={{ zIndex: '99999' }} className="custom-modal" dialogClassName="custom-modal-width">
           <Modal.Header closeButton>
             <Modal.Title style={{ fontSize: '17px' }}>Add Symptom</Modal.Title>
           </Modal.Header>
           <form onSubmit={addSymptom}>
-            <Modal.Body style={{ paddingTop: 0 }}>
+            <Modal.Body style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: 0, paddingBottom: 0 }}>
               {/* Add your form fields here */}
               {/* <div className="mb-3"> */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '16px' }}>
+                    {languages.map((lang) => (
+                      <button
+                        type="button"
+                        key={lang.id}
+                        onClick={() => setActiveLang(lang.id)}
+                        style={{
+                          borderRadius: '999px',
+                          padding: '2px 12px',
+                          fontSize: '12px',
+                          border: activeLang === lang.id ? '1px solid #1ddec4' : '1px solid #e5e7eb',
+                          background: activeLang === lang.id ? '#1ddec4' : '#f8fafc',
+                          color: activeLang === lang.id ? '#fff' : '#64748b',
+                          fontWeight: activeLang === lang.id ? '500' : '400',
+                          transition: '0.2s'
+                        }}
+                      >
+                        {lang.name}
+                      </button>
+                    ))}
+                  </div>
               <Form.Group style={{ display: 'flex', flexDirection: 'column' }}>
                 {/* <label htmlFor="categoryDescription" className="form-label">
                   Symptom Name
                 </label> */}
-                <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>Symptom Name</Form.Label>
+                <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>Symptom Name
+                  ({languages.find((l) => l.id === activeLang)?.name})
+                </Form.Label>
 
                 <Form.Control
                   type="text"
@@ -438,18 +472,41 @@ function ManageSymptom() {
         </Modal>
 
         {/* Modal Component */}
-        <Modal show={showModal} centered onHide={handleCloseModal} style={{ zIndex: '99999' }} className="custom-modal">
+        <Modal show={showModal} centered onHide={handleCloseModal} style={{ zIndex: '99999' }} className="custom-modal" dialogClassName="custom-modal-width">
           <Modal.Header closeButton>
             <Modal.Title style={{ fontSize: '17px' }}>Edit Symptom</Modal.Title>
           </Modal.Header>
           <form onSubmit={editSymptom}>
-            <Modal.Body style={{ paddingTop: 0 }}>
+            <Modal.Body style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: 0, paddingBottom: 0 }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '16px' }}>
+                    {languages.map((lang) => (
+                      <button
+                        type="button"
+                        key={lang.id}
+                        onClick={() => setActiveLang(lang.id)}
+                        style={{
+                          borderRadius: '999px',
+                          padding: '2px 12px',
+                          fontSize: '12px',
+                          border: activeLang === lang.id ? '1px solid #1ddec4' : '1px solid #e5e7eb',
+                          background: activeLang === lang.id ? '#1ddec4' : '#f8fafc',
+                          color: activeLang === lang.id ? '#fff' : '#64748b',
+                          fontWeight: activeLang === lang.id ? '500' : '400',
+                          transition: '0.2s'
+                        }}
+                      >
+                        {lang.name}
+                      </button>
+                    ))}
+                  </div>
               {/* Add your form fields here */}
               <Form.Group style={{ display: 'flex', flexDirection: 'column' }}>
                 {/* <label htmlFor="categoryDescription" className="form-label">
                   Symptom Name
                 </label> */}
-                <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}> Symptom Name</Form.Label>
+                <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}> Symptom Name
+                  ({languages.find((l) => l.id === activeLang)?.name})
+                </Form.Label>
 
                 <Form.Control
                   type="text"
