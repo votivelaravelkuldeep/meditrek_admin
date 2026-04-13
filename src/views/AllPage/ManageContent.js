@@ -36,14 +36,33 @@ function Managecontent() {
   ];
 
   const [content, setContent] = useState(0);
-  const [about, setAbout] = useState('');
-  const [terms, setTerms] = useState('');
+  //   const [about, setAbout] = useState('');
+  //   const [terms, setTerms] = useState('');
   const [privacy, setPrivacy] = useState('');
   const [android, setAndroid] = useState('');
   const [ios, setIos] = useState('');
   const [share, setShare] = useState('');
   const [activeButton, setActiveButton] = useState('about');
   const [contentUpdated, setContentUpdated] = useState(false);
+  const [activeLang, setActiveLang] = useState('en');
+  const [about, setAbout] = useState({
+    en: '',
+    fr: '',
+    es: '',
+    ar: '',
+    it: '',
+    de: '',
+    pt: ''
+  });
+  const [terms, setTerms] = useState({
+    en: '',
+    fr: '',
+    es: '',
+    ar: '',
+    it: '',
+    de: '',
+    pt: ''
+  });
 
   const handleShowContentUpdated = () => setContentUpdated(true);
   const handleCloseContentUpdated = () => setContentUpdated(false);
@@ -58,22 +77,38 @@ function Managecontent() {
   };
 
   useEffect(() => {
-    fetchContent('about', setAbout);
-    fetchContent('terms', setTerms);
+    fetchContent('about', setAbout, activeLang);
+    fetchContent('terms', setTerms, activeLang);
     fetchContent('privacy', setPrivacy);
     fetchContent('android', setAndroid);
     fetchContent('ios', setIos);
     fetchContent('share', setShare);
-  }, []);
+  }, [activeLang]);
 
-  const fetchContent = (contentType, setter) => {
+  //   const fetchContent = (contentType, setter) => {
+  //     axios
+  //       .get(`${API_URL}get_all_content_url?content_type=${contentTypes[contentType]}`)
+  //       .then((response) => {
+  //         setter(response.data.result[0].content);
+  //       })
+  //       .catch((error) => {
+  //         console.log(error);
+  //       });
+  //   };
+
+  const fetchContent = (contentType, setter, lang) => {
     axios
-      .get(`${API_URL}get_all_content_url?content_type=${contentTypes[contentType]}`)
-      .then((response) => {
-        setter(response.data.result[0].content);
+      .get(`${API_URL}get_all_content_url`, {
+        params: {
+          content_type: contentTypes[contentType],
+          language_code: lang // 🔥 ADD THIS
+        }
       })
-      .catch((error) => {
-        console.log(error);
+      .then((response) => {
+        setter((prev) => ({
+          ...prev,
+          [lang]: response.data.result[0]?.content || ''
+        }));
       });
   };
 
@@ -109,8 +144,11 @@ function Managecontent() {
       case 'about':
         contentStateToUpdate = about;
         break;
+      //   case 'terms':
+      //     contentStateToUpdate = terms;
+      //     break;
       case 'terms':
-        contentStateToUpdate = terms;
+        contentStateToUpdate = terms[activeLang];
         break;
       case 'privacy':
         contentStateToUpdate = privacy;
@@ -151,8 +189,6 @@ function Managecontent() {
     { id: 'de', name: 'Deutsch' },
     { id: 'pt', name: 'Português' }
   ];
-
-  const [activeLang, setActiveLang] = useState('en');
 
   return (
     <>
@@ -292,14 +328,14 @@ function Managecontent() {
                   {/* <span className="mb-2" style={{ fontSize: '15px' }}>
                     About us
                   </span> */}
-                  <div style={{ display: 'flex', flexWrap: 'wrap', }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap' }}>
                     {languages.map((lang) => (
                       <button
                         type="button"
                         key={lang.id}
                         onClick={() => setActiveLang(lang.id)}
                         style={{
-                        //   borderRadius: '999px',
+                          //   borderRadius: '999px',
                           padding: '2px 12px',
                           fontSize: '12px',
                           border: activeLang === lang.id ? '1px solid #1ddec4' : '1px solid #e5e7eb',
@@ -314,7 +350,17 @@ function Managecontent() {
                     ))}
                   </div>
                   <div>
-                    <JoditEditor value={about} config={config1} onBlur={(htmlString) => setAbout(htmlString)} />
+                    {/* <JoditEditor value={about} config={config1} onBlur={(htmlString) => setAbout(htmlString)} /> */}
+                    <JoditEditor
+                      value={about[activeLang]}
+                      config={config1}
+                      onBlur={(htmlString) => {
+                        setAbout((prev) => ({
+                          ...prev,
+                          [activeLang]: htmlString
+                        }));
+                      }}
+                    />
                   </div>
                   <br />
                   <button className="btn mt-2 submit-btn" onClick={() => handleBanner('about')}>
@@ -333,7 +379,17 @@ function Managecontent() {
                 >
                   <span>Terms And Conditions</span>
                   <div>
-                    <JoditEditor value={terms} config={config1} onBlur={(htmlString) => setTerms(htmlString)} />
+                    {/* <JoditEditor value={terms} config={config1} onBlur={(htmlString) => setTerms(htmlString)} /> */}
+                    <JoditEditor
+                      value={terms[activeLang]}
+                      config={config1}
+                      onBlur={(htmlString) => {
+                        setTerms((prev) => ({
+                          ...prev,
+                          [activeLang]: htmlString
+                        }));
+                      }}
+                    />
                   </div>
                   <br />
                   <button className="btn mt-2 submit-btn" onClick={() => handleBanner('terms')}>
