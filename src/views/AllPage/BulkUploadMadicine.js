@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Button } from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
 // import { Link } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
@@ -10,199 +10,207 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 // import DeleteIcon from '@mui/icons-material/Delete';
 // import EditIcon from '@mui/icons-material/Edit';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
-import Typography from '@mui/material/Typography';
+// import Typography from '@mui/material/Typography';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 import { API_URL, APP_PREFIX_PATH } from 'config/constant';
 import * as XLSX from 'xlsx';
-import { saveAs } from 'file-saver';    
+import { saveAs } from 'file-saver';
 import { useNavigate } from 'react-router-dom';
+import Heading from 'component/common/Heading';
+// import './managecontent.css';
+import './managecontent.css';
 
 function BulkUploadMadicine() {
-    
-    const navigate = useNavigate();
-    const [medicineData, setMedicineData] = useState([]);
-    const [medicineDataFile, setMedicineDataFile] = useState(null);
-    const [isLoading, setIsLoading] = useState(false);
-    // const [currentPage, setCurrentPage] = useState(1);
-    // const symptomsPerPage = 5;
+  const navigate = useNavigate();
+  const [medicineData, setMedicineData] = useState([]);
+  const [medicineDataFile, setMedicineDataFile] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  // const [currentPage, setCurrentPage] = useState(1);
+  // const symptomsPerPage = 5;
 
-    const getsymptom = async () => {
-        try {
-            const response = await axios.get(`${API_URL}get_all_medicine`);
-            setMedicineData(response.data.data);
-        } catch (error) {
-            console.error('Error getting Madicine data:', error);
-            Swal.fire({
-                title: 'Error',
-                text: 'Failed to fetch Madicine data',
-                icon: 'error',
-                confirmButtonText: 'OK'
-            });
+  const getsymptom = async () => {
+    try {
+      const response = await axios.get(`${API_URL}get_all_medicine`);
+      setMedicineData(response.data.data);
+    } catch (error) {
+      console.error('Error getting Madicine data:', error);
+      Swal.fire({
+        title: 'Error',
+        text: 'Failed to fetch Madicine data',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
+    }
+  };
+
+  useEffect(() => {
+    getsymptom();
+  }, []);
+
+  const handleFileChange = (e) => {
+    setMedicineDataFile(e.target.files[0]);
+  };
+
+  const handlebulkupload = () => {
+    const ws = XLSX.utils.json_to_sheet(
+      medicineData.map((item) => ({
+        // 'S. No.': index + 1,
+        Medicine_Name: item.medicine_name,
+        Medicine_Description: item.medicine_description
+        // 'Create Date & Time': item.createtime
+      }))
+    );
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'MedicineReport');
+    const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
+    saveAs(blob, 'MedicineReport.xlsx');
+  };
+
+  const UploadbulkFile = async () => {
+    if (!medicineDataFile) {
+      Swal.fire({
+        title: 'Error',
+        text: 'Please select a file first',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
+      return;
+    }
+
+    // Validate file type
+    if (!medicineDataFile.name.match(/\.(xlsx|xls)$/i)) {
+      Swal.fire({
+        title: 'Invalid File',
+        text: 'Please upload an Excel file (.xlsx, .xls)',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', medicineDataFile); // Must match 'request.file' on backend
+
+      const response = await axios.post(`${API_URL}bulk_upload_medicine`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
         }
-    };
+      });
 
-    useEffect(() => {
+      Swal.fire({
+        title: response.data.success ? 'Success' : 'Error',
+        text: 'File uploaded successfully',
+        icon: response.data.success ? 'success' : 'error',
+        confirmButtonText: 'OK'
+      });
+
+      if (response.data.success) {
         getsymptom();
-    }, []);
+        navigate(`${APP_PREFIX_PATH}/manage-medicine`);
+      }
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      Swal.fire({
+        title: 'Error',
+        text: error.response?.data?.msg || error.message || 'Failed to upload file',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    const handleFileChange = (e) => {
-        setMedicineDataFile(e.target.files[0]);
-    };
-
-    const handlebulkupload = () => {
-        const ws = XLSX.utils.json_to_sheet(
-            medicineData.map((item) => ({
-                // 'S. No.': index + 1,
-                'Medicine_Name': item.medicine_name,
-                'Medicine_Description': item.medicine_description,
-                // 'Create Date & Time': item.createtime
-            }))
-        );
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'MedicineReport');
-        const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-        const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
-        saveAs(blob, 'MedicineReport.xlsx');
-    };
-
-    const UploadbulkFile = async () => {
-        if (!medicineDataFile) {
-            Swal.fire({
-                title: 'Error',
-                text: 'Please select a file first',
-                icon: 'error',
-                confirmButtonText: 'OK'
-            });
-            return;
-        }
-    
-        // Validate file type
-        if (!medicineDataFile.name.match(/\.(xlsx|xls)$/i)) {
-            Swal.fire({
-                title: 'Invalid File',
-                text: 'Please upload an Excel file (.xlsx, .xls)',
-                icon: 'error',
-                confirmButtonText: 'OK'
-            });
-            return;
-        }
-    
-        setIsLoading(true);
-    
-        try {
-            const formData = new FormData();
-            formData.append("file", medicineDataFile); // Must match 'request.file' on backend
-    
-            const response = await axios.post(`${API_URL}bulk_upload_medicine`, formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            });
-    
-            Swal.fire({
-                title: response.data.success ? 'Success' : 'Error',
-                text: 'File uploaded successfully',
-                icon: response.data.success ? 'success' : 'error',
-                confirmButtonText: 'OK'
-            });
-    
-            if (response.data.success) {
-                getsymptom();
-                navigate(`${APP_PREFIX_PATH}/manage-medicine`);
-            }
-    
-        } catch (error) {
-            console.error('Error uploading file:', error);
-            Swal.fire({
-                title: 'Error',
-                text: error.response?.data?.msg || error.message || 'Failed to upload file',
-                icon: 'error',
-                confirmButtonText: 'OK'
-            });
-        } finally {
-            setIsLoading(false);
-        }
-    };
-    
-
-    return (
-        <>
-            <Typography style={{ marginTop: '15px', marginBottom: '30px' }} variant="h4" gutterBottom>
+  return (
+    <>
+      {/* <Typography style={{ marginTop: '15px', marginBottom: '30px' }} variant="h4" gutterBottom>
                 <span style={{ color: '#1ddec4' }}>Dashboard</span> / Bulk Upload Madicine
-            </Typography>
+            </Typography> */}
 
-            <Card>
-                <Card.Header className="bg-white">
+      <div
+        style={{
+          background: '#fff',
+          borderRadius: 16,
+          padding: '24px',
+          boxShadow: '0 4px 8px rgba(0,0,0,0.05)'
+        }}
+      >
+        {/* <Card.Header className="bg-white">
                     <h5>Bulk Medicine Management</h5>
-                </Card.Header>
+                </Card.Header> */}
+        <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
+          <Heading heading="Bulk Medicine Management" />
+        </div>
 
-                <Card.Body>
-                    <div className="card p-4 mb-4">
-                        <div className="d-flex justify-content-between align-items-center mb-4">
-                            <div>
-                                <h5 className="mb-1">Excel File Operations</h5>
-                                <p className="text-muted small mb-0">
-                                    Download template or upload bulk data
-                                </p>
-                            </div>
-                        </div>
+        <div className="mt-3">
+          <div className=" ">
+            <div className="d-flex justify-content-between align-items-center mb-2 gap-2 flex-wrap">
+              <div>
+                <h5 className="mb-1" style={{ fontSize: '16px', fontWeight: '600' }}>
+                  Excel File Operations
+                </h5>
+                <p className="text-muted small mb-0">Download template or upload bulk data</p>
+              </div>
+              <Button
+                className="btn btn-primary  action-btn"
+                variant="contained"
+                color="primary"
+                onClick={handlebulkupload}
+                // className="me-2"
+                disabled={isLoading}
+                style={{ fontSize: '12px', borderRadius: '10px' }}
+              >
+                <FileDownloadIcon style={{ fontSize: '16px' }} className="me-0.5" />
+                Download Template
+              </Button>
+            </div>
+            <div className="mb-4 mt-3">
+              <label htmlFor="file-upload" className="form-label" style={{ fontWeight: '600' }}>
+                Upload Excel File
+              </label>
+              <input
+                type="file"
+                id="file-upload"
+                accept=".xlsx, .xls"
+                onChange={handleFileChange}
+                disabled={isLoading}
+                className="custom-input form-control"
+                style={{ fontSize: '13px' }}
+              />
+              <div className="text-muted small mt-1" style={{ fontSize: '12px' }}>
+                {medicineDataFile ? `Selected file: ${medicineDataFile.name}` : 'No file selected'}
+              </div>
+            </div>
 
-                        <div className="mb-4">
-                            <Button
-                            className="btn btn-primary  action-btn"
-                                variant="contained"
-                                color="primary"
-                                onClick={handlebulkupload}
-                                // className="me-2"
-                                disabled={isLoading}
-                            >
-                                <FileDownloadIcon className="me-2" />
-                                Download Template
-                            </Button>
-                        </div>
+            <Button
+              className="btn btn-primary  action-btn mt-2"
+              variant="contained"
+              color="primary"
+              onClick={UploadbulkFile}
+              disabled={!medicineDataFile || isLoading}
+              style={{ fontSize: '12px', borderRadius: '10px' }}
+            >
+              {isLoading ? (
+                <>
+                  <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  Uploading...
+                </>
+              ) : (
+                <>
+                  <CloudUploadIcon style={{ fontSize: '16px' }} className="me-1" />
+                  Upload Data
+                </>
+              )}
+            </Button>
+          </div>
 
-                        <div className="mb-3">
-                            <label htmlFor="file-upload" className="form-label">
-                                Upload Excel File
-                            </label>
-                            <input
-                                type="file"
-                                className="form-control"
-                                id="file-upload"
-                                accept=".xlsx, .xls"
-                                onChange={handleFileChange}
-                                disabled={isLoading}
-                            />
-                            <div className="text-muted small mt-2">
-                                {medicineDataFile ? `Selected file: ${medicineDataFile.name}` : 'No file selected'}
-                            </div>
-                        </div>
-
-                        <Button
-                           className="btn btn-primary  action-btn"
-                           variant="contained"
-                           color="primary"
-                            onClick={UploadbulkFile}
-                            disabled={!medicineDataFile || isLoading}
-                            style={{width:'200px'}}
-                        >
-                            {isLoading ? (
-                                <>
-                                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                                    Uploading...
-                                </>
-                            ) : (
-                                <>
-                                    <CloudUploadIcon className="me-2" />
-                                    Upload Data
-                                </>
-                            )}
-                        </Button>
-                    </div>
-
-                    {/* Symptom List Table */}
-                    {/* {medicineData.length > 0 && (
+          {/* Symptom List Table */}
+          {/* {medicineData.length > 0 && (
                         <div className="mt-4">
                             <h5>Existing Medicine</h5>
                             <div className="table-responsive">
@@ -240,10 +248,10 @@ function BulkUploadMadicine() {
                             </div>
                         </div>
                     )} */}
-                </Card.Body>
-            </Card>
-        </>
-    );
+        </div>
+      </div>
+    </>
+  );
 }
 
 export default BulkUploadMadicine;

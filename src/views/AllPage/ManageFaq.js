@@ -30,10 +30,15 @@ function ManageFaq() {
   const [userType, setUserType] = useState('');
   const [faqId, setFaqId] = useState('');
   const [errors, setErrors] = useState({});
-  const [viewData, setViewData] = useState({});
+  // const [viewData, setViewData] = useState({});
   //   const usersPerPage = 50;
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [sortConfig, setSortConfig] = useState(null);
+  const [activeLang, setActiveLang] = useState('en');
+
+  const [viewLang, setViewLang] = useState('en');
+  const [viewFaqData, setViewFaqData] = useState({});
+  const [viewFaqId, setViewFaqId] = useState(null);
 
   const handleSort = (key) => {
     setSortConfig((prev) => {
@@ -101,27 +106,26 @@ function ManageFaq() {
       deleteFaq(faq_id);
       setSelectedActions({ ...selectedActions, [index]: null });
     } else if (action === 'Edit') {
-
       // if (faqItem.translations) {
       //   setFaqDataqa(faqItem.translations);
-      // } 
+      // }
       if (faqItem.translations) {
-  setFaqDataqa(faqItem.translations);
-} else {
-  setFaqDataqa({
-    en: {
-      question: faqItem.question || '',
-      answer: faqItem.answer || ''
-    },
-    fr: { question: '', answer: '' },
-    es: { question: '', answer: '' },
-    ar: { question: '', answer: '' },
-    it: { question: '', answer: '' },
-    de: { question: '', answer: '' },
-    pt: { question: '', answer: '' }
-  });
-}
-      
+        setFaqDataqa(faqItem.translations);
+      } else {
+        setFaqDataqa({
+          en: {
+            question: faqItem.question || '',
+            answer: faqItem.answer || ''
+          },
+          fr: { question: '', answer: '' },
+          es: { question: '', answer: '' },
+          ar: { question: '', answer: '' },
+          it: { question: '', answer: '' },
+          de: { question: '', answer: '' },
+          pt: { question: '', answer: '' }
+        });
+      }
+
       // else {
       //   setFaqDataqa({
       //     ...faqDataqa,
@@ -136,10 +140,18 @@ function ManageFaq() {
       setUserType(faqItem.user_type);
       handleShowEditModal();
       setSelectedActions({ ...selectedActions, [index]: null });
-    } else if (action === 'View') {
-      setViewData(faqItem);
+    }
+    // else if (action === 'View') {
+    //   setViewData(faqItem);
+    //   handleShowViewModal();
+    //   setSelectedActions({ ...selectedActions, [index]: null });
+    // }
+    else if (action === 'View') {
+      setViewFaqId(faq_id); // 🔥 store id
+      setViewLang(activeLang);
+
+      fetchFaqByLanguage(faq_id, activeLang);
       handleShowViewModal();
-      setSelectedActions({ ...selectedActions, [index]: null });
     }
   };
 
@@ -166,20 +178,38 @@ function ManageFaq() {
   //     setCurrentPage(value);
   //   };
 
+  // const getFaqs = async () => {
+  //   axios
+  //     .get(`${API_URL}get_faq`)
+  //     .then((response) => {
+  //       setFaqData(response.data.data);
+  //     })
+  //     .catch((error) => {
+  //       console.error('Error getting FAQs:', error);
+  //     });
+  // };
+
+  // 13/04/26
+
   const getFaqs = async () => {
-    axios
-      .get(`${API_URL}get_faq`)
-      .then((response) => {
-        setFaqData(response.data.data);
-      })
-      .catch((error) => {
-        console.error('Error getting FAQs:', error);
+    try {
+      const response = await axios.get(`${API_URL}get_faq`, {
+        params: {
+          language_code: activeLang // 🔥 key change
+        }
       });
+
+      setFaqData(response.data.data);
+    } catch (error) {
+      console.error('Error getting FAQs:', error);
+    }
   };
+
+  // ==============
 
   useEffect(() => {
     getFaqs();
-  }, []);
+  }, [activeLang]);
 
   const truncateText = (text, maxLength = 30) => {
     if (!text) return '';
@@ -272,73 +302,185 @@ function ManageFaq() {
   //       console.error('Error adding new FAQ', error);
   //     });
   // };
+
+  // const addFaq = async (e) => {
+  //   e.preventDefault();
+  //   let validationErrors = {};
+
+  //   // Fix: Check the correct data source
+  //   if (!faqDataqa[activeLang].question) {
+  //     validationErrors.question = 'Please enter question';
+  //   }
+  //   if (!faqDataqa[activeLang].answer) {
+  //     validationErrors.answer = 'Please enter answer';
+  //   }
+  //   if (!userType) {
+  //     validationErrors.userType = 'Please select a user type.';
+  //   }
+
+  //   if (Object.keys(validationErrors).length > 0) {
+  //     setErrors(validationErrors);
+  //     return;
+  //   }
+  //   setErrors({});
+
+  //   // Fix: Use a different variable name (not faqData to avoid conflict)
+  //   const submitData = {
+  //     question: faqDataqa[activeLang].question,
+  //     answer: faqDataqa[activeLang].answer,
+  //     userType: userType,
+  //     // If you need to send all language versions
+  //     translations: faqDataqa // Send all language data to backend
+  //   };
+
+  //   axios
+  //     .post(`${API_URL}add_faq`, submitData) // Changed variable name
+  //     .then((response) => {
+  //       if (response.data.key === 'exists') {
+  //         setErrors({ general: 'Faq already exist' });
+  //       } else if (response.data.success) {
+  //         Swal.fire({
+  //           title: '',
+  //           text: 'FAQ added successfully',
+  //           icon: 'success',
+  //           timer: 3000
+  //         });
+
+  //         // Reset all form data
+  //         setFaqDataqa({
+  //           en: { question: '', answer: '' },
+  //           fr: { question: '', answer: '' },
+  //           es: { question: '', answer: '' },
+  //           ar: { question: '', answer: '' },
+  //           it: { question: '', answer: '' },
+  //           de: { question: '', answer: '' },
+  //           pt: { question: '', answer: '' }
+  //         });
+
+  //         setActiveLang('en');
+  //         setUserType(''); // Reset user type
+  //         handleCloseAddModal();
+  //         getFaqs(); // Refresh the table
+  //       } else {
+  //         setUserType('');
+  //         handleCloseAddModal();
+  //       }
+  //     })
+  //     .catch((error) => {
+  //       console.error('Error adding new FAQ', error);
+  //     });
+  // };
+
+  // 13/04/26
+
   const addFaq = async (e) => {
     e.preventDefault();
+
     let validationErrors = {};
 
-    // Fix: Check the correct data source
     if (!faqDataqa[activeLang].question) {
       validationErrors.question = 'Please enter question';
     }
+
     if (!faqDataqa[activeLang].answer) {
       validationErrors.answer = 'Please enter answer';
     }
+
     if (!userType) {
-      validationErrors.userType = 'Please select a user type.';
+      validationErrors.userType = 'Please select user type';
     }
 
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
+
     setErrors({});
 
-    // Fix: Use a different variable name (not faqData to avoid conflict)
+    // ✅ ONLY SEND ACTIVE LANGUAGE
+    // const submitData = {
+    //   userType: userType,
+    //   translations: {
+    //     [activeLang]: {
+    //       question: faqDataqa[activeLang].question,
+    //       answer: faqDataqa[activeLang].answer
+    //     }
+    //   }
+    // };
+
+    // const submitData = {
+    //   userType: Number(userType), // 🔥 IMPORTANT FIX
+    //   translations: {
+    //     [activeLang]: {
+    //       question: faqDataqa[activeLang].question,
+    //       answer: faqDataqa[activeLang].answer
+    //     }
+    //   }
+    // };
+
+    //     const submitData = {
+    //   userType: Number(userType),
+
+    //   // 🔥 REQUIRED FOR BACKEND VALIDATION
+    //   question: faqDataqa[activeLang].question,
+    //   answer: faqDataqa[activeLang].answer,
+
+    //   // 🔥 REQUIRED FOR MULTI-LANGUAGE
+    //   translations: {
+    //     [activeLang]: {
+    //       question: faqDataqa[activeLang].question,
+    //       answer: faqDataqa[activeLang].answer
+    //     }
+    //   }
+    // };
+
     const submitData = {
+      userType: Number(userType),
+      language_code: activeLang, // 🔥 KEY
+
       question: faqDataqa[activeLang].question,
-      answer: faqDataqa[activeLang].answer,
-      userType: userType,
-      // If you need to send all language versions
-      translations: faqDataqa // Send all language data to backend
+      answer: faqDataqa[activeLang].answer
     };
 
-    axios
-      .post(`${API_URL}add_faq`, submitData) // Changed variable name
-      .then((response) => {
-        if (response.data.key === 'exists') {
-          setErrors({ general: 'Faq already exist' });
-        } else if (response.data.success) {
-          Swal.fire({
-            title: '',
-            text: 'FAQ added successfully',
-            icon: 'success',
-            timer: 3000
-          });
+    try {
+      const response = await axios.post(`${API_URL}add_faq`, submitData);
 
-          // Reset all form data
-          setFaqDataqa({
-            en: { question: '', answer: '' },
-            fr: { question: '', answer: '' },
-            es: { question: '', answer: '' },
-            ar: { question: '', answer: '' },
-            it: { question: '', answer: '' },
-            de: { question: '', answer: '' },
-            pt: { question: '', answer: '' }
-          });
+      if (response.data.success) {
+        Swal.fire({
+          text: 'FAQ added successfully',
+          icon: 'success',
+          timer: 2000
+        });
 
-          setActiveLang('en');
-          setUserType(''); // Reset user type
-          handleCloseAddModal();
-          getFaqs(); // Refresh the table
-        } else {
-          setUserType('');
-          handleCloseAddModal();
-        }
-      })
-      .catch((error) => {
-        console.error('Error adding new FAQ', error);
-      });
+        // Reset form
+        setFaqDataqa({
+          en: { question: '', answer: '' },
+          fr: { question: '', answer: '' },
+          es: { question: '', answer: '' },
+          ar: { question: '', answer: '' },
+          it: { question: '', answer: '' },
+          de: { question: '', answer: '' },
+          pt: { question: '', answer: '' }
+        });
+
+        setActiveLang('en');
+        setUserType('');
+        handleCloseAddModal();
+        getFaqs();
+      } else {
+        // setErrors({ general: response.data.message || 'Something went wrong' });
+        console.log(response.data);
+
+        setErrors({
+          general: response.data.message || response.data.error || 'Something went wrong'
+        });
+      }
+    } catch (error) {
+      console.error('Error adding FAQ:', error);
+    }
   };
+
+  // ===============
 
   // const editFaq = async (e) => {
   //   e.preventDefault();
@@ -475,21 +617,21 @@ function ManageFaq() {
   // };
 
   const handleCloseAddModal = () => {
-  setShowAddModal(false);
-  setUserType('');
-  setErrors({});
-  setActiveLang('en');
+    setShowAddModal(false);
+    setUserType('');
+    setErrors({});
+    setActiveLang('en');
 
-  setFaqDataqa({
-    en: { question: '', answer: '' },
-    fr: { question: '', answer: '' },
-    es: { question: '', answer: '' },
-    ar: { question: '', answer: '' },
-    it: { question: '', answer: '' },
-    de: { question: '', answer: '' },
-    pt: { question: '', answer: '' }
-  });
-};
+    setFaqDataqa({
+      en: { question: '', answer: '' },
+      fr: { question: '', answer: '' },
+      es: { question: '', answer: '' },
+      ar: { question: '', answer: '' },
+      it: { question: '', answer: '' },
+      de: { question: '', answer: '' },
+      pt: { question: '', answer: '' }
+    });
+  };
 
   const handleShowEditModal = () => setShowEditModal(true);
   // const handleCloseEditModal = () => {
@@ -499,20 +641,20 @@ function ManageFaq() {
   //   setErrors({});
   // };
   const handleCloseEditModal = () => {
-  setShowEditModal(false);
-  setErrors({});
-  setActiveLang('en');
+    setShowEditModal(false);
+    setErrors({});
+    setActiveLang('en');
 
-  setFaqDataqa({
-    en: { question: '', answer: '' },
-    fr: { question: '', answer: '' },
-    es: { question: '', answer: '' },
-    ar: { question: '', answer: '' },
-    it: { question: '', answer: '' },
-    de: { question: '', answer: '' },
-    pt: { question: '', answer: '' }
-  });
-};
+    setFaqDataqa({
+      en: { question: '', answer: '' },
+      fr: { question: '', answer: '' },
+      es: { question: '', answer: '' },
+      ar: { question: '', answer: '' },
+      it: { question: '', answer: '' },
+      de: { question: '', answer: '' },
+      pt: { question: '', answer: '' }
+    });
+  };
 
   const handleShowViewModal = () => setShowViewModal(true);
   const handleCloseViewModal = () => setShowViewModal(false);
@@ -613,7 +755,7 @@ function ManageFaq() {
     { id: 'pt', name: 'Português' }
   ];
 
-  const [activeLang, setActiveLang] = useState('en');
+  // const [activeLang, setActiveLang] = useState('en');
 
   const [faqDataqa, setFaqDataqa] = useState({
     en: { question: '', answer: '' },
@@ -641,8 +783,34 @@ function ManageFaq() {
     }));
   };
 
+  const fetchFaqByLanguage = async (faqId, lang) => {
+    try {
+      const response = await axios.get(`${API_URL}get_faq`, {
+        params: { language_code: lang }
+      });
 
-  
+      const allFaqs = response.data.data;
+
+      const selectedFaq = allFaqs.find((item) => Number(item.faq_id) === Number(faqId));
+
+      if (selectedFaq) {
+        setViewFaqData(selectedFaq);
+      } else {
+        // 🔥 No translation case
+        setViewFaqData({
+          question: null,
+          answer: null
+        });
+      }
+    } catch (error) {
+      console.error(error);
+    }
+
+    console.log('LANG CLICKED:', lang);
+    console.log('FAQ ID:', faqId);
+    // console.log("API DATA:", response.data.data);
+  };
+
   return (
     <>
       {/* <Typography style={{ marginTop: '15px', marginBottom: '30px' }} variant="h4" gutterBottom>
@@ -763,7 +931,7 @@ function ManageFaq() {
               {errors.general && <span className="text-danger">{errors.general}</span>}
 
               <div className="mb-1">
-                <label htmlFor="language" className="form-label" style={{ fontSize: '13px', fontWeight: 500,marginBottom:'4px' }}>
+                <label htmlFor="language" className="form-label" style={{ fontSize: '13px', fontWeight: 500, marginBottom: '4px' }}>
                   Languages
                 </label>
 
@@ -780,7 +948,7 @@ function ManageFaq() {
                         border: activeLang === lang.id ? '1px solid #1ddec4' : '1px solid #e5e7eb',
                         background: activeLang === lang.id ? '#1ddec4' : '#f8fafc',
                         color: activeLang === lang.id ? '#fff' : '#64748b',
-                        fontWeight:activeLang === lang.id ? '500' : '400',
+                        fontWeight: activeLang === lang.id ? '500' : '400',
                         transition: '0.2s'
                       }}
                     >
@@ -792,7 +960,7 @@ function ManageFaq() {
 
               {/* LANGUAGE FIELDS */}
               <div className="mb-1 mt-2">
-                <label htmlFor="question" className="form-label" style={{ fontSize: '13px', fontWeight: 500,marginBottom:'4px' }}>
+                <label htmlFor="question" className="form-label" style={{ fontSize: '13px', fontWeight: 500, marginBottom: '4px' }}>
                   Question ({languages.find((l) => l.id === activeLang)?.name})
                 </label>
 
@@ -807,8 +975,8 @@ function ManageFaq() {
                 />
               </div>
 
-              <div className='mt-2'>
-                <label htmlFor="answer" className="form-label" style={{ fontSize: '13px', fontWeight: 500,marginBottom:'4px' }}>
+              <div className="mt-2">
+                <label htmlFor="answer" className="form-label" style={{ fontSize: '13px', fontWeight: 500, marginBottom: '4px' }}>
                   Answer ({languages.find((l) => l.id === activeLang)?.name})
                 </label>
 
@@ -850,7 +1018,7 @@ function ManageFaq() {
           <form onSubmit={editFaq}>
             <Modal.Body>
               <div className="mb-2">
-                <label htmlFor="userType" className="form-label" style={{ fontSize: '13px', fontWeight: 500,marginBottom:'4px' }}>
+                <label htmlFor="userType" className="form-label" style={{ fontSize: '13px', fontWeight: 500, marginBottom: '4px' }}>
                   Select User Type
                 </label>
                 <Form.Select
@@ -911,7 +1079,7 @@ function ManageFaq() {
               {/* {errors.general && <span className="text-danger">{errors.general}</span>} */}
 
               <div className="mb-2">
-                <label htmlFor="language" className="form-label" style={{ fontSize: '13px', fontWeight: 500,marginBottom:'4px' }}>
+                <label htmlFor="language" className="form-label" style={{ fontSize: '13px', fontWeight: 500, marginBottom: '4px' }}>
                   Languages
                 </label>
 
@@ -928,7 +1096,7 @@ function ManageFaq() {
                         border: activeLang === lang.id ? '1px solid #1ddec4' : '1px solid #e5e7eb',
                         background: activeLang === lang.id ? '#1ddec4' : '#f8fafc',
                         color: activeLang === lang.id ? '#fff' : '#64748b',
-                        fontWeight:activeLang === lang.id ? '500' : '400',
+                        fontWeight: activeLang === lang.id ? '500' : '400',
                         transition: '0.2s'
                       }}
                     >
@@ -940,7 +1108,7 @@ function ManageFaq() {
 
               {/* LANGUAGE FIELDS */}
               <div className="mb-2">
-                <label htmlFor="question" className="form-label" style={{ fontSize: '13px', fontWeight: 500,marginBottom:'4px' }}>
+                <label htmlFor="question" className="form-label" style={{ fontSize: '13px', fontWeight: 500, marginBottom: '4px' }}>
                   Question ({languages.find((l) => l.id === activeLang)?.name})
                 </label>
 
@@ -962,7 +1130,7 @@ function ManageFaq() {
               </div>
 
               <div>
-                <label htmlFor="answer" className="form-label" style={{ fontSize: '13px', fontWeight: 500,marginBottom:'4px' }}>
+                <label htmlFor="answer" className="form-label" style={{ fontSize: '13px', fontWeight: 500, marginBottom: '4px' }}>
                   Answer ({languages.find((l) => l.id === activeLang)?.name})
                 </label>
 
@@ -995,7 +1163,7 @@ function ManageFaq() {
         </Modal>
 
         {/* View FAQ Modal */}
-        <Modal show={showViewModal} centered onHide={handleCloseViewModal} style={{ zIndex: '99999' }}>
+        <Modal show={showViewModal} centered onHide={handleCloseViewModal} style={{ zIndex: '99999' }} dialogClassName="custom-modal-width">
           <Modal.Header style={{ borderBottom: 0, paddingBottom: 0 }}>
             <Modal.Title style={{ fontSize: '17px' }}>FAQ Details</Modal.Title>
           </Modal.Header>
@@ -1004,17 +1172,51 @@ function ManageFaq() {
               <h6 className="form-label" style={{ fontSize: '13px', fontWeight: 500 }}>
                 User Type:
               </h6>
-              <p style={{ whiteSpace: 'pre-line', fontSize: '13px', fontWeight: 700 }}>{viewData.user_type_label}</p>
-              <h6 className="form-label" style={{ fontSize: '13px', fontWeight: 500 }}>
+              <p style={{ whiteSpace: 'pre-line', fontSize: '13px', fontWeight: 700 }}>{viewFaqData.user_type_label}</p>
+            {/*   <h6 className="form-label" style={{ fontSize: '13px', fontWeight: 500 }}>
                 Question:
               </h6>
-              <p style={{ whiteSpace: 'pre-line', fontSize: '13px', fontWeight: 700 }}>{viewData.question}</p>
+              <p style={{ whiteSpace: 'pre-line', fontSize: '13px', fontWeight: 700 }}>{viewData.question}</p> */}
             </div>
-            <div className="mb-3">
+            {/* <div className="mb-3">
               <h6 className="form-label" style={{ fontSize: '13px', fontWeight: 500 }}>
                 Answer:
               </h6>
               <p style={{ whiteSpace: 'pre-line', fontSize: '13px', fontWeight: 700 }}>{viewData.answer}</p>
+            </div> */}
+
+            {/* Language Tabs */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '10px' }}>
+              {languages.map((lang) => (
+                <button
+                  key={lang.id}
+                  onClick={() => {
+                    setViewLang(lang.id);
+                    // 🔥 RESET OLD DATA (IMPORTANT)
+                    setViewFaqData({});
+                    fetchFaqByLanguage(viewFaqId, lang.id);
+                  }}
+                  style={{
+                    borderRadius: '999px',
+                    padding: '4px 12px',
+                    fontSize: '12px',
+                    border: viewLang === lang.id ? '1px solid #1ddec4' : '1px solid #e5e7eb',
+                    background: viewLang === lang.id ? '#1ddec4' : '#f8fafc',
+                    color: viewLang === lang.id ? '#fff' : '#64748b'
+                  }}
+                >
+                  {lang.name}
+                </button>
+              ))}
+            </div>
+            <div className="mt-3">
+              {/* Question */}
+              <h6 style={{ fontSize: '13px', fontWeight: 500 }}>Question ({languages.find((l) => l.id === viewLang)?.name})</h6>
+              <p>{viewFaqData.question}</p>
+
+              {/* Answer */}
+              <h6 style={{ fontSize: '13px', fontWeight: 500 }}>Answer ({languages.find((l) => l.id === viewLang)?.name})</h6>
+              <p>{viewFaqData.answer}</p>
             </div>
           </Modal.Body>
           <Modal.Footer style={{ borderTop: 0, paddingTop: 0 }}>
