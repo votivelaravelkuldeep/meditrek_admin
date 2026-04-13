@@ -38,7 +38,7 @@ function ManageFaq() {
 
   const [viewLang, setViewLang] = useState('en');
   const [viewFaqData, setViewFaqData] = useState({});
-  const [viewFaqId, setViewFaqId] = useState(null);
+  // const [viewFaqId, setViewFaqId] = useState(null);
 
   const handleSort = (key) => {
     setSortConfig((prev) => {
@@ -146,13 +146,11 @@ function ManageFaq() {
     //   handleShowViewModal();
     //   setSelectedActions({ ...selectedActions, [index]: null });
     // }
-    else if (action === 'View') {
-      setViewFaqId(faq_id); // 🔥 store id
-      setViewLang(activeLang);
-
-      fetchFaqByLanguage(faq_id, activeLang);
-      handleShowViewModal();
-    }
+  else if (action === 'View') {
+  setViewFaqData(faqItem);   // ✅ store full object
+  setViewLang('en');         // default tab
+  handleShowViewModal();
+}
   };
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -373,112 +371,68 @@ function ManageFaq() {
 
   // 13/04/26
 
-  const addFaq = async (e) => {
-    e.preventDefault();
+const addFaq = async (e) => {
+  e.preventDefault();
 
-    let validationErrors = {};
+  let validationErrors = {};
 
-    if (!faqDataqa[activeLang].question) {
-      validationErrors.question = 'Please enter question';
-    }
+  if (!faqDataqa.en.question || !faqDataqa.en.answer) {
+  setActiveLang('en'); 
 
-    if (!faqDataqa[activeLang].answer) {
-      validationErrors.answer = 'Please enter answer';
-    }
+  if (!faqDataqa.en.question) {
+    validationErrors.question = 'English question required';
+  }
 
-    if (!userType) {
-      validationErrors.userType = 'Please select user type';
-    }
+  if (!faqDataqa.en.answer) {
+    validationErrors.answer = 'English answer required';
+  }
+}
 
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      return;
-    }
+  if (!userType) {
+    validationErrors.userType = 'Please select user type';
+  }
 
-    setErrors({});
+  if (Object.keys(validationErrors).length > 0) {
+    setErrors(validationErrors);
+    return;
+  }
 
-    // ✅ ONLY SEND ACTIVE LANGUAGE
-    // const submitData = {
-    //   userType: userType,
-    //   translations: {
-    //     [activeLang]: {
-    //       question: faqDataqa[activeLang].question,
-    //       answer: faqDataqa[activeLang].answer
-    //     }
-    //   }
-    // };
+  setErrors({});
 
-    // const submitData = {
-    //   userType: Number(userType), // 🔥 IMPORTANT FIX
-    //   translations: {
-    //     [activeLang]: {
-    //       question: faqDataqa[activeLang].question,
-    //       answer: faqDataqa[activeLang].answer
-    //     }
-    //   }
-    // };
-
-    //     const submitData = {
-    //   userType: Number(userType),
-
-    //   // 🔥 REQUIRED FOR BACKEND VALIDATION
-    //   question: faqDataqa[activeLang].question,
-    //   answer: faqDataqa[activeLang].answer,
-
-    //   // 🔥 REQUIRED FOR MULTI-LANGUAGE
-    //   translations: {
-    //     [activeLang]: {
-    //       question: faqDataqa[activeLang].question,
-    //       answer: faqDataqa[activeLang].answer
-    //     }
-    //   }
-    // };
-
-    const submitData = {
-      userType: Number(userType),
-      language_code: activeLang, // 🔥 KEY
-
-      question: faqDataqa[activeLang].question,
-      answer: faqDataqa[activeLang].answer
-    };
-
-    try {
-      const response = await axios.post(`${API_URL}add_faq`, submitData);
-
-      if (response.data.success) {
-        Swal.fire({
-          text: 'FAQ added successfully',
-          icon: 'success',
-          timer: 2000
-        });
-
-        // Reset form
-        setFaqDataqa({
-          en: { question: '', answer: '' },
-          fr: { question: '', answer: '' },
-          es: { question: '', answer: '' },
-          ar: { question: '', answer: '' },
-          it: { question: '', answer: '' },
-          de: { question: '', answer: '' },
-          pt: { question: '', answer: '' }
-        });
-
-        setActiveLang('en');
-        setUserType('');
-        handleCloseAddModal();
-        getFaqs();
-      } else {
-        // setErrors({ general: response.data.message || 'Something went wrong' });
-        console.log(response.data);
-
-        setErrors({
-          general: response.data.message || response.data.error || 'Something went wrong'
-        });
-      }
-    } catch (error) {
-      console.error('Error adding FAQ:', error);
-    }
+  const submitData = {
+    userType: Number(userType),
+    translations: faqDataqa
   };
+
+  try {
+    const response = await axios.post(`${API_URL}add_faq`, submitData);
+
+    if (response.data.success) {
+      Swal.fire({
+        text: 'FAQ added successfully',
+        icon: 'success',
+        timer: 2000
+      });
+
+      setFaqDataqa({
+        en: { question: '', answer: '' },
+        fr: { question: '', answer: '' },
+        es: { question: '', answer: '' },
+        ar: { question: '', answer: '' },
+        it: { question: '', answer: '' },
+        de: { question: '', answer: '' },
+        pt: { question: '', answer: '' }
+      });
+
+      setActiveLang('en');
+      setUserType('');
+      handleCloseAddModal();
+      getFaqs();
+    }
+  } catch (error) {
+    console.error('Error adding FAQ:', error);
+  }
+};
 
   // ===============
 
@@ -783,34 +737,46 @@ function ManageFaq() {
     }));
   };
 
-  const fetchFaqByLanguage = async (faqId, lang) => {
-    try {
-      const response = await axios.get(`${API_URL}get_faq`, {
-        params: { language_code: lang }
-      });
+  // const fetchFaqByLanguage = async (faqId, lang) => {
+  //   try {
+  //     const response = await axios.get(`${API_URL}get_faq`, {
+  //       params: { language_code: lang }
+  //     });
 
-      const allFaqs = response.data.data;
+  //     const allFaqs = response.data.data;
 
-      const selectedFaq = allFaqs.find((item) => Number(item.faq_id) === Number(faqId));
+  //     const selectedFaq = allFaqs.find((item) => Number(item.faq_id) === Number(faqId));
 
-      if (selectedFaq) {
-        setViewFaqData(selectedFaq);
-      } else {
-        // 🔥 No translation case
-        setViewFaqData({
-          question: null,
-          answer: null
-        });
-      }
-    } catch (error) {
-      console.error(error);
-    }
+  //     if (selectedFaq) {
+  //       setViewFaqData(selectedFaq);
+  //     } else {
+  //       // 🔥 No translation case
+  //       setViewFaqData({
+  //         question: null,
+  //         answer: null
+  //       });
+  //     }
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
 
-    console.log('LANG CLICKED:', lang);
-    console.log('FAQ ID:', faqId);
-    // console.log("API DATA:", response.data.data);
-  };
+  //   console.log('LANG CLICKED:', lang);
+  //   console.log('FAQ ID:', faqId);
+  //   // console.log("API DATA:", response.data.data);
+  // };
+const question =
+  viewFaqData.translations?.[viewLang]?.question
+    ? viewFaqData.translations[viewLang].question
+    : viewLang === "en"
+    ? viewFaqData.question || "N/A"
+    : "N/A";
 
+const answer =
+  viewFaqData.translations?.[viewLang]?.answer
+    ? viewFaqData.translations[viewLang].answer
+    : viewLang === "en"
+    ? viewFaqData.answer || "N/A"
+    : "N/A";
   return (
     <>
       {/* <Typography style={{ marginTop: '15px', marginBottom: '30px' }} variant="h4" gutterBottom>
@@ -969,7 +935,15 @@ function ManageFaq() {
                   rows={3}
                   placeholder="Enter question"
                   value={faqDataqa[activeLang].question}
-                  onChange={(e) => handleLangChange('question', e.target.value)}
+                  onChange={(e) => {
+    handleLangChange('question', e.target.value);
+
+    // clear error when typing
+    if (activeLang === 'en') {
+      setErrors((prev) => ({ ...prev, question: '' }));
+    }
+  }}
+  isInvalid={activeLang === 'en' && errors.question}
                   className="custom-search form-control"
                   style={{ fontSize: '13px' }}
                 />
@@ -985,19 +959,21 @@ function ManageFaq() {
                   rows={3}
                   placeholder="Enter answer"
                   value={faqDataqa[activeLang].answer}
-                  onChange={(e) => handleLangChange('answer', e.target.value)}
-                  // style={{
-                  //   borderRadius: '10px',
-                  //   fontSize: '13px',
-                  //   padding: '10px 12px',
-                  //   border: '1px solid #e5e7eb'
-                  // }}
-                  // onFocus={(e) => (e.target.style.border = '1px solid #1ddec4')}
-                  // onBlur={(e) => (e.target.style.border = '1px solid #e5e7eb')}
+                  onChange={(e) => {
+    handleLangChange('answer', e.target.value);
+
+    if (activeLang === 'en') {
+      setErrors((prev) => ({ ...prev, answer: '' }));
+    }
+  }}
+  isInvalid={activeLang === 'en' && errors.answer}
                   className="custom-search form-control"
                   style={{ fontSize: '13px' }}
                 />
               </div>
+              <Form.Control.Feedback type="invalid">
+  {errors.answer}
+</Form.Control.Feedback>
             </Modal.Body>
             <Modal.Footer style={{ borderTop: 0, paddingTop: 0 }}>
               <Button variant="secondary" onClick={handleCloseAddModal} style={{ fontSize: '12px' }}>
@@ -1191,11 +1167,8 @@ function ManageFaq() {
                 <button
                   key={lang.id}
                   onClick={() => {
-                    setViewLang(lang.id);
-                    // 🔥 RESET OLD DATA (IMPORTANT)
-                    setViewFaqData({});
-                    fetchFaqByLanguage(viewFaqId, lang.id);
-                  }}
+  setViewLang(lang.id);
+}}
                   style={{
                     borderRadius: '999px',
                     padding: '4px 12px',
@@ -1212,11 +1185,12 @@ function ManageFaq() {
             <div className="mt-3">
               {/* Question */}
               <h6 style={{ fontSize: '13px', fontWeight: 500 }}>Question ({languages.find((l) => l.id === viewLang)?.name})</h6>
-              <p>{viewFaqData.question}</p>
+              <p>{question}</p>
+
 
               {/* Answer */}
               <h6 style={{ fontSize: '13px', fontWeight: 500 }}>Answer ({languages.find((l) => l.id === viewLang)?.name})</h6>
-              <p>{viewFaqData.answer}</p>
+              <p>{answer}</p>
             </div>
           </Modal.Body>
           <Modal.Footer style={{ borderTop: 0, paddingTop: 0 }}>
