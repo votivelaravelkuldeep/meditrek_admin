@@ -32,6 +32,7 @@ function ManageReportCategory() {
   //   const usersPerPage = 50; // Show 5 rows per page
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [sortConfig, setSortConfig] = useState(null);
+  const [activeLang, setActiveLang] = useState('en');
 
   const handleSort = (key) => {
     setSortConfig((prev) => {
@@ -359,6 +360,16 @@ function ManageReportCategory() {
     }
   ];
 
+  const languages = [
+    { id: 'en', name: 'English', default: true },
+    { id: 'fr', name: 'Français' },
+    { id: 'es', name: 'Español' },
+    { id: 'ar', name: 'العربية' },
+    { id: 'it', name: 'Italiano' },
+    { id: 'de', name: 'Deutsch' },
+    { id: 'pt', name: 'Português' }
+  ];
+
   return (
     <>
       {/* <Typography style={{ marginTop: '15px', marginBottom: '30px' }} variant="h4" gutterBottom>
@@ -373,23 +384,21 @@ function ManageReportCategory() {
         }}
       >
         <div className="d-flex justify-content-between flex-wrap align-items-center">
-          <Heading heading='Manage Report Category' />
-          <div className='d-flex gap-2 flex-wrap'>
+          <Heading heading="Manage Report Category" />
+          <div className="d-flex gap-2 flex-wrap">
             <div>
-            <input
-              className="search-input custom-search form-control"
-              type="text"
-              placeholder="Search..."
-              onChange={handleSearchChange}
-              style={{ width: '250px', fontSize: '13px' }}
-            />
-          </div>
+              <input
+                className="search-input custom-search form-control"
+                type="text"
+                placeholder="Search..."
+                onChange={handleSearchChange}
+                style={{ width: '250px', fontSize: '13px' }}
+              />
+            </div>
             <Button className="btn btn-primary" style={{ fontSize: '12px', borderRadius: '10px' }} onClick={handleShowModal}>
               <AddIcon style={{ fontSize: '16px' }} /> Add Report Category
             </Button>
           </div>
-
-          
         </div>
 
         <div
@@ -415,14 +424,37 @@ function ManageReportCategory() {
         </div>
 
         {/* Add Modal */}
-        <Modal show={showModal} centered onHide={handleCloseModal} style={{ zIndex: '99999' }} className="custom-modal">
+        <Modal show={showModal} centered onHide={handleCloseModal} style={{ zIndex: '99999' }} className="custom-modal" dialogClassName="custom-modal-width">
           <Modal.Header closeButton>
             <Modal.Title style={{ fontSize: '17px' }}>Add Category </Modal.Title>
           </Modal.Header>
           <form onSubmit={addReportCategory}>
-            <Modal.Body style={{ paddingTop: 0 }}>
+            <Modal.Body style={{ paddingLeft: '10px',paddingRight:'10px',paddingTop:0,paddingBottom:0 }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px',marginBottom:'16px' }}>
+                {languages.map((lang) => (
+                  <button
+                    type="button"
+                    key={lang.id}
+                    onClick={() => setActiveLang(lang.id)}
+                    style={{
+                      borderRadius: '999px',
+                      padding: '2px 12px',
+                      fontSize: '12px',
+                      border: activeLang === lang.id ? '1px solid #1ddec4' : '1px solid #e5e7eb',
+                      background: activeLang === lang.id ? '#1ddec4' : '#f8fafc',
+                      color: activeLang === lang.id ? '#fff' : '#64748b',
+                      fontWeight: activeLang === lang.id ? '500' : '400',
+                      transition: '0.2s'
+                    }}
+                  >
+                    {lang.name}
+                  </button>
+                ))}
+              </div>
               <Form.Group style={{ display: 'flex', flexDirection: 'column' }}>
-                <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>Category Name</Form.Label>
+                <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>Category Name 
+                  ({languages.find((l) => l.id === activeLang)?.name})
+                </Form.Label>
                 <Form.Control
                   type="text"
                   placeholder="Enter name"
@@ -472,14 +504,37 @@ function ManageReportCategory() {
         </Modal>
 
         {/* Edit Modal */}
-        <Modal show={showModal2} centered onHide={handleCloseModal2} style={{ zIndex: '99999' }} className="custom-modal">
+        <Modal show={showModal2} centered onHide={handleCloseModal2} style={{ zIndex: '99999' }} className="custom-modal" dialogClassName="custom-modal-width">
           <Modal.Header closeButton>
             <Modal.Title style={{ fontSize: '17px' }}>Edit Category</Modal.Title>
           </Modal.Header>
           <form onSubmit={editReportCategory}>
-            <Modal.Body style={{ paddingTop: 0 }}>
+            <Modal.Body style={{ paddingLeft: '10px',paddingRight:'10px',paddingTop:0,paddingBottom:0 }}>
+               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px',marginBottom:'16px' }}>
+                {languages.map((lang) => (
+                  <button
+                    type="button"
+                    key={lang.id}
+                    onClick={() => setActiveLang(lang.id)}
+                    style={{
+                      borderRadius: '999px',
+                      padding: '2px 12px',
+                      fontSize: '12px',
+                      border: activeLang === lang.id ? '1px solid #1ddec4' : '1px solid #e5e7eb',
+                      background: activeLang === lang.id ? '#1ddec4' : '#f8fafc',
+                      color: activeLang === lang.id ? '#fff' : '#64748b',
+                      fontWeight: activeLang === lang.id ? '500' : '400',
+                      transition: '0.2s'
+                    }}
+                  >
+                    {lang.name}
+                  </button>
+                ))}
+              </div>
               <Form.Group style={{ display: 'flex', flexDirection: 'column' }}>
-                <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>Category Name</Form.Label>
+                <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>Category Name
+                   ({languages.find((l) => l.id === activeLang)?.name})
+                </Form.Label>
                 <Form.Control
                   type="text"
                   placeholder="Enter name"
