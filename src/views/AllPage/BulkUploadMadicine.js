@@ -19,7 +19,7 @@ import { saveAs } from 'file-saver';
 import { useNavigate } from 'react-router-dom';
 import Heading from 'component/common/Heading';
 // import './managecontent.css';
-import './managecontent.css'
+import './managecontent.css';
 
 function BulkUploadMadicine() {
   const navigate = useNavigate();
@@ -145,29 +145,29 @@ function BulkUploadMadicine() {
                 </Card.Header> */}
         <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
           <Heading heading="Bulk Medicine Management" />
-          <Button
-            className="btn btn-primary  action-btn"
-            variant="contained"
-            color="primary"
-            onClick={handlebulkupload}
-            // className="me-2"
-            disabled={isLoading}
-            style={{ fontSize: '12px', borderRadius: '10px' }}
-          >
-            <FileDownloadIcon style={{ fontSize: '16px' }} className="me-0.5" />
-            Download Template
-          </Button>
         </div>
 
         <div className="mt-3">
           <div className=" ">
-            <div className="d-flex justify-content-between align-items-center mb-2">
+            <div className="d-flex justify-content-between align-items-center mb-2 gap-2 flex-wrap">
               <div>
                 <h5 className="mb-1" style={{ fontSize: '16px', fontWeight: '600' }}>
                   Excel File Operations
                 </h5>
                 <p className="text-muted small mb-0">Download template or upload bulk data</p>
               </div>
+              <Button
+                className="btn btn-primary  action-btn"
+                variant="contained"
+                color="primary"
+                onClick={handlebulkupload}
+                // className="me-2"
+                disabled={isLoading}
+                style={{ fontSize: '12px', borderRadius: '10px' }}
+              >
+                <FileDownloadIcon style={{ fontSize: '16px' }} className="me-0.5" />
+                Download Template
+              </Button>
             </div>
             <div className="mb-4 mt-3">
               <label htmlFor="file-upload" className="form-label" style={{ fontWeight: '600' }}>

@@ -140,7 +140,30 @@ function BulkUploadDesease() {
         <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
           {/* <h5>Bulk Disease Management</h5> */}
           <Heading heading="Bulk Disease Management" />
-          <Button
+          {/* <Button
+            className="btn btn-primary  action-btn"
+            variant="contained"
+            color="primary"
+            onClick={handlebulkupload}
+            // className="me-2"
+            disabled={isLoading}
+            style={{ fontSize: '12px', borderRadius: '10px' }}
+          >
+            <FileDownloadIcon style={{ fontSize: '16px' }} className="me-0.5" />
+            Download Template
+          </Button> */}
+        </div>
+
+        <div className="mt-3">
+          <div>
+            <div className="d-flex justify-content-between align-items-center mb-2 gap-2 flex-wrap">
+              <div>
+                <h5 className="mb-1" style={{ fontSize: '16px', fontWeight: '600' }}>
+                  Excel File Operations
+                </h5>
+                <p className="text-muted small mb-0">Download template or upload bulk data</p>
+              </div>
+               <Button
             className="btn btn-primary  action-btn"
             variant="contained"
             color="primary"
@@ -152,17 +175,6 @@ function BulkUploadDesease() {
             <FileDownloadIcon style={{ fontSize: '16px' }} className="me-0.5" />
             Download Template
           </Button>
-        </div>
-
-        <div className="mt-3">
-          <div>
-            <div className="d-flex justify-content-between align-items-center mb-2">
-              <div>
-                <h5 className="mb-1" style={{ fontSize: '16px', fontWeight: '600' }}>
-                  Excel File Operations
-                </h5>
-                <p className="text-muted small mb-0">Download template or upload bulk data</p>
-              </div>
             </div>
 
             <div className="mb-4 mt-3">
