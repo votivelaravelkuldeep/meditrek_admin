@@ -23,7 +23,15 @@ function ManageReportCategory() {
   const [currentPage, setCurrentPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
   const [showModal2, setShowModal2] = useState(false);
-  const [categoryName, setCategoryName] = useState('');
+  const [categoryData, setCategoryData] = useState({
+  en: '',
+  fr: '',
+  es: '',
+  ar: '',
+  it: '',
+  de: '',
+  pt: ''
+});
   const [nameError, setNameError] = useState('');
   const [reportId, setReportId] = useState('');
   const [image, setImage] = useState(null);
@@ -33,6 +41,24 @@ function ManageReportCategory() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [sortConfig, setSortConfig] = useState(null);
   const [activeLang, setActiveLang] = useState('en');
+
+  const resetForm = () => {
+  setCategoryData({
+    en: '',
+    fr: '',
+    es: '',
+    ar: '',
+    it: '',
+    de: '',
+    pt: ''
+  });
+
+  setImage(null);
+  setImagePreview(null);
+  setEditImagePreview(null);
+  setActiveLang('en');
+  setNameError({});
+};
 
   const handleSort = (key) => {
     setSortConfig((prev) => {
@@ -78,20 +104,41 @@ function ManageReportCategory() {
     console.log(`Delete user with ID: ${report_category_id}`);
   };
 
-  const handleActionChange = (index, action, report_category_id, name, image) => {
-    setSelectedActions({ ...selectedActions, [index]: action });
-    if (action === 'Delete') {
-      deleteReportCategory(report_category_id);
-      setSelectedActions({ ...selectedActions, [index]: null });
-    } else if (action === 'Edit') {
-      setCategoryName(name);
-      setReportId(report_category_id);
-      //   setEditImagePreview(image ? `${API_URL}uploads/report_category/${image}` : null);
-      setEditImagePreview(image ? `${IMAGE_PATH}${image}` : null);
-      handleShowModal2();
-      setSelectedActions({ ...selectedActions, [index]: null });
-    }
-  };
+ const handleActionChange = (index, action, report_category_id, name, image) => {
+  setSelectedActions({ ...selectedActions, [index]: action });
+
+  if (action === 'Delete') {
+    deleteReportCategory(report_category_id);
+    setSelectedActions({ ...selectedActions, [index]: null });
+  } else if (action === 'Edit') {
+
+    const selectedItem = reportData.find(
+      (r) => r.report_category_id === report_category_id
+    );
+
+    const translationsMap = {};
+
+    selectedItem?.translations?.forEach((t) => {
+      translationsMap[t.language_code] = t.category_name;
+    });
+
+    setCategoryData({
+      en: translationsMap.en || '',
+      fr: translationsMap.fr || '',
+      es: translationsMap.es || '',
+      ar: translationsMap.ar || '',
+      it: translationsMap.it || '',
+      de: translationsMap.de || '',
+      pt: translationsMap.pt || ''
+    });
+
+    setReportId(report_category_id);
+    setEditImagePreview(image ? `${IMAGE_PATH}${image}` : null);
+
+    handleShowModal2();
+    setSelectedActions({ ...selectedActions, [index]: null });
+  }
+};
 
   const [searchQuery, setSearchQuery] = useState('');
   const handleSearchChange = (event) => {
@@ -159,108 +206,106 @@ function ManageReportCategory() {
     }
   };
 
-  const addReportCategory = async (e) => {
-    e.preventDefault();
-    let errors = {};
+const addReportCategory = async (e) => {
+  e.preventDefault();
 
-    if (!categoryName) {
-      errors.categoryName = 'Please enter category name';
-    }
+  let errors = {};
 
-    if (Object.keys(errors).length > 0) {
-      setNameError(errors);
-      return;
-    }
-    setNameError({});
+  if (!categoryData.en) {
+    setActiveLang('en');
+    errors.categoryName = 'English category name required';
+  }
 
-    const formData = new FormData();
-    formData.append('category_name', categoryName);
-    if (image) {
-      formData.append('image', image);
-    }
+  if (!image) {
+    errors.image = 'Image required';
+  }
 
-    axios
-      .post(`${API_URL}add_report_category`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      })
-      .then((response) => {
-        if (response.data.key) {
-          setNameError({ general: response.data.msg });
-        } else if (response.data.success) {
-          Swal.fire({
-            title: '',
-            text: 'Category added successfully',
-            icon: 'success',
-            timer: 3000
-          });
-          handleCloseModal();
-          setCategoryName('');
-          setImage(null);
-          setImagePreview(null);
-          getreportCategory();
-        } else {
-          setCategoryName('');
-          handleCloseModal();
-        }
-      })
-      .catch((error) => {
-        console.error('Error adding new category', error);
+  if (Object.keys(errors).length > 0) {
+    setNameError(errors);
+    return;
+  }
+
+  setNameError({});
+
+  const translations = Object.entries(categoryData).map(([lang, name]) => ({
+    language_code: lang,
+    category_name: name
+  }));
+
+  const formData = new FormData();
+  formData.append('category_name', categoryData.en);
+  formData.append('translations', JSON.stringify(translations));
+
+  if (image) formData.append('image', image);
+
+  try {
+    const response = await axios.post(`${API_URL}add_report_category`, formData);
+
+    if (response.data.success) {
+      Swal.fire({
+        text: 'Category added successfully',
+        icon: 'success',
+        timer: 2000
       });
-  };
 
-  const editReportCategory = async (e) => {
-    e.preventDefault();
-    let errors = {};
-
-    if (!categoryName) {
-      errors.categoryName = 'Please enter category name';
+      resetForm();
+      handleCloseModal();
+      getreportCategory();
     }
+  } catch (error) {
+    console.error(error);
+  }
+};
 
-    if (Object.keys(errors).length > 0) {
-      setNameError(errors);
-      return;
-    }
-    setNameError({});
+const editReportCategory = async (e) => {
+  e.preventDefault();
 
-    const formData = new FormData();
-    formData.append('category_name', categoryName);
-    formData.append('report_category_id', reportId);
-    if (image) {
-      formData.append('image', image);
-    }
+  let errors = {};
 
-    axios
-      .post(`${API_URL}edit_report_category`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      })
-      .then((response) => {
-        if (response.data.key) {
-          setNameError({ general: response.data.msg });
-        } else if (response.data.success) {
-          Swal.fire({
-            title: '',
-            text: 'Category updated successfully',
-            icon: 'success',
-            timer: 2000
-          });
-          handleCloseModal2();
-          setCategoryName('');
-          setImage(null);
-          setEditImagePreview(null);
-          getreportCategory();
-        } else {
-          setCategoryName('');
-          handleCloseModal2();
-        }
-      })
-      .catch((error) => {
-        console.error('Error updating category', error);
+  if (!categoryData.en) {
+    setActiveLang('en');
+    errors.categoryName = 'English category name required';
+  }
+
+  if (Object.keys(errors).length > 0) {
+    setNameError(errors);
+    return;
+  }
+
+  setNameError({});
+
+  const translations = Object.entries(categoryData).map(([lang, name]) => ({
+    language_code: lang,
+    category_name: name
+  }));
+
+  const formData = new FormData();
+  formData.append('report_category_id', reportId);
+  formData.append('category_name', categoryData.en);
+  formData.append('translations', JSON.stringify(translations));
+
+  if (image) {
+    formData.append('image', image);
+  }
+
+  try {
+    const response = await axios.post(`${API_URL}edit_report_category`, formData);
+
+    if (response.data.success) {
+      Swal.fire({
+        text: 'Category updated successfully',
+        icon: 'success',
+        timer: 2000
       });
-  };
+
+      resetForm();
+      handleCloseModal2();
+      getreportCategory();
+    }
+  } catch (error) {
+    console.error(error);
+  }
+};
 
   const handleShowModal = () => {
     setShowModal(true);
@@ -268,22 +313,16 @@ function ManageReportCategory() {
     setImagePreview(null);
   };
 
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setCategoryName('');
-    setImage(null);
-    setImagePreview(null);
-    setNameError({});
-  };
+const handleCloseModal = () => {
+  setShowModal(false);
+  resetForm();
+};
 
   const handleShowModal2 = () => setShowModal2(true);
-  const handleCloseModal2 = () => {
-    setShowModal2(false);
-    setCategoryName('');
-    setImage(null);
-    setEditImagePreview(null);
-    setNameError({});
-  };
+const handleCloseModal2 = () => {
+  setShowModal2(false);
+  resetForm();
+};
 
   const columns = [
     {
@@ -292,10 +331,17 @@ function ManageReportCategory() {
       render: (_, index) => index + 1
     },
     {
-      label: 'Category Name',
-      key: 'category_name',
-      sortable: true
-    },
+  label: 'Category Name',
+  key: 'category_name',
+  sortable: true,
+  render: (user) => {
+    const t = user.translations?.find(
+      (t) => t.language_code === activeLang
+    );
+
+    return t?.category_name || 'N/A';
+  }
+},
     {
       label: 'Image',
       key: 'image',
@@ -451,42 +497,56 @@ function ManageReportCategory() {
                   </button>
                 ))}
               </div>
-              <Form.Group style={{ display: 'flex', flexDirection: 'column' }}>
-                <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>Category Name 
-                  ({languages.find((l) => l.id === activeLang)?.name})
-                </Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="Enter name"
-                  onChange={(e) => {
-                    setCategoryName(e.target.value);
-                    setNameError((prev) => ({ ...prev, categoryName: '' }));
-                  }}
-                  isInvalid={nameError.categoryName}
-                  className="custom-input custom-search"
-                  style={{ fontSize: '13px' }}
-                />
-                <Form.Control.Feedback type="invalid">{nameError.categoryName}</Form.Control.Feedback>
-              </Form.Group>
+            <Form.Group style={{ display: 'flex', flexDirection: 'column' }}>
+  <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>
+    Category Name ({languages.find((l) => l.id === activeLang)?.name})
+  </Form.Label>
 
-              <Form.Group style={{ display: 'flex', flexDirection: 'column', marginTop: '10px' }}>
-                {/* <label htmlFor="categoryImage" className="form-label">
-                  Category Image
-                </label> */}
-                <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}> Category Image</Form.Label>
-                <Form.Control
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="custom-input custom-search"
-                  style={{ fontSize: '13px' }}
-                />
-                {imagePreview && (
-                  <div className="mt-2">
-                    <img src={imagePreview} alt="Preview" style={{ width: '100px', height: '100px', objectFit: 'cover' }} />
-                  </div>
-                )}
-              </Form.Group>
+  <Form.Control
+    type="text"
+    placeholder="Enter name"
+    value={categoryData[activeLang] || ''}
+    onChange={(e) => {
+      setCategoryData((prev) => ({
+        ...prev,
+        [activeLang]: e.target.value
+      }));
+
+      if (activeLang === 'en') {
+        setNameError((prev) => ({ ...prev, categoryName: '' }));
+      }
+    }}
+    isInvalid={activeLang === 'en' && nameError.categoryName}
+  />
+
+  <Form.Control.Feedback type="invalid">
+    {nameError.categoryName}
+  </Form.Control.Feedback>
+</Form.Group>
+
+             <Form.Group style={{ display: 'flex', flexDirection: 'column', marginTop: '10px' }}>
+  <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>
+    Category Image
+  </Form.Label>
+
+  <Form.Control
+    type="file"
+    accept="image/*"
+    onChange={handleImageChange}
+    className="custom-input custom-search"
+    style={{ fontSize: '13px' }}
+  />
+
+  {imagePreview && (
+    <div className="mt-2">
+      <img
+        src={imagePreview}
+        alt="Preview"
+        style={{ width: '100px', height: '100px', objectFit: 'cover' }}
+      />
+    </div>
+  )}
+</Form.Group>
 
               <span style={{ color: 'red', fontSize: '12px' }}>Image size must be 1200x1200 px</span>
 
@@ -538,9 +598,12 @@ function ManageReportCategory() {
                 <Form.Control
                   type="text"
                   placeholder="Enter name"
-                  value={categoryName}
+                  value={categoryData[activeLang] || ''}
                   onChange={(e) => {
-                    setCategoryName(e.target.value);
+                    setCategoryData((prev) => ({
+  ...prev,
+  [activeLang]: e.target.value
+}));
                     setNameError((prev) => ({ ...prev, categoryName: '' }));
                   }}
                   isInvalid={nameError.categoryName}
