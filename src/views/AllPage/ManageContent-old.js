@@ -1,11 +1,11 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './managecontent.css';
-// import Typography from '@mui/material/Typography';
+import Typography from '@mui/material/Typography';
 import JoditEditor from 'jodit-react';
 import axios from 'axios';
-import { API_URL } from 'config/constant';
-// import { Link } from 'react-router-dom';
+import { API_URL, APP_PREFIX_PATH } from 'config/constant';
+import { Link } from 'react-router-dom';
 import { Modal, Button } from 'react-bootstrap';
 
 function Managecontent() {
@@ -41,13 +41,13 @@ function Managecontent() {
   const [privacy, setPrivacy] = useState('');
   const [android, setAndroid] = useState('');
   const [ios, setIos] = useState('');
-  const [share, setShare] = useState('');
+  const [share, setShare] = useState('')
   const [activeButton, setActiveButton] = useState('about');
-  const [contentUpdated, setContentUpdated] = useState(false);
+  const [contentUpdated, setContentUpdated] = useState(false)
 
-  const handleShowContentUpdated = () => setContentUpdated(true);
-  const handleCloseContentUpdated = () => setContentUpdated(false);
-
+  const handleShowContentUpdated = () => setContentUpdated(true)
+  const handleCloseContentUpdated = () => setContentUpdated(false)
+  
   const contentTypes = {
     about: 0,
     terms: 1,
@@ -63,7 +63,7 @@ function Managecontent() {
     fetchContent('privacy', setPrivacy);
     fetchContent('android', setAndroid);
     fetchContent('ios', setIos);
-    fetchContent('share', setShare);
+    fetchContent('share', setShare)
   }, []);
 
   const fetchContent = (contentType, setter) => {
@@ -71,6 +71,7 @@ function Managecontent() {
       .get(`${API_URL}get_all_content_url?content_type=${contentTypes[contentType]}`)
       .then((response) => {
         setter(response.data.result[0].content);
+        
       })
       .catch((error) => {
         console.log(error);
@@ -122,8 +123,8 @@ function Managecontent() {
         contentStateToUpdate = ios;
         break;
       case 'share':
-        contentStateToUpdate = share;
-        break;
+          contentStateToUpdate = share;
+          break;
       default:
         contentStateToUpdate = '';
     }
@@ -134,7 +135,7 @@ function Managecontent() {
       })
       .then(() => {
         console.log(`${contentType} updated successfully`);
-        handleShowContentUpdated();
+        handleShowContentUpdated()
       })
       .catch((error) => {
         console.log(error);
@@ -142,135 +143,64 @@ function Managecontent() {
       });
   };
 
-  const languages = [
-    { id: 'en', name: 'English', default: true },
-    { id: 'fr', name: 'Français' },
-    { id: 'es', name: 'Español' },
-    { id: 'ar', name: 'العربية' },
-    { id: 'it', name: 'Italiano' },
-    { id: 'de', name: 'Deutsch' },
-    { id: 'pt', name: 'Português' }
-  ];
-
-  const [activeLang, setActiveLang] = useState('en');
-
   return (
     <>
-      {/* <Typography style={{ marginTop: '15px', marginBottom: '30px' }} variant="h4" gutterBottom>
+      <Typography style={{ marginTop: '15px', marginBottom: '30px' }} variant="h4" gutterBottom>
       <Link to={APP_PREFIX_PATH + '/'} style={{textDecoration: 'none'}}><span style={{ color: '#f68519' }}>Dashboard</span></Link> / Manage Content
-      </Typography> */}
+      </Typography>
       {/* <Typography variant="h4" gutterBottom>
         Manage Content
       </Typography> */}
 
-      <div className="container-fluid" style={{ borderRadius: '8px', paddingBottom: '20px' }}>
-        <div className="row">
+      <div className="container-fluid bg-white" style={{ borderRadius: '8px', paddingBottom: '20px' }}>
+        <div className="row justify-content-center" style={{ marginTop: '2rem' }}>
           <div className="col-md-12">
-            <nav className="navbar navbar-expand-lg navbar-light  navBar">
-              <div className="d-flex gap-2 mb-2 flex-wrap">
+            <nav className="navbar navbar-expand-lg navbar-light  navBar mt-3 ">
+              <div className="container-fluid navbar-responsive">
                 <button
-                  className={`btn ${activeButton === 'about' ? 'btn-content-active' : ''}`}
-                  style={{
-                    borderRadius: '999px',
-                    padding: '8px 24px',
-                    fontSize: '13px',
-                    background: activeButton === 'about' ? '#1ddec4' : '#eef2f7',
-                    color: activeButton === 'about' ? '#fff' : '#64748b',
-                    cursor: 'pointer',
-                    border: 0,
-                    fontWeight: 500,
-                    textTransform: 'capitalize'
-                  }}
+                  className={`btn me-2 mb-2 btn-content ${activeButton === 'about' ? 'active' : ''}`}
+                  style={{ width: 'fit-content', fontSize: '14px' }}
                   type="button"
                   onClick={() => handleButtonClick('about')}
                 >
-                  About Us
+                  ABOUT US
                 </button>
                 <button
-                  className={`btn ${activeButton === 'terms' ? 'btn-content-active' : ''}`}
-                  style={{
-                    borderRadius: '999px',
-                    padding: '8px 24px',
-                    fontSize: '13px',
-                    background: activeButton === 'terms' ? '#1ddec4' : '#eef2f7',
-                    color: activeButton === 'terms' ? '#fff' : '#64748b',
-                    cursor: 'pointer',
-                    border: 0,
-                    fontWeight: 500
-                  }}
+                  className={`btn  me-2 mb-2 btn-content ${activeButton === 'terms' ? 'active' : ''}`}
+                  style={{width: 'fit-content', fontSize: '14px' }}
                   type="button"
                   onClick={() => handleButtonClick('terms')}
                   id="termss"
                 >
-                  {/* TERMS AND CONDITIONS */}
-                  Terms And Conditions
+                  TERMS AND CONDITIONS
                 </button>
                 <button
-                  className={`btn ${activeButton === 'privacy' ? 'btn-content-active' : ''}`}
-                  style={{
-                    borderRadius: '999px',
-                    padding: '8px 24px',
-                    fontSize: '13px',
-                    background: activeButton === 'privacy' ? '#1ddec4' : '#eef2f7',
-                    color: activeButton === 'privacy' ? '#fff' : '#64748b',
-                    cursor: 'pointer',
-                    border: 0,
-                    fontWeight: 500
-                  }}
+                  className={`btn  me-2 mb-2 btn-content ${activeButton === 'privacy' ? 'active' : ''}`}
+                  style={{ width: 'fit-content', fontSize: '14px' }}
                   type="button"
                   onClick={() => handleButtonClick('privacy')}
                 >
-                  {/* PRIVACY POLICY */}
-                  Privacy Policy
+                  PRIVACY POLICY
                 </button>
                 <button
-                  className={`btn ${activeButton === 'android' ? 'btn-content-active' : ''}`}
-                  style={{
-                    borderRadius: '999px',
-                    padding: '8px 24px',
-                    fontSize: '13px',
-                    background: activeButton === 'android' ? '#1ddec4' : '#eef2f7',
-                    color: activeButton === 'android' ? '#fff' : '#64748b',
-                    cursor: 'pointer',
-                    border: 0,
-                    fontWeight: 500
-                  }}
+                  className={`btn  me-2 mb-2  btn-content ${activeButton === 'android' ? 'active' : ''}`}
+                  style={{ width: 'fit-content', fontSize: '14px' }}
                   type="button"
                   onClick={() => handleButtonClick('android')}
                 >
-                  {/* ANDROID APP URL */}
-                  Android App URL
+                  ANDROID APP URL
                 </button>
                 <button
-                  className={`btn ${activeButton === 'ios' ? 'btn-content-active' : ''}`}
-                  style={{
-                    borderRadius: '999px',
-                    padding: '8px 24px',
-                    fontSize: '13px',
-                    background: activeButton === 'ios' ? '#1ddec4' : '#eef2f7',
-                    color: activeButton === 'ios' ? '#fff' : '#64748b',
-                    cursor: 'pointer',
-                    border: 0,
-                    fontWeight: 500
-                  }}
+                  className={`btn  me-2 mb-2 btn-content ${activeButton === 'ios' ? 'active' : ''}`}
+                  style={{ width: 'fit-content', fontSize: '14px' }}
                   type="button"
                   onClick={() => handleButtonClick('ios')}
                 >
-                  {/* IOS APP URL */}
-                  IOS App URL
+                  IOS APP URL
                 </button>
                 <button
-                  className={`btn ${activeButton === 'share' ? 'btn-content-active' : ''}`}
-                  style={{
-                    borderRadius: '999px',
-                    padding: '8px 24px',
-                    fontSize: '13px',
-                    background: activeButton === 'share' ? '#1ddec4' : '#eef2f7',
-                    color: activeButton === 'share' ? '#fff' : '#64748b',
-                    cursor: 'pointer',
-                    border: 0,
-                    fontWeight: 500
-                  }}
+                  className={`btn  me-2 mb-2 btn-content ${activeButton === 'share' ? 'active' : ''}`}
+                  style={{ width: 'fit-content', fontSize: '14px' }}
                   type="button"
                   onClick={() => handleButtonClick('share')}
                 >
@@ -278,41 +208,13 @@ function Managecontent() {
                 </button>
               </div>
             </nav>
-            {/* <br /> */}
-            <div className="">
+            <br />
+            <div className="user-details">
               {content === 0 && (
-                <div
-                  style={{
-                    background: '#fff',
-                    borderRadius: 16,
-                    boxShadow: '0 4px 8px rgba(0,0,0,0.05)',
-                    padding: '24px'
-                  }}
-                >
-                  {/* <span className="mb-2" style={{ fontSize: '15px' }}>
+                <div>
+                  <span className="mb-2" style={{ fontSize: '15px' }}>
                     About us
-                  </span> */}
-                  <div style={{ display: 'flex', flexWrap: 'wrap', }}>
-                    {languages.map((lang) => (
-                      <button
-                        type="button"
-                        key={lang.id}
-                        onClick={() => setActiveLang(lang.id)}
-                        style={{
-                        //   borderRadius: '999px',
-                          padding: '2px 12px',
-                          fontSize: '12px',
-                          border: activeLang === lang.id ? '1px solid #1ddec4' : '1px solid #e5e7eb',
-                          background: activeLang === lang.id ? '#1ddec4' : '#f8fafc',
-                          color: activeLang === lang.id ? '#fff' : '#64748b',
-                          fontWeight: activeLang === lang.id ? '500' : '400',
-                          transition: '0.2s'
-                        }}
-                      >
-                        {lang.name}
-                      </button>
-                    ))}
-                  </div>
+                  </span>
                   <div>
                     <JoditEditor value={about} config={config1} onBlur={(htmlString) => setAbout(htmlString)} />
                   </div>
@@ -323,14 +225,7 @@ function Managecontent() {
                 </div>
               )}
               {content === 1 && (
-                <div
-                  style={{
-                    background: '#fff',
-                    borderRadius: 16,
-                    boxShadow: '0 4px 8px rgba(0,0,0,0.05)',
-                    padding: '24px'
-                  }}
-                >
+                <div>
                   <span>Terms And Conditions</span>
                   <div>
                     <JoditEditor value={terms} config={config1} onBlur={(htmlString) => setTerms(htmlString)} />
@@ -342,14 +237,7 @@ function Managecontent() {
                 </div>
               )}
               {content === 2 && (
-                <div
-                  style={{
-                    background: '#fff',
-                    borderRadius: 16,
-                    boxShadow: '0 4px 8px rgba(0,0,0,0.05)',
-                    padding: '24px'
-                  }}
-                >
+                <div>
                   <span>Privacy Policy</span>
                   <div>
                     <JoditEditor value={privacy} config={config1} onBlur={(htmlString) => setPrivacy(htmlString)} />
@@ -361,14 +249,7 @@ function Managecontent() {
                 </div>
               )}
               {content === 3 && (
-                <div
-                  style={{
-                    background: '#fff',
-                    borderRadius: 16,
-                    boxShadow: '0 4px 8px rgba(0,0,0,0.05)',
-                    padding: '24px'
-                  }}
-                >
+                <div>
                   <span>Android App Url</span>
                   <div>
                     <input
@@ -386,14 +267,7 @@ function Managecontent() {
                 </div>
               )}
               {content === 4 && (
-                <div
-                  style={{
-                    background: '#fff',
-                    borderRadius: 16,
-                    boxShadow: '0 4px 8px rgba(0,0,0,0.05)',
-                    padding: '24px'
-                  }}
-                >
+                <div>
                   <span>IOS App Url</span>
                   <div>
                     <input
@@ -411,14 +285,7 @@ function Managecontent() {
                 </div>
               )}
               {content === 5 && (
-                <div
-                  style={{
-                    background: '#fff',
-                    borderRadius: 16,
-                    boxShadow: '0 4px 8px rgba(0,0,0,0.05)',
-                    padding: '24px'
-                  }}
-                >
+                <div>
                   <span>Share Message</span>
                   <div>
                     <input
@@ -438,11 +305,14 @@ function Managecontent() {
             </div>
           </div>
         </div>
-        <Modal show={contentUpdated} onHide={handleCloseContentUpdated} style={{ marginTop: '107px' }}>
+      <Modal show={contentUpdated} onHide={handleCloseContentUpdated} style={{ marginTop: '107px' }}>
           <Modal.Header>
-            <Modal.Title></Modal.Title>
+            <Modal.Title>
+            </Modal.Title>
           </Modal.Header>
-          <Modal.Body>Content Updated Successfully</Modal.Body>
+          <Modal.Body>
+            Content Updated Successfully
+          </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={handleCloseContentUpdated}>
               Close
