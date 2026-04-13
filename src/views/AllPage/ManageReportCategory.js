@@ -463,7 +463,7 @@ function ManageReportCategory() {
                     setNameError((prev) => ({ ...prev, categoryName: '' }));
                   }}
                   isInvalid={nameError.categoryName}
-                  className="custom-input custom-search"
+                   className="custom-input custom-search"
                   style={{ fontSize: '13px' }}
                 />
                 <Form.Control.Feedback type="invalid">{nameError.categoryName}</Form.Control.Feedback>
