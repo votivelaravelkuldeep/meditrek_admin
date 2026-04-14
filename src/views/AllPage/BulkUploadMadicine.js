@@ -179,7 +179,7 @@ function BulkUploadMadicine() {
                 accept=".xlsx, .xls"
                 onChange={handleFileChange}
                 disabled={isLoading}
-                className="custom-input form-control"
+                className="custom-input form-control custom-search"
                 style={{ fontSize: '13px' }}
               />
               <div className="text-muted small mt-1" style={{ fontSize: '12px' }}>
