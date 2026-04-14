@@ -210,7 +210,7 @@ function ManageCategory() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
           <Button className="btn btn-primary" style={{ fontSize: '12px', borderRadius: '10px' }} onClick={() => setShowModal(true)}>
-            <AddIcon /> Add Specialization
+            <AddIcon style={{ fontSize: '16px' }} /> Add Specialization
           </Button>
         </div>
       </div>
