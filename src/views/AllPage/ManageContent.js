@@ -8,6 +8,15 @@ import { API_URL } from 'config/constant';
 // import { Link } from 'react-router-dom';
 import { Modal, Button } from 'react-bootstrap';
 
+// import 'jodit/build/jodit.min.css';
+// Import Jodit language files
+import 'jodit/esm/langs/fr';
+import 'jodit/esm/langs/es';
+import 'jodit/esm/langs/ar';
+import 'jodit/esm/langs/de';
+import 'jodit/esm/langs/it';
+import 'jodit/esm/langs/pt_br';
+
 function Managecontent() {
   const options = [
     'bold',
@@ -38,31 +47,26 @@ function Managecontent() {
   const [content, setContent] = useState(0);
   //   const [about, setAbout] = useState('');
   //   const [terms, setTerms] = useState('');
-  const [privacy, setPrivacy] = useState('');
+  // const [privacy, setPrivacy] = useState('');
   const [android, setAndroid] = useState('');
   const [ios, setIos] = useState('');
   const [share, setShare] = useState('');
   const [activeButton, setActiveButton] = useState('about');
   const [contentUpdated, setContentUpdated] = useState(false);
   const [activeLang, setActiveLang] = useState('en');
-  const [about, setAbout] = useState({
-    en: '',
-    fr: '',
-    es: '',
-    ar: '',
-    it: '',
-    de: '',
-    pt: ''
-  });
-  const [terms, setTerms] = useState({
-    en: '',
-    fr: '',
-    es: '',
-    ar: '',
-    it: '',
-    de: '',
-    pt: ''
-  });
+  const [about, setAbout] = useState({ en: '', fr: '', es: '', ar: '', it: '', de: '', pt: '' });
+  const [terms, setTerms] = useState({ en: '', fr: '', es: '', ar: '', it: '', de: '', pt: '' });
+  const [privacy, setPrivacy] = useState({ en: '', fr: '', es: '', ar: '', it: '', de: '', pt: '' });
+
+  const joditLangMap = {
+    en: 'en',
+    fr: 'fr',
+    es: 'es',
+    ar: 'ar',
+    it: 'it',
+    de: 'de',
+    pt: 'pt_br'
+  };
 
   const handleShowContentUpdated = () => setContentUpdated(true);
   const handleCloseContentUpdated = () => setContentUpdated(false);
@@ -76,14 +80,14 @@ function Managecontent() {
     share: 5
   };
 
-  useEffect(() => {
-    fetchContent('about', setAbout, activeLang);
-    fetchContent('terms', setTerms, activeLang);
-    fetchContent('privacy', setPrivacy);
-    fetchContent('android', setAndroid);
-    fetchContent('ios', setIos);
-    fetchContent('share', setShare);
-  }, [activeLang]);
+  // useEffect(() => {
+  //   fetchContent('about', setAbout, activeLang);
+  //   fetchContent('terms', setTerms, activeLang);
+  //   fetchContent('privacy', setPrivacy);
+  //   fetchContent('android', setAndroid);
+  //   fetchContent('ios', setIos);
+  //   fetchContent('share', setShare);
+  // }, [activeLang]);
 
   //   const fetchContent = (contentType, setter) => {
   //     axios
@@ -96,12 +100,28 @@ function Managecontent() {
   //       });
   //   };
 
+  // const fetchContent = (contentType, setter, lang) => {
+  //   axios
+  //     .get(`${API_URL}get_all_content_url`, {
+  //       params: {
+  //         content_type: contentTypes[contentType],
+  //         language_code: lang // 🔥 ADD THIS
+  //       }
+  //     })
+  //     .then((response) => {
+  //       setter((prev) => ({
+  //         ...prev,
+  //         [lang]: response.data.result[0]?.content || ''
+  //       }));
+  //     });
+  // };
+
   const fetchContent = (contentType, setter, lang) => {
     axios
       .get(`${API_URL}get_all_content_url`, {
         params: {
           content_type: contentTypes[contentType],
-          language_code: lang // 🔥 ADD THIS
+          language_code: lang
         }
       })
       .then((response) => {
@@ -109,7 +129,8 @@ function Managecontent() {
           ...prev,
           [lang]: response.data.result[0]?.content || ''
         }));
-      });
+      })
+      .catch(console.error);
   };
 
   const config1 = useMemo(
@@ -127,9 +148,13 @@ function Managecontent() {
       sizeLG: 900,
       sizeMD: 700,
       sizeSM: 400,
-      toolbarAdaptive: false
+      toolbarAdaptive: false,
+
+      // ✅ ADD THIS
+      language: joditLangMap[activeLang] || 'en', // ✅ Jodit UI language
+      direction: activeLang === 'ar' ? 'rtl' : 'ltr' // ✅ RTL for Arabic
     }),
-    []
+    [activeLang]
   );
 
   const handleButtonClick = (contentType) => {
@@ -142,7 +167,7 @@ function Managecontent() {
     let contentStateToUpdate;
     switch (contentType) {
       case 'about':
-        contentStateToUpdate = about;
+        contentStateToUpdate = about[activeLang];
         break;
       //   case 'terms':
       //     contentStateToUpdate = terms;
@@ -151,7 +176,7 @@ function Managecontent() {
         contentStateToUpdate = terms[activeLang];
         break;
       case 'privacy':
-        contentStateToUpdate = privacy;
+        contentStateToUpdate = privacy[activeLang];
         break;
       case 'android':
         contentStateToUpdate = android;
@@ -189,6 +214,31 @@ function Managecontent() {
     { id: 'de', name: 'Deutsch' },
     { id: 'pt', name: 'Português' }
   ];
+
+  useEffect(() => {
+    fetchContent('about', setAbout, activeLang);
+    fetchContent('terms', setTerms, activeLang);
+    fetchContent('privacy', setPrivacy, activeLang);
+
+    // These are NOT language-based — call once only
+    if (activeLang === 'en') {
+      fetchSingleContent('android', setAndroid);
+      fetchSingleContent('ios', setIos);
+      fetchSingleContent('share', setShare);
+    }
+  }, [activeLang]);
+
+  // Separate fetch for non-multilingual fields
+  const fetchSingleContent = (contentType, setter) => {
+    axios
+      .get(`${API_URL}get_all_content_url`, {
+        params: { content_type: contentTypes[contentType] }
+      })
+      .then((response) => {
+        setter(response.data.result[0]?.content || '');
+      })
+      .catch(console.error);
+  };
 
   return (
     <>
@@ -352,6 +402,7 @@ function Managecontent() {
                   <div>
                     {/* <JoditEditor value={about} config={config1} onBlur={(htmlString) => setAbout(htmlString)} /> */}
                     <JoditEditor
+                      key={activeLang} // 🔥 force re-render
                       value={about[activeLang]}
                       config={config1}
                       onBlur={(htmlString) => {
@@ -377,10 +428,32 @@ function Managecontent() {
                     padding: '24px'
                   }}
                 >
-                  <span>Terms And Conditions</span>
+                  {/* <span>Terms And Conditions</span> */}
                   <div>
+                    {/* ✅ Add language tabs — same as About Us */}
+                    <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+                      {languages.map((lang) => (
+                        <button
+                          type="button"
+                          key={lang.id}
+                          onClick={() => setActiveLang(lang.id)}
+                          style={{
+                            padding: '2px 12px',
+                            fontSize: '12px',
+                            border: activeLang === lang.id ? '1px solid #1ddec4' : '1px solid #e5e7eb',
+                            background: activeLang === lang.id ? '#1ddec4' : '#f8fafc',
+                            color: activeLang === lang.id ? '#fff' : '#64748b',
+                            fontWeight: activeLang === lang.id ? '500' : '400',
+                            transition: '0.2s'
+                          }}
+                        >
+                          {lang.name}
+                        </button>
+                      ))}
+                    </div>
                     {/* <JoditEditor value={terms} config={config1} onBlur={(htmlString) => setTerms(htmlString)} /> */}
                     <JoditEditor
+                      key={activeLang}
                       value={terms[activeLang]}
                       config={config1}
                       onBlur={(htmlString) => {
@@ -406,9 +479,40 @@ function Managecontent() {
                     padding: '24px'
                   }}
                 >
-                  <span>Privacy Policy</span>
+                  {/* <span>Privacy Policy</span> */}
                   <div>
-                    <JoditEditor value={privacy} config={config1} onBlur={(htmlString) => setPrivacy(htmlString)} />
+                    <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+                      {languages.map((lang) => (
+                        <button
+                          type="button"
+                          key={lang.id}
+                          onClick={() => setActiveLang(lang.id)}
+                          style={{
+                            padding: '2px 12px',
+                            fontSize: '12px',
+                            border: activeLang === lang.id ? '1px solid #1ddec4' : '1px solid #e5e7eb',
+                            background: activeLang === lang.id ? '#1ddec4' : '#f8fafc',
+                            color: activeLang === lang.id ? '#fff' : '#64748b',
+                            fontWeight: activeLang === lang.id ? '500' : '400',
+                            transition: '0.2s'
+                          }}
+                        >
+                          {lang.name}
+                        </button>
+                      ))}
+                    </div>
+                    {/* <JoditEditor value={privacy} config={config1} onBlur={(htmlString) => setPrivacy(htmlString)} /> */}
+                    <JoditEditor
+                      key={activeLang}
+                      value={terms[activeLang]}
+                      config={config1}
+                      onBlur={(htmlString) => {
+                        setPrivacy((prev) => ({
+                          ...prev,
+                          [activeLang]: htmlString
+                        }));
+                      }}
+                    />
                   </div>
                   <br />
                   <button className="btn mt-2 submit-btn" onClick={() => handleBanner('privacy')}>
@@ -425,18 +529,22 @@ function Managecontent() {
                     padding: '24px'
                   }}
                 >
-                  <span>Android App Url</span>
-                  <div>
+                  <span style={{ fontSize: '13px', fontWeight: 600 }}>Android App Url</span>
+                  <div className="mt-2">
                     <input
                       type="text"
-                      className="form-control"
                       value={android}
                       onChange={(e) => setAndroid(e.target.value)}
                       placeholder="Enter android app url"
+                      className="custom-input custom-search form-control"
+                      style={{ fontSize: '12px' }}
                     />
                   </div>
-                  <br />
-                  <button className="btn mt-2 submit-btn" onClick={() => handleBanner('android')}>
+                  <button
+                    className="btn mt-3 btn btn-primary action-btn"
+                    style={{ fontSize: '12px', borderRadius: '10px' }}
+                    onClick={() => handleBanner('android')}
+                  >
                     Update
                   </button>{' '}
                 </div>
@@ -450,18 +558,18 @@ function Managecontent() {
                     padding: '24px'
                   }}
                 >
-                  <span>IOS App Url</span>
-                  <div>
+                  <span style={{ fontSize: '13px', fontWeight: 600 }}>IOS App Url</span>
+                  <div className="mt-2">
                     <input
                       type="text"
-                      className="form-control"
                       value={ios}
                       onChange={(e) => setIos(e.target.value)}
                       placeholder="Enter ios app url"
+                      className="custom-input custom-search form-control"
+                      style={{ fontSize: '12px' }}
                     />
                   </div>
-                  <br />
-                  <button className="btn mt-2 submit-btn" onClick={() => handleBanner('ios')}>
+                  <button className="btn mt-3 btn btn-primary action-btn" style={{ fontSize: '12px' }} onClick={() => handleBanner('ios')}>
                     Update
                   </button>{' '}
                 </div>
@@ -475,18 +583,22 @@ function Managecontent() {
                     padding: '24px'
                   }}
                 >
-                  <span>Share Message</span>
-                  <div>
+                  <span style={{ fontSize: '13px', fontWeight: 600 }}>Share Message</span>
+                  <div className="mt-2">
                     <input
                       type="text"
-                      className="form-control"
                       value={share}
                       onChange={(e) => setShare(e.target.value)}
                       placeholder="Enter share message"
+                      className="custom-input custom-search form-control"
+                      style={{ fontSize: '12px' }}
                     />
                   </div>
-                  <br />
-                  <button className="btn mt-2 submit-btn" onClick={() => handleBanner('share')}>
+                  <button
+                    className="btn mt-3 btn btn-primary action-btn"
+                    style={{ fontSize: '12px' }}
+                    onClick={() => handleBanner('share')}
+                  >
                     Update
                   </button>{' '}
                 </div>
