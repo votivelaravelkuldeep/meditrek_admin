@@ -7,7 +7,9 @@ import { PiHospitalFill } from "react-icons/pi";
 import { GiMedicines, GiPillDrop } from "react-icons/gi";
 import { FaStethoscope } from "react-icons/fa";
 import { BiSolidCustomize } from "react-icons/bi";
-import { fetchDoctors } from "services/analyticsAPI";
+import { fetchAdminPatientDemographics, fetchAdminPatientDemographicsDetails, fetchDoctors } from "services/analyticsAPI";
+import CustomPagination from "component/common/Pagination";
+import { CircularProgress } from "@mui/material";
 
 const MOCK_PATIENTS = [
   { id:1,  age:45, gender:"Male",   diseases:[{name:"Hypertension"},{name:"Type 2 Diabetes"}], medications:[{name:"Lisinopril"},{name:"Metformin"}],    symptoms:"headache, fatigue" },
@@ -22,16 +24,16 @@ const MOCK_PATIENTS = [
   { id:10, age:29, gender:"Female", diseases:[{name:"Migraine"}],                               medications:[{name:"Rizatriptan"}],                       symptoms:"aura, throbbing headache" },
 ];
 
-const MOCK_DEMOGRAPHICS = [
-  {age_group:"0-18",  gender:"Male",   count:5},
-  {age_group:"0-18",  gender:"Female", count:4},
-  {age_group:"19-30", gender:"Male",   count:12},
-  {age_group:"19-30", gender:"Female", count:15},
-  {age_group:"31-45", gender:"Male",   count:18},
-  {age_group:"31-45", gender:"Female", count:14},
-  {age_group:"46+",   gender:"Male",   count:10},
-  {age_group:"46+",   gender:"Female", count:8},
-];
+// const MOCK_DEMOGRAPHICS = [
+//   {age_group:"0-18",  gender:"Male",   count:5},
+//   {age_group:"0-18",  gender:"Female", count:4},
+//   {age_group:"19-30", gender:"Male",   count:12},
+//   {age_group:"19-30", gender:"Female", count:15},
+//   {age_group:"31-45", gender:"Male",   count:18},
+//   {age_group:"31-45", gender:"Female", count:14},
+//   {age_group:"46+",   gender:"Male",   count:10},
+//   {age_group:"46+",   gender:"Female", count:8},
+// ];
 
 // const MOCK_DOCTORS  = [{value:1,label:"Dr. Smith"},{value:2,label:"Dr. Johnson"},{value:3,label:"Dr. Williams"}];
 const MOCK_DISEASES = ["Hypertension","Type 2 Diabetes","Migraine","COPD","Anxiety","Depression","Asthma","Osteoarthritis","Heart Failure","Hyperlipidemia"].map(l=>({label:l}));
@@ -302,7 +304,10 @@ function AdminDoctorBanner({ selectedDoctors, doctors, onToggle }) {
           label="Doctor"
           all={doctorOptions}
           selected={selectedDoctors}
-          onToggle={onToggle}
+          onToggle={(doctorName) => {
+            const doctor = doctors.find(d => d.label === doctorName);
+            onToggle(doctorName, doctor?.value);
+          }}
           searchPlaceholder="Search doctors..."
         />
       </div>
@@ -735,101 +740,335 @@ function DoctorAnalytics() {
   );
 }
 
-function Demographics() {
-  const [ageGroup,setAgeGroup] = useState("All");
-  const [gender,  setGender]   = useState("All");
+function Demographics({ selectedDoctorIds = [] }) {
+  const [ageGroup, setAgeGroup] = useState("All");
+  const [gender, setGender] = useState("All");
+  const [summary, setSummary] = useState(null);
+  const [patients, setPatients] = useState([]);
+  const [loadingSummary, setLoadingSummary] = useState(false);   // ← separate loaders
+  const [loadingPatients, setLoadingPatients] = useState(false); // ← like sub-admin
+  const [totalPatients, setTotalPatients] = useState(0);
+  const [matchedPatients, setMatchedPatients] = useState(0);
+  const [page, setPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  const filteredData = useMemo(()=>MOCK_DEMOGRAPHICS.filter(item=>{
-    if(ageGroup!=="All"&&item.age_group!==ageGroup) return false;
-    if(gender!=="All"&&item.gender!==gender) return false;
-    return true;
-  }),[ageGroup,gender]);
+  // ─── FIXED: always use doctor_ids array, never single doctor_id ───
+  const buildPayload = () => ({
+    doctor_ids: selectedDoctorIds.length > 0 ? selectedDoctorIds : null,
+    gender: gender === "All" ? "" : gender === "Male" ? 1 : gender === "Female" ? 2 : 3,
+    age_group: ageGroup === "All" ? "" : ageGroup,
+    page,
+    limit: rowsPerPage,
+  });
 
-  const total        = filteredData.reduce((s,i)=>s+i.count,0);
-  const ageGroupCount= new Set(filteredData.map(i=>i.age_group)).size;
+  // ─── Load SUMMARY (charts + cross-table) ───
+  const loadSummary = async () => {
+    setLoadingSummary(true);
+    try {
+      const payload = buildPayload();
+      const res = await fetchAdminPatientDemographics(payload);
+      if (res?.success) {
+        setSummary(res);
+        setTotalPatients(res.total_patients || 0);
+        setMatchedPatients(res.matched_patients || 0);
+      }
+    } catch (err) {
+      console.error("Error loading demographics summary:", err);
+    } finally {
+      setLoadingSummary(false);
+    }
+  };
 
-  const ageDist = useMemo(()=>{
-    const map={};
-    filteredData.forEach(i=>{map[i.age_group]=(map[i.age_group]||0)+i.count;});
-    return Object.entries(map).map(([label,value])=>({label,value,pct:pct(value,total)}));
-  },[filteredData,total]);
+  // ─── Load PATIENT DETAILS (table) ───
+  const loadPatients = async () => {
+    setLoadingPatients(true);
+    try {
+      const payload = buildPayload();
+      const res = await fetchAdminPatientDemographicsDetails(payload);
+      if (res?.success) {
+        setPatients(res.patients || []);
+      }
+    } catch (err) {
+      console.error("Error loading patient details:", err);
+    } finally {
+      setLoadingPatients(false);
+    }
+  };
 
-  const genderDist = useMemo(()=>{
-    const map={Male:0,Female:0,Other:0,"Not Specified":0};
-    filteredData.forEach(i=>{if(map[i.gender]!==undefined)map[i.gender]+=i.count;});
-    return Object.entries(map).map(([label,value])=>({label,value,pct:pct(value,total)}));
-  },[filteredData,total]);
+  // ─── Reload summary + details when filters/doctors change ───
+  useEffect(() => {
+    loadSummary();
+    loadPatients();
+  }, [ageGroup, gender, selectedDoctorIds]);
 
-  const crossData = useMemo(()=>{
-    const genders=["Male","Female","Other","Not Specified"];
-    const map={};
-    Object.keys(AGE_GROUPS).forEach(ag=>{map[ag]={age:ag,Male:0,Female:0,Other:0,"Not Specified":0,total:0};});
-    filteredData.forEach(item=>{
-      if(!map[item.age_group]) return;
-      map[item.age_group][item.gender]+=item.count;
-      map[item.age_group].total+=item.count;
-    });
-    return Object.values(map).map(row=>{
-      const nr={...row};
-      genders.forEach(g=>{nr[g+"_pct"]=pct(row[g],total);});
-      nr.total_pct=pct(row.total,total);
-      return nr;
-    });
-  },[filteredData,total]);
+  // ─── Reload ONLY details when page/rowsPerPage changes ───
+  useEffect(() => {
+    loadPatients();
+  }, [page, rowsPerPage]);
 
-  /* For the expand panel we need the mock patients filtered to the same slice */
-  const filteredPatients = useMemo(()=>MOCK_PATIENTS.filter(p=>{
-    const ag = toAgeGroup(p.age);
-    if(ageGroup!=="All"&&ag!==ageGroup) return false;
-    if(gender!=="All"&&p.gender!==gender) return false;
-    return true;
-  }),[ageGroup,gender]);
+  // ─── Reset page when filters change ───
+  useEffect(() => {
+    setPage(1);
+  }, [ageGroup, gender, selectedDoctorIds]);
+
+  // ─── Age Distribution: filter out zeros, keep only groups with data ───
+  const ageDist = useMemo(() => {
+    if (!summary?.ageDistribution) return [];
+    let filtered = summary.ageDistribution;
+    if (ageGroup !== "All") {
+      filtered = filtered.filter(item => item.age_group === ageGroup);
+    }
+    return filtered
+      .filter(item => item.count > 0)
+      .map(item => ({
+        label: item.age_group,
+        value: item.count,
+        pct: item.percentage,
+      }));
+  }, [summary, ageGroup]);
+
+  // ─── Gender Distribution: filter out zeros ───
+  const genderDist = useMemo(() => {
+    if (!summary?.sexDistribution) return [];
+    let filtered = summary.sexDistribution;
+    if (gender !== "All") {
+      filtered = filtered.filter(item => item.gender === gender);
+    }
+    return filtered
+      .filter(item => item.count > 0)
+      .map(item => ({
+        label: item.gender,
+        value: item.count,
+        pct: item.percentage,
+      }));
+  }, [summary, gender]);
+
+  // ─── Cross Table: filter out zero-total rows ───
+  const crossData = useMemo(() => {
+    if (!summary?.crossTable) return [];
+    let filtered = summary.crossTable;
+    if (ageGroup !== "All") {
+      filtered = filtered.filter(row => row.age_group === ageGroup);
+    }
+    return filtered
+      .filter(row => {
+        const totalCount = parseInt(row.total?.toString().split(" ")[0] ?? "0", 10);
+        return totalCount > 0;
+      })
+      .map(row => ({
+        age: row.age_group,
+        Male: row.Male,
+        Female: row.Female,
+        Other: row.Other,
+        "Not Specified": row["Not Specified"],
+        total: row.total,
+      }));
+  }, [summary, ageGroup]);
+
+  // ─── FIXED: Age Groups stat card = always 7 (the fixed groups), not ageDist.length ───
+  const TOTAL_AGE_GROUPS = 7;
+
+  // ─── Loading state for initial load ───
+  if (loadingSummary && !summary) {
+    return (
+      <div>
+        <div style={S.pageHead}>
+          <h2 style={S.pageTitle}>Demographics</h2>
+          <p style={S.pageSub}>Age group × Sex distribution across patients</p>
+        </div>
+        <div style={S.card}>
+          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: "40px" }}>
+            <CircularProgress size={32} />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
-      <div style={S.pageHead}><h2 style={S.pageTitle}>Demographics</h2><p style={S.pageSub}>Age group × Sex distribution across patients</p></div>
+      <div style={S.pageHead}>
+        <h2 style={S.pageTitle}>Demographics</h2>
+        <p style={S.pageSub}>Age group × Sex distribution across patients</p>
+      </div>
+
+      {/* ─── Filters ─── */}
       <div style={S.filterBar}>
         <div style={S.filterRow}>
-          <div style={{flex:1,minWidth:180}}><AgeRangeFilter value={ageGroup} onChange={setAgeGroup}/></div>
-          <div style={{flex:1,minWidth:180}}><GenderFilter value={gender} onChange={setGender}/></div>
+          <div style={{ flex: 1, minWidth: 180 }}>
+            <AgeRangeFilter value={ageGroup} onChange={setAgeGroup} />
+          </div>
+          <div style={{ flex: 1, minWidth: 180 }}>
+            <GenderFilter value={gender} onChange={setGender} />
+          </div>
         </div>
       </div>
+
+      {/* ─── Stat Cards with loaders ─── */}
       <div style={S.statRow}>
-        <StatCard label="Patients in View" value={total} sub={`${pct(total,86)}% of all patients`}/>
-        <StatCard label="Total Patients"   value={86}/>
-        <StatCard label="Age Groups"       value={ageGroupCount}/>
+        {loadingSummary ? (
+          <>
+            {["Patients in View", "Total Patients", "Age Groups"].map(lbl => (
+              <div key={lbl} style={S.statCard}>
+                <div style={S.statLbl}>{lbl}</div>
+                <div style={{ ...S.statVal, display: "flex", justifyContent: "center", alignItems: "center", height: 36 }}>
+                  <CircularProgress size={24} />
+                </div>
+              </div>
+            ))}
+          </>
+        ) : (
+          <>
+            <StatCard
+              label="Patients in View"
+              value={matchedPatients}
+              sub={`${totalPatients > 0 ? ((matchedPatients / totalPatients) * 100).toFixed(1) : "0.0"}% of all patients`}
+            />
+            <StatCard label="Total Patients" value={totalPatients} />
+            {/* ─── FIXED: always 7, not ageDist.length ─── */}
+            <StatCard label="Age Groups" value={TOTAL_AGE_GROUPS} />
+          </>
+        )}
       </div>
+
+      {/* ─── Charts ─── */}
       <div style={S.grid2}>
         <div style={S.card}>
-          <p style={S.cardTitle}>Age Group Distribution</p>
-          <div style={S.barWrap}>{ageDist.map((d,i)=><HBar key={i} label={d.label} value={d.value} total={total} pctVal={d.pct}/>)}</div>
+          <p style={S.cardTitle}>
+            Age Group Distribution
+            <span style={{ fontSize: 10, color: "#94a3b8", fontWeight: 400 }}>
+              % of all {totalPatients} patients
+            </span>
+          </p>
+          {loadingSummary ? (
+            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: "20px" }}>
+              <CircularProgress size={24} />
+            </div>
+          ) : ageDist.length > 0 ? (
+            <div style={S.barWrap}>
+              {ageDist.map((d, i) => (
+                <HBar key={i} label={d.label} value={d.value} total={totalPatients} pctVal={d.pct} />
+              ))}
+            </div>
+          ) : (
+            <div style={S.noData}>No age distribution data available</div>
+          )}
         </div>
+
         <div style={S.card}>
-          <p style={S.cardTitle}>Sex Distribution</p>
-          <div style={S.barWrap}>{genderDist.map((d,i)=><HBar key={i} label={d.label} value={d.value} total={total} pctVal={d.pct} color={GCOLORS[d.label]}/>)}</div>
+          <p style={S.cardTitle}>
+            Sex Distribution
+            <span style={{ fontSize: 10, color: "#94a3b8", fontWeight: 400 }}>
+              % of all {totalPatients} patients
+            </span>
+          </p>
+          {loadingSummary ? (
+            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: "20px" }}>
+              <CircularProgress size={24} />
+            </div>
+          ) : genderDist.length > 0 ? (
+            <div style={S.barWrap}>
+              {genderDist.map((d, i) => (
+                <HBar key={i} label={d.label} value={d.value} total={totalPatients} pctVal={d.pct} color={GCOLORS[d.label]} />
+              ))}
+            </div>
+          ) : (
+            <div style={S.noData}>No gender distribution data available</div>
+          )}
         </div>
       </div>
+
+      {/* ─── Cross Table ─── */}
       <div style={S.card}>
         <p style={S.cardTitle}>Age × Sex Cross-table</p>
-        <DataTable cols={[
-          {key:"age",          label:"Age Group",    sortable:true},
-          {key:"Male",         label:"Male",         sortable:true, render:r=><span style={{fontWeight:600,color:ACCENT}}>{r.Male} <span style={{color:"#94a3b8",fontWeight:400}}>({r.Male_pct}%)</span></span>},
-          {key:"Female",       label:"Female",       sortable:true, render:r=><span style={{fontWeight:600,color:"#60a5fa"}}>{r.Female} <span style={{color:"#94a3b8",fontWeight:400}}>({r.Female_pct}%)</span></span>},
-          {key:"Other",        label:"Other",        sortable:true, render:r=><span style={{fontWeight:600,color:"#8b5cf6"}}>{r.Other} <span style={{color:"#94a3b8",fontWeight:400}}>({r.Other_pct}%)</span></span>},
-          {key:"Not Specified",label:"Not Specified",sortable:true, render:r=><span style={{fontWeight:600,color:"#94a3b8"}}>{r["Not Specified"]} <span style={{fontWeight:400}}>({r["Not Specified_pct"]}%)</span></span>},
-          {key:"total",        label:"Total",        sortable:true, render:r=><span style={{fontWeight:700}}>{r.total} <span style={{color:"#94a3b8",fontWeight:400}}>({r.total_pct}%)</span></span>},
-        ]} rows={crossData}/>
-        <div style={{marginTop:14}}>
-          <AnonExpandPanel patients={filteredPatients}/>
-        </div>
+        {loadingSummary ? (
+          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: "20px" }}>
+            <CircularProgress size={24} />
+          </div>
+        ) : (
+          <DataTable
+            cols={[
+              { key: "age", label: "Age Group", sortable: true },
+              {
+                key: "Male", label: "Male", sortable: true,
+                render: r => <span style={{ fontWeight: 600, color: ACCENT }}>{r.Male}</span>
+              },
+              {
+                key: "Female", label: "Female", sortable: true,
+                render: r => <span style={{ fontWeight: 600, color: "#60a5fa" }}>{r.Female}</span>
+              },
+              {
+                key: "Other", label: "Other", sortable: true,
+                render: r => <span style={{ fontWeight: 600, color: "#8b5cf6" }}>{r.Other}</span>
+              },
+              {
+                key: "Not Specified", label: "Not Specified", sortable: true,
+                render: r => <span style={{ fontWeight: 600, color: "#94a3b8" }}>{r["Not Specified"]}</span>
+              },
+              {
+                key: "total", label: "Total", sortable: true,
+                render: r => <span style={{ fontWeight: 700 }}>{r.total}</span>
+              },
+            ]}
+            rows={crossData}
+            empty="No cross-table data available"
+          />
+        )}
+      </div>
+
+      {/* ─── Patient Details ─── */}
+      <div style={S.card}>
+        <p style={S.cardTitle}>Patient Details</p>
+        {loadingPatients ? (
+          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: "40px" }}>
+            <CircularProgress size={32} />
+          </div>
+        ) : patients.length > 0 ? (
+          <>
+            <DataTable
+              cols={[
+                { key: "name", label: "Patient Name", sortable: true },
+                { key: "age", label: "Age", sortable: true },
+                {
+                  key: "gender", label: "Gender", sortable: true,
+                  render: r => <span style={S.badge(r.gender)}>{r.gender}</span>
+                },
+                {
+                  key: "diseases", label: "Diseases",
+                  render: r => {
+                    let diseasesList = [];
+                    if (r.diseases) {
+                      try {
+                        const matches = r.diseases.match(/name:\s*([^,}]+)/g);
+                        if (matches) diseasesList = matches.map(m => m.replace("name:", "").trim());
+                      } catch (e) { diseasesList = []; }
+                    }
+                    return <DChips arr={diseasesList} />;
+                  }
+                },
+                {
+                  key: "medications", label: "Medications",
+                  render: r => <MChips arr={(r.medications || []).map(m => m.name)} />
+                },
+              ]}
+              rows={patients}
+            />
+            <CustomPagination
+              count={matchedPatients}
+              page={page}
+              rowsPerPage={rowsPerPage}
+              onPageChange={newPage => setPage(newPage)}
+              onRowsPerPageChange={val => { setRowsPerPage(val); setPage(1); }}
+            />
+          </>
+        ) : (
+          <div style={S.noData}>No patient records found</div>
+        )}
       </div>
     </div>
   );
 }
 
-/* ============================================================
-   2. DISEASE / DEMOGRAPHICS
-   ============================================================ */
 function DiseaseDemo({diseases}) {
   const allDiseases = diseases?.length>0?diseases.map(d=>d.label):[];
   const [selDiseases,setSelDiseases] = useState([]);
@@ -1454,6 +1693,7 @@ export default function AdminAnalytics() {
   const [active,         setActive]         = useState("doctorana");
   const [doctors, setDoctors] = useState([]);
 const [selectedDoctors, setSelectedDoctors] = useState([]);
+const [selectedDoctorValues, setSelectedDoctorValues] = useState([]);
 
   const sharedProps = {diseases:MOCK_DISEASES, medicines:MOCK_MEDICINES, symptoms:MOCK_SYMPTOMS};
 
@@ -1471,7 +1711,7 @@ useEffect(() => {
 
   const VIEWS = {
     doctorana:    <DoctorAnalytics/>,
-    demographics: <Demographics/>,
+    demographics: <Demographics selectedDoctorIds={selectedDoctorValues} />,
     diseasedemo:  <DiseaseDemo   {...sharedProps}/>,
     diseasemed:   <DiseaseMedication {...sharedProps}/>,
     meddemo:      <MedicationDemo {...sharedProps}/>,
@@ -1481,11 +1721,16 @@ useEffect(() => {
     customize:    <CustomizeTable {...sharedProps}/>,
   };
 
-  const toggleDoctor = (doctorName) => {
+const toggleDoctor = (doctorName, doctorValue) => {
   setSelectedDoctors(prev =>
     prev.includes(doctorName)
       ? prev.filter(d => d !== doctorName)
       : [...prev, doctorName]
+  );
+  setSelectedDoctorValues(prev =>
+    prev.includes(doctorValue)
+      ? prev.filter(v => v !== doctorValue)
+      : [...prev, doctorValue]
   );
 };
 

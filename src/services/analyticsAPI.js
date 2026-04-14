@@ -1,6 +1,5 @@
 import { API_URL } from "config/constant";
 
-
 let diseaseCache = {};
 let medicineCache = {};
 export const symptomCache = {};
@@ -100,5 +99,73 @@ export const fetchDoctors = async () => {
   } catch (err) {
     console.error("Error fetching doctors:", err);
     return [];
+  }
+};
+
+export const fetchAdminPatientDemographics = async (payload) => {
+  try {
+    const res = await fetch(`${API_URL}admin-patient-demographics`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await res.json();
+    console.log("Demographics Summary:", data);
+
+    if (data.success) return data;
+
+    return {
+      success: false,
+      total_patients: 0,
+      matched_patients: 0,
+      ageDistribution: [],
+      sexDistribution: [],
+      crossTable: [],
+    };
+  } catch (err) {
+    console.error("Error fetching demographics:", err);
+    return {
+      success: false,
+      total_patients: 0,
+      matched_patients: 0,
+      ageDistribution: [],
+      sexDistribution: [],
+      crossTable: [],
+    };
+  }
+};
+
+export const fetchAdminPatientDemographicsDetails = async (payload) => {
+  try {
+    const res = await fetch(`${API_URL}admin-patient-demographics-details`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await res.json();
+    console.log("Demographics Details:", data);
+
+    if (data.success) return data;
+
+    return {
+      success: false,
+      patients: [],
+      total: 0,
+      matched_patients: 0,
+      page: 1,
+      limit: 10,
+    };
+  } catch (err) {
+    console.error("Error fetching patient details:", err);
+    return {
+      success: false,
+      patients: [],
+      total: 0,
+      matched_patients: 0,
+      page: 1,
+      limit: 10,
+    };
   }
 };
