@@ -29,6 +29,7 @@ function ManageCategory() {
   const [showModal, setShowModal] = useState(false);
   const [showModal2, setShowModal2] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
+  const [activeLang, setActiveLang] = useState('en');
 
   // ================= FETCH =================
   const fetchData = async () => {
@@ -175,6 +176,16 @@ function ManageCategory() {
     }
   ];
 
+  const languages = [
+    { id: 'en', name: 'English', default: true },
+    { id: 'fr', name: 'Français' },
+    { id: 'es', name: 'Español' },
+    { id: 'ar', name: 'العربية' },
+    { id: 'it', name: 'Italiano' },
+    { id: 'de', name: 'Deutsch' },
+    { id: 'pt', name: 'Português' }
+  ];
+
   return (
     <div
       style={{
@@ -189,7 +200,7 @@ function ManageCategory() {
         {/* <h5 className="fw-bold mb-0" style={{ color: '#1e293b' }}>
           Manage Specialization
         </h5> */}
-        <Heading heading='Manage Specialization' />
+        <Heading heading="Manage Specialization" />
 
         <div className="d-flex gap-2">
           <input
@@ -246,8 +257,8 @@ function ManageCategory() {
             </FormikForm>
           )}
         </Formik>
-      </Modal> */}
-      <Modal show={showModal} onHide={() => setShowModal(false)} centered className="custom-modal">
+      </Modal> */} 
+      <Modal show={showModal} onHide={() => setShowModal(false)} centered className="custom-modal" dialogClassName="custom-modal-width">
         <Modal.Header closeButton style={{ borderBottom: 0, paddingBottom: 0 }}>
           <Modal.Title>Add Specialization</Modal.Title>
         </Modal.Header>
@@ -255,10 +266,32 @@ function ManageCategory() {
         <Formik initialValues={{ categoryName: '' }} validationSchema={validationSchema} onSubmit={handleAdd}>
           {({ handleSubmit, errors, touched }) => (
             <FormikForm onSubmit={handleSubmit}>
-              <Modal.Body>
+              <Modal.Body style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: 0, paddingBottom: 0 }}>
+                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', margin: '16px 0' }}>
+                    {languages.map((lang) => (
+                      <button
+                        type="button"
+                        key={lang.id}
+                        onClick={() => setActiveLang(lang.id)}
+                        style={{
+                          borderRadius: '999px',
+                          padding: '2px 12px',
+                          fontSize: '12px',
+                          border: activeLang === lang.id ? '1px solid #1ddec4' : '1px solid #e5e7eb',
+                          background: activeLang === lang.id ? '#1ddec4' : '#f8fafc',
+                          color: activeLang === lang.id ? '#fff' : '#64748b',
+                          fontWeight: activeLang === lang.id ? '500' : '400',
+                          transition: '0.2s'
+                        }}
+                      >
+                        {lang.name}
+                      </button>
+                    ))}
+                  </div>
                 <Form.Group style={{ display: 'flex', flexDirection: 'column' }}>
-                  <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>Specialization Name</Form.Label>
-
+                  <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>Specialization Name
+                    ({languages.find((l) => l.id === activeLang)?.name})
+                  </Form.Label>
                   <Field
                     name="categoryName"
                     type="text"
@@ -320,8 +353,8 @@ function ManageCategory() {
           )}
         </Formik>
       </Modal> */}
-      <Modal show={showModal2} onHide={() => setShowModal2(false)} centered className="custom-modal">
-        <Modal.Header closeButton>
+      <Modal show={showModal2} onHide={() => setShowModal2(false)} centered className="custom-modal" dialogClassName="custom-modal-width">
+        <Modal.Header closeButton style={{ borderBottom: 0, paddingBottom: 0 }}>
           <Modal.Title>Edit Specialization</Modal.Title>
         </Modal.Header>
 
@@ -335,10 +368,32 @@ function ManageCategory() {
         >
           {({ handleSubmit, errors, touched }) => (
             <FormikForm onSubmit={handleSubmit}>
-              <Modal.Body>
+              <Modal.Body style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: 0, paddingBottom: 0 }}>
+                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', margin: '16px 0' }}>
+                    {languages.map((lang) => (
+                      <button
+                        type="button"
+                        key={lang.id}
+                        onClick={() => setActiveLang(lang.id)}
+                        style={{
+                          borderRadius: '999px',
+                          padding: '2px 12px',
+                          fontSize: '12px',
+                          border: activeLang === lang.id ? '1px solid #1ddec4' : '1px solid #e5e7eb',
+                          background: activeLang === lang.id ? '#1ddec4' : '#f8fafc',
+                          color: activeLang === lang.id ? '#fff' : '#64748b',
+                          fontWeight: activeLang === lang.id ? '500' : '400',
+                          transition: '0.2s'
+                        }}
+                      >
+                        {lang.name}
+                      </button>
+                    ))}
+                  </div>
                 <Form.Group style={{ display: 'flex', flexDirection: 'column' }}>
-                  <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>Specialization Name</Form.Label>
-
+                  <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>Specialization Name
+                    ({languages.find((l) => l.id === activeLang)?.name})
+                  </Form.Label>
                   <Field
                     name="categoryName"
                     type="text"
@@ -346,7 +401,6 @@ function ManageCategory() {
                     className={`custom-input custom-search form-control ${errors.categoryName && touched.categoryName ? 'is-invalid' : ''}`}
                     style={{ fontSize: '13px' }}
                   />
-
                   {errors.categoryName && touched.categoryName && <div className="invalid-feedback">{errors.categoryName}</div>}
                 </Form.Group>
               </Modal.Body>
