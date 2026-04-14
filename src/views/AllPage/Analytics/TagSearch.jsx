@@ -274,7 +274,7 @@ function TagSearch({ label, all, selected, onToggle, searchPlaceholder }) {
   return (
     <>
       <style>{DROPDOWN_STYLES}</style>
-      <div style={{ marginBottom: 14, width: "100%" }}>
+      <div style={{  width: "100%" }}>
         {label && <span style={styles.label}>{label}</span>}
         
         <div className="tag-dropdown-container" ref={ref}>

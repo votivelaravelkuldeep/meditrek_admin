@@ -6,13 +6,15 @@ import { APP_PREFIX_PATH } from 'config/constant';
 import AddTaskIcon from '@mui/icons-material/AddTask';
 import CancelIcon from '@mui/icons-material/Cancel';
 import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 
 function DoctorActions({
   doctor,
   index,
   handleActionChange,
   handleActiveDeactive,
-  handleDeleteDoctor
+  handleDeleteDoctor,
+  handleEditEmail 
 }) {
   return (
     <div className="dropdown text-center">
@@ -89,7 +91,17 @@ function DoctorActions({
           </li>
         )}
 
-        <li>
+   <li>
+      <button
+        className="dropdown-item d-flex align-items-center"
+        onClick={() => handleEditEmail(doctor.doctor_id, doctor.email)}
+          // ✅ just call the prop
+      >
+        <EditIcon style={{ fontSize: '16px' }} className="me-1" /> Edit Email
+      </button>
+    </li>
+
+        <li>  
           <button
             className="dropdown-item text-danger d-flex align-items-center"
             onClick={() => handleDeleteDoctor(doctor.doctor_id)}

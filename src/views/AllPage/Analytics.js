@@ -456,7 +456,7 @@ function DoctorAnalytics() {
         <div style={{ 
           display: "flex", 
           gap: "20px", 
-          alignItems: "flex-end",
+          alignItems: "center",
           flexWrap: "wrap"
         }}>
           {/* Period Filter - Custom Single Select Dropdown */}

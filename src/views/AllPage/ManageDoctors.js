@@ -41,6 +41,11 @@ function ManageDoctors() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [sortConfig, setSortConfig] = useState(null);
 
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  // const [emailDoctorId, setEmailDoctorId] = useState('');
+  const [newEmail, setNewEmail] = useState('');
+  const [emailError, setEmailError] = useState('');
+
   // const doctorsPerPage = 50;
 
   const handleSort = (key) => {
@@ -266,6 +271,37 @@ function ManageDoctors() {
       }
     });
   };
+
+  const handleEditEmail = (doctor_id, currentEmail) => {
+    // setEmailDoctorId(doctor_id);
+    setNewEmail(currentEmail || '');
+    setEmailError('');
+    setShowEmailModal(true);
+  };
+
+  // const handleUpdateEmail = () => {
+  //   if (!newEmail) {
+  //     setEmailError('Please enter email');
+  //     return;
+  //   }
+  //   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
+  //     setEmailError('Please enter a valid email');
+  //     return;
+  //   }
+
+  //   axios
+  //     .post(`${API_URL}update_doctor_email`, { doctor_id: emailDoctorId, email: newEmail })
+  //     .then((response) => {
+  //       if (response.data.success) {
+  //         Swal.fire({ title: '', text: 'Email updated successfully', icon: 'success', timer: 2000 });
+  //         setShowEmailModal(false);
+  //         getDoctors();
+  //       } else {
+  //         setEmailError(response.data.msg || 'Failed to update email');
+  //       }
+  //     })
+  //     .catch(() => setEmailError('Something went wrong.'));
+  // };
 
   // const handleSearchChange = (event) => {
   //   setSearchQuery(event.target.value);
@@ -497,7 +533,7 @@ function ManageDoctors() {
       //   </span>
       // )
     },
-     { label: 'Created At', key: 'createtime', sortable: true },
+    { label: 'Created At', key: 'createtime', sortable: true },
 
     {
       label: 'Action',
@@ -572,10 +608,10 @@ function ManageDoctors() {
           handleActionChange={handleActionChange}
           handleActiveDeactive={handleActiveDeactive}
           handleDeleteDoctor={handleDeleteDoctor}
+          handleEditEmail={handleEditEmail} // ✅ add this
         />
       )
-    },
-   
+    }
   ];
 
   return (
@@ -598,7 +634,7 @@ function ManageDoctors() {
           {/* <h5 className="fw-bold mb-0" style={{ color: '#1e293b' }}>
             Manage Doctor
           </h5> */}
-          <Heading heading='Manage Doctor' />
+          <Heading heading="Manage Doctor" />
 
           <input
             className="custom-search form-control"
@@ -815,6 +851,38 @@ function ManageDoctors() {
           </form>
         </Modal>
         {/* </Card> */}
+        {/* Edit Email Modal */}
+        <Modal show={showEmailModal} centered onHide={() => setShowEmailModal(false)} style={{ zIndex: '99999' }} className="custom-modal">
+          <Modal.Header closeButton>
+            <Modal.Title style={{ fontSize: '17px' }}>Edit Email</Modal.Title>
+          </Modal.Header>
+          <Modal.Body style={{paddingTop:0}}>
+            <div>
+              <label htmlFor='email' className="form-label" style={{ fontWeight: '600' }}>Email Address</label>
+              <Form.Control
+                type="email"
+                placeholder="Enter new email"
+                value={newEmail}
+                onChange={(e) => {
+                  setNewEmail(e.target.value);
+                  setEmailError('');
+                }}
+                isInvalid={!!emailError}
+                 className="custom-input form-control custom-search"
+                style={{ fontSize: '13px' }}
+              />
+              <Form.Control.Feedback type="invalid">{emailError}</Form.Control.Feedback>
+            </div>
+          </Modal.Body>
+          <Modal.Footer style={{ borderTop: 'none',paddingTop:0,paddingRight:0 }}>
+            <Button variant="secondary" style={{ fontSize: '12px' }} onClick={() => setShowEmailModal(false)}>
+              Close
+            </Button>
+            <Button variant="primary" style={{ fontSize: '12px' }} >
+              Update
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </div>
     </>
   );
