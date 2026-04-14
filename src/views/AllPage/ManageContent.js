@@ -45,6 +45,7 @@ function Managecontent() {
   ];
 
   const [content, setContent] = useState(0);
+  const [loading, setLoading] = useState(false);
   //   const [about, setAbout] = useState('');
   //   const [terms, setTerms] = useState('');
   // const [privacy, setPrivacy] = useState('');
@@ -116,22 +117,27 @@ function Managecontent() {
   //     });
   // };
 
-  const fetchContent = (contentType, setter, lang) => {
-    axios
-      .get(`${API_URL}get_all_content_url`, {
-        params: {
-          content_type: contentTypes[contentType],
-          language_code: lang
-        }
-      })
-      .then((response) => {
-        setter((prev) => ({
-          ...prev,
-          [lang]: response.data.result[0]?.content || ''
-        }));
-      })
-      .catch(console.error);
-  };
+const fetchContent = (contentType, setter, lang) => {
+  setLoading(true);
+  axios
+    .get(`${API_URL}get_all_content_url`, {
+      params: {
+        content_type: contentTypes[contentType]
+      }
+    })
+    .then((response) => {
+      const translations = response.data.result?.translations || {};
+
+      setter((prev) => ({
+        ...prev,
+        [lang]: translations[lang] || ''
+      }));
+    })
+    .catch(console.error)
+    .finally(() => {
+      setLoading(false);
+    });
+};
 
   const config1 = useMemo(
     () => ({
@@ -190,11 +196,11 @@ function Managecontent() {
       default:
         contentStateToUpdate = '';
     }
-    axios
-      .post(`${API_URL}update_content`, {
-        contentType: contentTypes[contentType],
-        content: contentStateToUpdate
-      })
+    axios.post(`${API_URL}update_content`, {
+  contentType: contentTypes[contentType],
+  content: contentStateToUpdate,
+  lang: activeLang
+})
       .then(() => {
         console.log(`${contentType} updated successfully`);
         handleShowContentUpdated();
@@ -229,16 +235,19 @@ function Managecontent() {
   }, [activeLang]);
 
   // Separate fetch for non-multilingual fields
-  const fetchSingleContent = (contentType, setter) => {
-    axios
-      .get(`${API_URL}get_all_content_url`, {
-        params: { content_type: contentTypes[contentType] }
-      })
-      .then((response) => {
-        setter(response.data.result[0]?.content || '');
-      })
-      .catch(console.error);
-  };
+ const fetchSingleContent = (contentType, setter) => {
+  axios
+    .get(`${API_URL}get_all_content_url`, {
+      params: { content_type: contentTypes[contentType] }
+    })
+    .then((response) => {
+      const translations = response.data.result?.translations || {};
+
+      // single content → always use EN
+      setter(translations.en || '');
+    })
+    .catch(console.error);
+};
 
   return (
     <>
@@ -401,8 +410,13 @@ function Managecontent() {
                   </div>
                   <div>
                     {/* <JoditEditor value={about} config={config1} onBlur={(htmlString) => setAbout(htmlString)} /> */}
+                    {loading ? (
+  <div style={{ textAlign: 'center', padding: '40px' }}>
+    <span>Loading content...</span>
+  </div>
+) : (
                     <JoditEditor
-                      key={activeLang} // 🔥 force re-render
+                      key={activeLang}
                       value={about[activeLang]}
                       config={config1}
                       onBlur={(htmlString) => {
@@ -412,6 +426,7 @@ function Managecontent() {
                         }));
                       }}
                     />
+                    )}
                   </div>
                   <br />
                   <button className="btn mt-2 submit-btn" onClick={() => handleBanner('about')}>
@@ -452,6 +467,11 @@ function Managecontent() {
                       ))}
                     </div>
                     {/* <JoditEditor value={terms} config={config1} onBlur={(htmlString) => setTerms(htmlString)} /> */}
+                  {loading ? (
+  <div style={{ textAlign: 'center', padding: '40px' }}>
+    <span>Loading content...</span>
+  </div>
+) : (
                     <JoditEditor
                       key={activeLang}
                       value={terms[activeLang]}
@@ -463,6 +483,7 @@ function Managecontent() {
                         }));
                       }}
                     />
+                    )}
                   </div>
                   <br />
                   <button className="btn mt-2 submit-btn" onClick={() => handleBanner('terms')}>
@@ -502,9 +523,14 @@ function Managecontent() {
                       ))}
                     </div>
                     {/* <JoditEditor value={privacy} config={config1} onBlur={(htmlString) => setPrivacy(htmlString)} /> */}
+               {loading ? (
+  <div style={{ textAlign: 'center', padding: '40px' }}>
+    <span>Loading content...</span>
+  </div>
+) : (
                     <JoditEditor
                       key={activeLang}
-                      value={terms[activeLang]}
+                      value={privacy[activeLang]}
                       config={config1}
                       onBlur={(htmlString) => {
                         setPrivacy((prev) => ({
@@ -513,6 +539,7 @@ function Managecontent() {
                         }));
                       }}
                     />
+)}
                   </div>
                   <br />
                   <button className="btn mt-2 submit-btn" onClick={() => handleBanner('privacy')}>
