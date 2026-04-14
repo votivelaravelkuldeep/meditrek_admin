@@ -497,6 +497,7 @@ function ManageDoctors() {
       //   </span>
       // )
     },
+     { label: 'Created At', key: 'createtime', sortable: true },
 
     {
       label: 'Action',
@@ -574,7 +575,7 @@ function ManageDoctors() {
         />
       )
     },
-    { label: 'Created At', key: 'createtime', sortable: true }
+   
   ];
 
   return (

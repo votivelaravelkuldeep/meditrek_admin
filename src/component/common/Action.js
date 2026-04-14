@@ -3,6 +3,9 @@ import { Link } from 'react-router-dom';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import ToggleOnIcon from '@mui/icons-material/ToggleOn';
 import { APP_PREFIX_PATH } from 'config/constant';
+import AddTaskIcon from '@mui/icons-material/AddTask';
+import CancelIcon from '@mui/icons-material/Cancel';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 function DoctorActions({
   doctor,
@@ -29,9 +32,9 @@ function DoctorActions({
         <li>
           <Link
             to={`${APP_PREFIX_PATH}/view-doctor/${btoa(doctor.doctor_id)}`}
-            className="dropdown-item"
+            className="dropdown-item d-flex align-items-center"
           >
-            <VisibilityIcon style={{ fontSize: '16px' }} /> View
+            <VisibilityIcon style={{ fontSize: '16px' }} className='me-1' /> View
           </Link>
         </li>
 
@@ -39,7 +42,7 @@ function DoctorActions({
           <>
             <li>
               <button
-                className="dropdown-item"
+                className="dropdown-item d-flex align-items-center"
                 onClick={() =>
                   handleActionChange(
                     index,
@@ -52,18 +55,18 @@ function DoctorActions({
                   )
                 }
               >
-                ✅ Approve
+                <AddTaskIcon style={{fontSize:'16px'}} className='me-1' /> Approve
               </button>
             </li>
 
             <li>
               <button
-                className="dropdown-item"
+                className="dropdown-item d-flex align-items-center"
                 onClick={() =>
                   handleActionChange(index, 'Reject', doctor.doctor_id)
                 }
               >
-                ❌ Reject
+                <CancelIcon style={{fontSize:'16px'}} className='me-1' /> Reject
               </button>
             </li>
           </>
@@ -72,7 +75,7 @@ function DoctorActions({
         {doctor.approve_status === 1 && (
           <li>
             <button
-              className="dropdown-item"
+              className="dropdown-item d-flex align-items-center"
               onClick={() =>
                 handleActiveDeactive(
                   doctor.doctor_id,
@@ -88,10 +91,10 @@ function DoctorActions({
 
         <li>
           <button
-            className="dropdown-item text-danger"
+            className="dropdown-item text-danger d-flex align-items-center"
             onClick={() => handleDeleteDoctor(doctor.doctor_id)}
           >
-            🗑 Delete
+            <DeleteIcon style={{fontSize:'16px'}} className='me-1' /> Delete
           </button>
         </li>
       </ul>
