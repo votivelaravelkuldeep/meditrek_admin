@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import TagSearch from "./Analytics/TagSearch";
 import AgeRangeFilter from "./Analytics/AgeRangeFilter";
 import GenderFilter from "./Analytics/GenderFilter";
@@ -37,6 +37,20 @@ const MOCK_DEMOGRAPHICS = [
 const MOCK_DISEASES = ["Hypertension","Type 2 Diabetes","Migraine","COPD","Anxiety","Depression","Asthma","Osteoarthritis","Heart Failure","Hyperlipidemia"].map(l=>({label:l}));
 const MOCK_MEDICINES= ["Lisinopril","Metformin","Sumatriptan","Albuterol","Sertraline","Ibuprofen","Amlodipine","Fluticasone","Furosemide","Spiriva","Escitalopram","Atorvastatin","Rizatriptan"].map(l=>({label:l}));
 const MOCK_SYMPTOMS = ["headache","fatigue","nausea","shortness of breath","wheezing","joint pain","coughing","edema","insomnia"].map(l=>({label:l}));
+
+const MOCK_MEASUREMENTS = ["Blood Pressure","Blood Glucose","BMI","Cholesterol","Oxygen Saturation","Heart Rate"];
+const MOCK_PATIENT_MEASUREMENTS = {
+  1:  { "Blood Pressure":"142/90", "Blood Glucose":"7.8 mmol/L", "BMI":"28.1",  "Cholesterol":"210 mg/dL" },
+  2:  { "Blood Pressure":"118/76", "Blood Glucose":"5.1 mmol/L", "BMI":"22.4" },
+  3:  { "Blood Pressure":"148/92", "Blood Glucose":"5.9 mmol/L", "BMI":"26.7",  "Cholesterol":"220 mg/dL", "Oxygen Saturation":"94%" },
+  4:  { "Blood Pressure":"115/72", "Blood Glucose":"4.9 mmol/L", "BMI":"21.0" },
+  5:  { "Blood Pressure":"155/98", "Blood Glucose":"6.1 mmol/L", "BMI":"30.2",  "Cholesterol":"245 mg/dL" },
+  6:  { "Blood Pressure":"120/78", "Blood Glucose":"5.0 mmol/L", "BMI":"23.5",  "Oxygen Saturation":"97%" },
+  7:  { "Blood Pressure":"135/85", "Blood Glucose":"6.8 mmol/L", "BMI":"27.0",  "Oxygen Saturation":"92%", "Heart Rate":"88 bpm" },
+  8:  { "Blood Pressure":"112/70", "Blood Glucose":"4.7 mmol/L", "BMI":"20.8" },
+  9:  { "Blood Pressure":"138/86", "Blood Glucose":"8.9 mmol/L", "BMI":"31.5",  "Cholesterol":"260 mg/dL" },
+  10: { "Blood Pressure":"116/74", "Blood Glucose":"4.8 mmol/L", "BMI":"22.1" },
+};
 
 const AGE_GROUPS = {
   "0-18": a => a >= 0 && a <= 18,
@@ -291,6 +305,431 @@ function AdminDoctorBanner({ selectedDoctors, doctors, onToggle }) {
           onToggle={onToggle}
           searchPlaceholder="Search doctors..."
         />
+      </div>
+    </div>
+  );
+}
+
+function DoctorAnalytics() {
+  const [period, setPeriod] = useState("Last 30 days");
+  const [periodOpen, setPeriodOpen] = useState(false);
+  const [periodSearch, setPeriodSearch] = useState("");
+  const [selectedSpecialties, setSelectedSpecialties] = useState([]);
+  const periodRef = useRef(null);
+  
+  // Mock specialties data
+  const SPECIALTIES = [
+    "Cardiology",
+    "Neurology", 
+    "Pediatrics",
+    "Orthopedics",
+    "Dermatology",
+    "Psychiatry",
+    "Pulmonology",
+    "Endocrinology"
+  ];
+  
+  // Base doctor data
+  const BASE_DOCTOR_DATA = [
+    { name:"Dr. Smith",    basePatients:31, specialty:"Cardiology", lastLogin:"Today, 09:42" },
+    { name:"Dr. Johnson",  basePatients:22, specialty:"Neurology",  lastLogin:"Today, 08:15" },
+    { name:"Dr. Williams", basePatients:18, specialty:"Pediatrics", lastLogin:"Today, 07:30" },
+    { name:"Dr. Patel",    basePatients:15, specialty:"Cardiology", lastLogin:"Yesterday, 18:02" },
+    { name:"Dr. Garcia",   basePatients:28, specialty:"Orthopedics",lastLogin:"Today, 10:15" },
+    { name:"Dr. Lee",      basePatients:20, specialty:"Dermatology",lastLogin:"Today, 09:00" },
+  ];
+  
+  const PERIOD_OPTIONS = ["Last 30 days", "Last 90 days", "Last 6 months", "Last year"];
+  
+  // Filter period options based on search
+  const filteredPeriods = PERIOD_OPTIONS.filter(option =>
+    option.toLowerCase().includes(periodSearch.toLowerCase())
+  );
+  
+  // Close period dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (periodRef.current && !periodRef.current.contains(e.target)) {
+        setPeriodOpen(false);
+        setPeriodSearch("");
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+  
+  // Function to get period-specific data
+  const getPeriodData = (period, doctor) => {
+    const multipliers = {
+      "Last 30 days": { newPatients: Math.round(doctor.basePatients * 0.2), pctChange: "+15%", trend: "up" },
+      "Last 90 days": { newPatients: Math.round(doctor.basePatients * 0.45), pctChange: "+32%", trend: "up" },
+      "Last 6 months": { newPatients: Math.round(doctor.basePatients * 0.7), pctChange: "+48%", trend: "up" },
+      "Last year": { newPatients: Math.round(doctor.basePatients * 0.85), pctChange: "+65%", trend: "up" }
+    };
+    
+    const variations = {
+      "Dr. Smith": { "Last 90 days": { newPatients: 14, pctChange: "+28%", trend: "up" }, "Last 6 months": { newPatients: 22, pctChange: "+45%", trend: "up" }, "Last year": { newPatients: 28, pctChange: "+62%", trend: "up" } },
+      "Dr. Johnson": { "Last 90 days": { newPatients: 10, pctChange: "+18%", trend: "up" }, "Last 6 months": { newPatients: 16, pctChange: "+35%", trend: "up" }, "Last year": { newPatients: 20, pctChange: "+55%", trend: "up" } },
+      "Dr. Williams": { "Last 90 days": { newPatients: 7, pctChange: "-8%", trend: "down" }, "Last 6 months": { newPatients: 12, pctChange: "-5%", trend: "down" }, "Last year": { newPatients: 15, pctChange: "+2%", trend: "up" } },
+      "Dr. Patel": { "Last 90 days": { newPatients: 4, pctChange: "-35%", trend: "down" }, "Last 6 months": { newPatients: 8, pctChange: "-20%", trend: "down" }, "Last year": { newPatients: 11, pctChange: "-8%", trend: "down" } },
+      "Dr. Garcia": { "Last 90 days": { newPatients: 12, pctChange: "+22%", trend: "up" }, "Last 6 months": { newPatients: 19, pctChange: "+40%", trend: "up" }, "Last year": { newPatients: 25, pctChange: "+58%", trend: "up" } },
+      "Dr. Lee": { "Last 90 days": { newPatients: 6, pctChange: "-3%", trend: "down" }, "Last 6 months": { newPatients: 10, pctChange: "-2%", trend: "down" }, "Last year": { newPatients: 14, pctChange: "+5%", trend: "up" } }
+    };
+    
+    if (variations[doctor.name] && variations[doctor.name][period]) {
+      return variations[doctor.name][period];
+    }
+    
+    return multipliers[period];
+  };
+  
+  // Generate doctor data based on selected period
+  const MOCK_DOCTOR_STATS_WITH_SPECIALTY = useMemo(() => {
+    return BASE_DOCTOR_DATA.map(doctor => {
+      const periodData = getPeriodData(period, doctor);
+      return {
+        ...doctor,
+        patients: doctor.basePatients,
+        newPatients: periodData.newPatients,
+        newPct: periodData.pctChange,
+        trend: periodData.trend,
+        lastLogin: doctor.lastLogin,
+      };
+    });
+  }, [period]);
+  
+  // Filter doctors by selected specialties
+  const filteredDoctors = useMemo(() => {
+    if (selectedSpecialties.length === 0) {
+      return MOCK_DOCTOR_STATS_WITH_SPECIALTY;
+    }
+    return MOCK_DOCTOR_STATS_WITH_SPECIALTY.filter(doc => 
+      selectedSpecialties.includes(doc.specialty)
+    );
+  }, [selectedSpecialties, MOCK_DOCTOR_STATS_WITH_SPECIALTY]);
+  
+  const totalPts = filteredDoctors.reduce((s,d)=>s+d.patients,0);
+  const avgPts = filteredDoctors.length > 0 ? (totalPts / filteredDoctors.length).toFixed(1) : "0";
+  const newTotal = filteredDoctors.reduce((s,d)=>s+d.newPatients,0);
+  
+  const toggleSpecialty = (specialty) => {
+    setSelectedSpecialties(prev =>
+      prev.includes(specialty)
+        ? prev.filter(s => s !== specialty)
+        : [...prev, specialty]
+    );
+  };
+
+  const selectPeriod = (option) => {
+    setPeriod(option);
+    setPeriodOpen(false);
+    setPeriodSearch("");
+  };
+
+  const handlePeriodKeyDown = (e, option) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      selectPeriod(option);
+    }
+  };
+
+  const handleTriggerKeyDown = (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      setPeriodOpen(v => !v);
+    }
+  };
+
+  return (
+    <div>
+      <div style={S.pageHead}>
+        <h2 style={S.pageTitle}>Doctor Analytics</h2>
+        <p style={S.pageSub}>Patient load, growth and session activity per doctor</p>
+      </div>
+
+      <div style={S.filterBar}>
+        <div style={{ 
+          display: "flex", 
+          gap: "20px", 
+          alignItems: "flex-end",
+          flexWrap: "wrap"
+        }}>
+          {/* Period Filter - Custom Single Select Dropdown */}
+          <div style={{ minWidth: "200px" }} ref={periodRef}>
+            <div style={S.filterLabel}>PERIOD</div>
+            <div style={{ position: "relative" }}>
+              <div
+                role="button"
+                tabIndex={0}
+                aria-expanded={periodOpen}
+                aria-haspopup="listbox"
+                onClick={() => setPeriodOpen(v => !v)}
+                onKeyDown={handleTriggerKeyDown}
+                style={{
+                  width: "100%",
+                  height: "38px",
+                  border: "1.5px solid #e5e7eb",
+                  borderRadius: "10px",
+                  padding: "0 32px 0 12px",
+                  fontSize: "13px",
+                  background: "#fff",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  boxSizing: "border-box"
+                }}
+                onMouseEnter={(e) => {
+                  if (!periodOpen) e.currentTarget.style.borderColor = ACCENT;
+                }}
+                onMouseLeave={(e) => {
+                  if (!periodOpen) e.currentTarget.style.borderColor = "#e5e7eb";
+                }}
+              >
+                <span style={{ fontSize: "13px", color: "#374151" }}>
+                  {period}
+                </span>
+                <svg 
+                  style={{
+                    position: "absolute",
+                    right: "12px",
+                    top: "50%",
+                    transform: periodOpen ? "translateY(-50%) rotate(180deg)" : "translateY(-50%)",
+                    transition: "transform 0.18s",
+                    color: "#9ca3af"
+                  }}
+                  width="14" 
+                  height="14" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="2.5"
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </div>
+
+              {periodOpen && (
+                <div
+                  role="listbox"
+                  aria-label="Period options"
+                  style={{
+                    position: "absolute",
+                    top: "calc(100% + 6px)",
+                    left: 0,
+                    right: 0,
+                    background: "#fff",
+                    border: "1.5px solid #e5e7eb",
+                    borderRadius: "12px",
+                    boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
+                    zIndex: 200,
+                    overflow: "hidden"
+                  }}
+                >
+                  {/* Search input */}
+                  <div style={{
+                    padding: "10px 12px",
+                    borderBottom: "1px solid #f3f4f6"
+                  }}>
+                    <input
+                      autoFocus
+                      placeholder="Search periods..."
+                      value={periodSearch}
+                      onChange={(e) => setPeriodSearch(e.target.value)}
+                      style={{
+                        width: "100%",
+                        border: "1.5px solid #e5e7eb",
+                        borderRadius: "8px",
+                        padding: "6px 10px",
+                        fontSize: "13px",
+                        outline: "none",
+                        background: "#f9fafb",
+                        boxSizing: "border-box"
+                      }}
+                      onFocus={(e) => e.target.style.borderColor = ACCENT}
+                      onBlur={(e) => e.target.style.borderColor = "#e5e7eb"}
+                    />
+                  </div>
+                  
+                  {/* Options list */}
+                  <div style={{
+                    maxHeight: "240px",
+                    overflowY: "auto",
+                    padding: "6px 0"
+                  }}>
+                    {filteredPeriods.length === 0 ? (
+                      <div style={{
+                        padding: "16px",
+                        textAlign: "center",
+                        color: "#9ca3af",
+                        fontSize: "12px"
+                      }}>
+                        No periods found
+                      </div>
+                    ) : (
+                      filteredPeriods.map(option => (
+                        <div
+                          key={option}
+                          role="option"
+                          tabIndex={0}
+                          aria-selected={period === option}
+                          onClick={() => selectPeriod(option)}
+                          onKeyDown={(e) => handlePeriodKeyDown(e, option)}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "10px",
+                            padding: "8px 14px",
+                            cursor: "pointer",
+                            fontSize: "13px",
+                            color: "#374151",
+                            background: period === option ? ACCENT_BG : "transparent"
+                          }}
+                          onMouseEnter={(e) => {
+                            if (period !== option) e.currentTarget.style.background = ACCENT_BG;
+                          }}
+                          onMouseLeave={(e) => {
+                            if (period !== option) e.currentTarget.style.background = "transparent";
+                          }}
+                        >
+                          {/* Radio button style indicator */}
+                          <div style={{
+                            width: "16px",
+                            height: "16px",
+                            borderRadius: "50%",
+                            border: `2px solid ${period === option ? ACCENT : "#d1d5db"}`,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            flexShrink: 0
+                          }}>
+                            {period === option && (
+                              <div style={{
+                                width: "8px",
+                                height: "8px",
+                                borderRadius: "50%",
+                                background: ACCENT
+                              }} />
+                            )}
+                          </div>
+                          {option}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {/* Specialty Filter */}
+          <div style={{ flex: 1, minWidth: "260px" }}>
+            <TagSearch
+              label="SPECIALTY"
+              all={SPECIALTIES}
+              selected={selectedSpecialties}
+              onToggle={toggleSpecialty}
+              searchPlaceholder="Search specialties..."
+            />
+          </div>
+        </div>
+      </div>
+
+      <div style={S.statRow}>
+        <StatCard label="Total Doctors" value={filteredDoctors.length}/>
+        <StatCard label="Total Patients" value={totalPts}/>
+        <StatCard label="Avg Patients / Doctor" value={avgPts}/>
+        <StatCard label={`New Patients (${period})`} value={newTotal}/>
+      </div>
+
+      {/* Patients per doctor bars */}
+      <div style={S.card}>
+        <p style={S.cardTitle}>Patients per doctor</p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {filteredDoctors.map((d,i)=>(
+            <div key={i}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                <span style={{ fontSize: 13, fontWeight: 500, color: "#374151" }}>
+                  {d.name} 
+                  <span style={{ fontSize: 11, color: "#94a3b8", marginLeft: 8 }}>({d.specialty})</span>
+                </span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: ACCENT }}>
+                  {d.patients} patients
+                </span>
+              </div>
+              <div style={S.barTrack}>
+                <div style={{
+                  ...S.barFill((d.patients / totalPts) * 100, ACCENT),
+                  width: `${(d.patients / totalPts) * 100}%`
+                }} />
+              </div>
+            </div>
+          ))}
+          {filteredDoctors.length === 0 && (
+            <div style={S.noData}>No doctors found for selected specialties</div>
+          )}
+        </div>
+      </div>
+
+      <div style={S.grid2}>
+        {/* New patient growth */}
+        <div style={S.card}>
+          <p style={S.cardTitle}>New patient growth</p>
+          <DataTable
+            cols={[
+              { key:"name", label:"Doctor", sortable: true,
+                render: r => (
+                  <div>
+                    <span style={{ fontWeight: 500 }}>{r.name}</span>
+                    <span style={{ fontSize: 11, color: "#94a3b8", marginLeft: 8 }}>({r.specialty})</span>
+                  </div>
+                )
+              },
+              { key:"newPatients", label:"New Patients", sortable: true,
+                render: r => <span style={{ fontWeight: 700, color: ACCENT }}>{r.newPatients}</span> 
+              },
+              { key:"newPct", label:"vs Last Period", sortable: true,
+                render: r => (
+                  <span style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 4,
+                    padding: "3px 10px",
+                    borderRadius: 20,
+                    fontSize: 11,
+                    fontWeight: 600,
+                    background: r.trend === "up" ? "rgba(34, 197, 94, 0.1)" : "rgba(239, 68, 68, 0.1)",
+                    color: r.trend === "up" ? "#22c55e" : "#ef4444",
+                  }}>
+                    {r.trend === "up" ? "↑" : "↓"} {r.newPct}
+                  </span>
+                )
+              },
+            ]}
+            rows={filteredDoctors}
+          />
+        </div>
+
+        {/* Session activity */}
+        <div style={S.card}>
+          <p style={S.cardTitle}>Session activity</p>
+          <DataTable
+            cols={[
+              { key:"name", label:"Doctor", sortable: true,
+                render: r => (
+                  <div>
+                    <span style={{ fontWeight: 500 }}>{r.name}</span>
+                    <span style={{ fontSize: 11, color: "#94a3b8", marginLeft: 8 }}>({r.specialty})</span>
+                  </div>
+                )
+              },
+              { key:"lastLogin", label:"Last Login", sortable: true,
+                render: r => <span style={{ fontSize: 12, color: "#64748b" }}>{r.lastLogin}</span> 
+              },
+            ]}
+            rows={filteredDoctors}
+          />
+        </div>
       </div>
     </div>
   );
@@ -735,6 +1174,158 @@ function MedicationHealth({medicines}) {
   );
 }
 
+
+/* ============================================================
+   CROSS-ANALYSIS  (with TagSearch dropdowns)
+   ============================================================ */
+function CrossAnalysis({ diseases, medicines }) {
+  const allDiseases = diseases?.length > 0 ? diseases.map(d => d.label) : [];
+  const allMeds     = medicines?.length > 0 ? medicines.map(m => m.label) : [];
+
+  const [selDiseases,     setSelDiseases]     = useState([]);
+  const [selMeasurements, setSelMeasurements] = useState([]);
+  const [selMeds,         setSelMeds]         = useState([]);
+
+  const toggleD = d => setSelDiseases(prev => prev.includes(d) ? prev.filter(x=>x!==d) : [...prev,d]);
+  const toggleM = m => setSelMeasurements(prev => prev.includes(m) ? prev.filter(x=>x!==m) : [...prev,m]);
+  const toggleMed = m => setSelMeds(prev => prev.includes(m) ? prev.filter(x=>x!==m) : [...prev,m]);
+
+  const filteredPatients = useMemo(()=>{
+    let p = [...MOCK_PATIENTS];
+    if(selDiseases.length > 0) p = p.filter(pt => pt.diseases.some(d => selDiseases.includes(d.name)));
+    if(selMeds.length > 0)     p = p.filter(pt => pt.medications.some(m => selMeds.includes(m.name)));
+    return p;
+  }, [selDiseases, selMeds]);
+
+  /* disease overlap within matched cohort */
+  const diseaseDist = useMemo(()=>{
+    const map = {};
+    filteredPatients.forEach(p => p.diseases.forEach(d => { map[d.name] = (map[d.name]||0)+1; }));
+    return Object.entries(map).map(([label,value]) => ({ label, value, pct: pct(value, filteredPatients.length) }))
+      .sort((a,b) => b.value - a.value);
+  }, [filteredPatients]);
+
+  /* med overlap within matched cohort */
+  const medDist = useMemo(()=>{
+    const map = {};
+    filteredPatients.forEach(p => p.medications.forEach(m => { map[m.name] = (map[m.name]||0)+1; }));
+    return Object.entries(map).map(([label,value]) => ({ label, value, pct: pct(value, filteredPatients.length) }))
+      .sort((a,b) => b.value - a.value);
+  }, [filteredPatients]);
+
+  /* measurement rows for selected measurements */
+  const measurementRows = useMemo(()=>{
+    if(selMeasurements.length === 0) return [];
+    return filteredPatients.map((p,i) => {
+      const meas = MOCK_PATIENT_MEASUREMENTS[p.id] || {};
+      const row  = { ref:`P-${String(i+1).padStart(3,"0")}`, ageGroup:toAgeGroup(p.age), gender:p.gender };
+      selMeasurements.forEach(m => { row[m] = meas[m] || "—"; });
+      return row;
+    });
+  }, [filteredPatients, selMeasurements]);
+
+  const anyFilter = selDiseases.length > 0 || selMeds.length > 0 || selMeasurements.length > 0;
+
+  return (
+    <div>
+      <div style={S.pageHead}>
+        <h2 style={S.pageTitle}>Cross-Analysis</h2>
+        <p style={S.pageSub}>Explore relationships across diseases, measurements, and medications</p>
+      </div>
+
+      <div style={S.filterBar} className="d-flex w-100 gap-3">
+        <div className="w-100">
+          <TagSearch
+            label="Disease"
+            all={allDiseases}
+            selected={selDiseases}
+            onToggle={toggleD}
+            searchPlaceholder="Search diseases..."
+          />
+        </div>
+
+        <div className="w-100">
+          <TagSearch
+            label="Measurement"
+            all={MOCK_MEASUREMENTS}
+            selected={selMeasurements}
+            onToggle={toggleM}
+            searchPlaceholder="Search measurements..."
+          />
+        </div>
+
+        <div className="w-100">
+          <TagSearch
+            label="Medication"
+            all={allMeds}
+            selected={selMeds}
+            onToggle={toggleMed}
+            searchPlaceholder="Search medications..."
+          />
+        </div>
+      </div>
+
+      <div style={S.statRow}>
+        <StatCard label="Matched Patients"    value={filteredPatients.length} sub={`${pct(filteredPatients.length, MOCK_PATIENTS.length)}% of all patients`}/>
+        <StatCard label="Diseases Selected"   value={selDiseases.length     || "All"}/>
+        <StatCard label="Measurements"        value={selMeasurements.length  || "None"}/>
+        <StatCard label="Medications Selected"value={selMeds.length          || "All"}/>
+      </div>
+
+      {!anyFilter && (
+        <div style={S.card}><div style={S.noData}>Select at least one disease, measurement, or medication to explore correlations</div></div>
+      )}
+
+      {anyFilter && (
+        <>
+          {/* Overlap charts */}
+          <div style={S.grid2}>
+            <div style={S.card}>
+              <p style={S.cardTitle}>Disease overlap in matched cohort</p>
+              {diseaseDist.length === 0
+                ? <div style={S.noData}>No data</div>
+                : <div style={S.barWrap}>{diseaseDist.map((d,i)=><HBar key={i} label={d.label} value={d.value} total={filteredPatients.length} pctVal={d.pct}/>)}</div>
+              }
+            </div>
+            <div style={S.card}>
+              <p style={S.cardTitle}>Medication overlap in matched cohort</p>
+              {medDist.length === 0
+                ? <div style={S.noData}>No data</div>
+                : <div style={S.barWrap}>{medDist.map((d,i)=><HBar key={i} label={d.label} value={d.value} total={filteredPatients.length} pctVal={d.pct}/>)}</div>
+              }
+            </div>
+          </div>
+
+          {/* Measurement breakdown table */}
+          {selMeasurements.length > 0 && (
+            <div style={S.card}>
+              <p style={S.cardTitle}>Measurement values — matched patients</p>
+              <DataTable
+                cols={[
+                  { key:"ref",      label:"Patient Ref", render: r=><span style={S.refBadge}>{r.ref}</span> },
+                  { key:"ageGroup", label:"Age Group",   sortable:true, render: r=><span style={S.ageGroupBadge}>{r.ageGroup}</span> },
+                  { key:"gender",   label:"Gender",      sortable:true, render: r=><span style={S.badge(r.gender)}>{r.gender}</span> },
+                  ...selMeasurements.map(m=>({
+                    key:m, label:m, sortable:true,
+                    render: r => <span style={{fontWeight:600, color: r[m]==="—" ? "#94a3b8" : "#854f0b"}}>{r[m]}</span>,
+                  })),
+                ]}
+                rows={measurementRows}
+              />
+            </div>
+          )}
+
+          {/* Anonymous records expand */}
+          <div style={S.card}>
+            <p style={S.cardTitle}>Records</p>
+            <AnonExpandPanel patients={filteredPatients}/>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 /* ============================================================
    7. CUSTOMIZE TABLE
    ============================================================ */
@@ -836,10 +1427,14 @@ function CustomizeTable({diseases,medicines,symptoms}) {
   );
 }
 
+
+
 /* ============================================================
    NAV CONFIG
    ============================================================ */
 const NAV = [
+  {section:"Doctor"},
+  {key:"doctorana",    label:"Doctor Analytics",            icon:<BsPeopleFill/>},
   {section:"Patient Info"},
   {key:"demographics", label:"Demographics",                icon:<BsPeopleFill/>},
   {section:"Disease"},
@@ -849,15 +1444,14 @@ const NAV = [
   {key:"meddemo",      label:"Medication / Demographics",   icon:<BsFillFileBarGraphFill/>},
   {key:"meddisease",   label:"Medication / Disease",        icon:<GiPillDrop/>},
   {key:"medhealth",    label:"Medication / Reported Health",icon:<FaStethoscope/>},
+  {section:"Cross Analysis"},
+  {key:"crossana",     label:"Cross-Analysis",              icon:<FaStethoscope/>},
   {section:"Custom"},
   {key:"customize",    label:"Customize Table",             icon:<BiSolidCustomize/>},
 ];
 
-/* ============================================================
-   ROOT
-   ============================================================ */
 export default function AdminAnalytics() {
-  const [active,         setActive]         = useState("demographics");
+  const [active,         setActive]         = useState("doctorana");
   const [doctors, setDoctors] = useState([]);
 const [selectedDoctors, setSelectedDoctors] = useState([]);
 
@@ -876,12 +1470,14 @@ useEffect(() => {
 }, []);
 
   const VIEWS = {
+    doctorana:    <DoctorAnalytics/>,
     demographics: <Demographics/>,
     diseasedemo:  <DiseaseDemo   {...sharedProps}/>,
     diseasemed:   <DiseaseMedication {...sharedProps}/>,
     meddemo:      <MedicationDemo {...sharedProps}/>,
     meddisease:   <MedicationDisease {...sharedProps}/>,
     medhealth:    <MedicationHealth {...sharedProps}/>,
+    crossana:     <CrossAnalysis    {...sharedProps}/>,
     customize:    <CustomizeTable {...sharedProps}/>,
   };
 
