@@ -1,19 +1,17 @@
 import React, { useEffect } from 'react';
-// import { useTheme } from '@mui/material/styles';
+import { useTheme } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import {
   Fade,
   Avatar,
-  //   ListItemAvatar,
+  ListItemAvatar,
   ClickAwayListener,
   Paper,
   Popper,
   List,
   ListItemText,
   ListItemIcon,
-  ListItemButton,
-  Typography,
-  Box
+  ListItemButton
 } from '@mui/material';
 import PersonTwoToneIcon from '@mui/icons-material/PersonTwoTone';
 import MeetingRoomTwoToneIcon from '@mui/icons-material/MeetingRoomTwoTone';
@@ -23,7 +21,7 @@ import Swal from 'sweetalert2';
 import axios from 'axios';
 
 const ProfileSection = () => {
-  //   const theme = useTheme();
+  const theme = useTheme();
   const navigate = useNavigate();
 
   const [open, setOpen] = React.useState(false);
@@ -43,7 +41,7 @@ const ProfileSection = () => {
 
         if (response.data.success) {
           // Only update the state if the data has changed
-          setUserDetails(response.data?.info[0]);
+            setUserDetails(response.data?.info[0]);
         } else {
           console.log('Profile Details fetch Error');
         }
@@ -105,7 +103,7 @@ const ProfileSection = () => {
 
   return (
     <>
-      {/* <ListItemAvatar>
+      <ListItemAvatar>
         <Avatar
           alt="Sepha Wilon"
           src={userDetails.image ? `${IMAGE_PATH}${userDetails.image}?${new Date().getTime()}` : `${IMAGE_PATH}placeholder.jpg`}
@@ -113,32 +111,8 @@ const ProfileSection = () => {
           ref={anchorRef}
           sx={{ width: 36, height: 36 }}
         />
-      </ListItemAvatar> */}
-
-      {/* // ✅ New */}
-      <Box
-        ref={anchorRef}
-        onClick={handleToggle}
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          cursor: 'pointer',
-          gap: 1.5,
-          px: 1,
-          py: 0.5,
-          borderRadius: '8px',
-          '&:hover': { background: '#f5f7fa' }
-        }}
-      >
-        <Avatar
-          src={userDetails.image ? `${IMAGE_PATH}${userDetails.image}?${new Date().getTime()}` : `${IMAGE_PATH}placeholder.jpg`}
-          sx={{ width: 36, height: 36 }}
-        />
-        <Box>
-          <Typography sx={{ fontSize: '14px', fontWeight: 600 }}>{userDetails?.name || 'Admin'}</Typography>
-        </Box>
-      </Box>
-      {/* <Popper
+      </ListItemAvatar>
+      <Popper
         placement="bottom-end"
         open={open}
         anchorEl={anchorRef.current}
@@ -162,15 +136,14 @@ const ProfileSection = () => {
       >
         {({ TransitionProps }) => (
           <Fade {...TransitionProps}>
-            <Paper
-              elevation={0}
+            <Paper  elevation={0}
               sx={{
                 width: 260,
-                borderRadius: '12px',
-                border: '1px solid #e9ecef'
-              }}
-            >
+                borderRadius: "12px",
+                border: "1px solid #e9ecef"
+              }}>
               <ClickAwayListener onClickAway={handleClose}>
+                
                 <List
                   sx={{
                     width: '100%',
@@ -195,72 +168,6 @@ const ProfileSection = () => {
                     <ListItemText primary="Logout" />
                   </ListItemButton>
                 </List>
-              </ClickAwayListener>
-            </Paper>
-          </Fade>
-        )}
-      </Popper> */}
-      <Popper
-        placement="bottom-end"
-        open={open}
-        anchorEl={anchorRef.current}
-        role={undefined}
-        transition
-        disablePortal
-        modifiers={[
-          { name: 'offset', options: { offset: [0, 12] } },
-          { name: 'preventOverflow', options: { altAxis: true } }
-        ]}
-      >
-        {({ TransitionProps }) => (
-          <Fade {...TransitionProps}>
-            <Paper
-              elevation={0}
-              sx={{
-                width: 260,
-                borderRadius: '12px',
-                border: '1px solid #e9ecef'
-              }}
-            >
-              <ClickAwayListener onClickAway={handleClose}>
-                <Box>
-                  {/* ✅ User header section */}
-                  <Box
-                    sx={{
-                      p: 2,
-                      borderBottom: '1px solid #f1f3f5',
-                      display: 'flex',
-                      gap: 1.5,
-                      alignItems: 'center'
-                    }}
-                  >
-                    <Avatar
-                      src={userDetails.image ? `${IMAGE_PATH}${userDetails.image}?${new Date().getTime()}` : `${IMAGE_PATH}placeholder.jpg`}
-                      sx={{ width: 42, height: 42,border:'1px solid #1ddec4' }}
-                    />
-                    <Box>
-                      <Typography sx={{ fontWeight: 600 }}>{userDetails?.name || 'Admin'}</Typography>
-                      <Typography sx={{ fontSize: '12px', color: '#6c757d' }}>{userDetails?.email}</Typography>
-                    </Box>
-                  </Box>
-
-                  {/* ✅ Menu items */}
-                  <List>
-                    <ListItemButton onClick={handleProfileClick} sx={{ py: 1 }}>
-                      <ListItemIcon>
-                        <PersonTwoToneIcon sx={{ color: '#1ddec4' }} />
-                      </ListItemIcon>
-                      <ListItemText primary="Profile" />
-                    </ListItemButton>
-
-                    <ListItemButton onClick={handleLogoutClick} sx={{ py: 1 }}>
-                      <ListItemIcon>
-                        <MeetingRoomTwoToneIcon sx={{ color: '#ff6b6b' }} />
-                      </ListItemIcon>
-                      <ListItemText primary="Logout" />
-                    </ListItemButton>
-                  </List>
-                </Box>
               </ClickAwayListener>
             </Paper>
           </Fade>
