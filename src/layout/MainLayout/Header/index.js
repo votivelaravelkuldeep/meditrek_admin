@@ -11,7 +11,6 @@
 // // import NotificationSection from './NotificationSection';
 // import { drawerWidth } from 'config.js';
 
-
 // // assets
 // import MenuTwoToneIcon from '@mui/icons-material/MenuTwoTone';
 // import logo from 'assets/images/logo.png';
@@ -66,138 +65,135 @@
 
 // export default Header;
 
+import React from 'react';
+import PropTypes from 'prop-types';
 
-import React from "react";
-import PropTypes from "prop-types";
+import { IconButton, InputBase, Paper } from '@mui/material';
+import FullscreenIcon from '@mui/icons-material/Fullscreen';
+import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
+import MenuTwoToneIcon from '@mui/icons-material/MenuTwoTone';
+import SearchIcon from '@mui/icons-material/Search';
+import RefreshIcon from "@mui/icons-material/Refresh";
 
-import { IconButton, InputBase, Paper } from "@mui/material";
-import FullscreenIcon from "@mui/icons-material/Fullscreen";
-import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
-import MenuTwoToneIcon from "@mui/icons-material/MenuTwoTone";
-import SearchIcon from "@mui/icons-material/Search";
-
-import ProfileSection from "./ProfileSection";
-import logo from "assets/images/logo1.png";
+import ProfileSection from './ProfileSection';
+import logo from 'assets/images/logo1.png';
 
 const Header = ({ drawerOpen, drawerToggle }) => {
   const [isFullscreen, setIsFullscreen] = React.useState(false);
 
-const toggleFullscreen = () => {
-  if (!document.fullscreenElement) {
-    document.documentElement.requestFullscreen();
-    setIsFullscreen(true);
-  } else {
-    document.exitFullscreen();
-    setIsFullscreen(false);
-  }
-};
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen();
+      setIsFullscreen(false);
+    }
+  };
+
+   const handleRefresh = () => {
+    window.location.reload();
+  };
+
   return (
     <div
       style={{
-        width: "100%",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between"
+        width: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between'
       }}
     >
-     <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
-  <img src={logo} alt="logo" style={{ width: 32 }} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+        <img src={logo} alt="logo" style={{ width: 32 }} />
 
-  {drawerOpen && (
-    <span
-      style={{
-        fontSize: "20px",
-        fontWeight: 600
-      }}
-    >
-      Meditrek
-    </span>
-  )}
+        {drawerOpen && (
+          <span
+            style={{
+              fontSize: '20px',
+              fontWeight: 600
+            }}
+          >
+            Meditrek
+          </span>
+        )}
 
-  <IconButton
-    onClick={drawerToggle}
-    style={{ background: "#f5f7fa" }}
-  >
-    <MenuTwoToneIcon style={{ color: "#1ddec4" }} />
-  </IconButton>
+        <IconButton onClick={drawerToggle} style={{ background: '#f5f7fa' }}>
+          <MenuTwoToneIcon style={{ color: '#1ddec4' }} />
+        </IconButton>
 
-  <div
-    style={{
-      display: "flex",
-      alignItems: "center",
-      marginLeft: "8px",
-      gap: "10px"
-    }}
-  >
-    <div
-      style={{
-        width: "1px",
-        height: "28px",
-        background: "#eaecef"
-      }}
-    />
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            marginLeft: '8px',
+            gap: '10px'
+          }}
+        >
+          <div
+            style={{
+              width: '1px',
+              height: '28px',
+              background: '#eaecef'
+            }}
+          />
 
-    <span
-      style={{
-        fontSize: "14px",
-        color: "#6c757d"
-      }}
-    >
-      Dashboard
-    </span>
-  </div>
-</div>
+          <span
+            style={{
+              fontSize: '14px',
+              color: '#6c757d'
+            }}
+          >
+            Dashboard
+          </span>
+        </div>
+      </div>
 
-      
+      {/* SEARCH */}
+      <Paper
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          px: 1.5,
+          py: 0.5,
+          borderRadius: '8px',
+          width: 320,
+          background: '#f6f8fa',
+          boxShadow: 'none'
+        }}
+      >
+        <SearchIcon sx={{ fontSize: 20, color: '#9aa0a6' }} />
 
-      {/* SEARCH */ }
-  <Paper
-    sx={{
-      display: "flex",
-      alignItems: "center",
-      px: 1.5,
-      py: 0.5,
-      borderRadius: "8px",
-      width: 320,
-      background: "#f6f8fa",
-      boxShadow: "none"
-    }}
-  >
-    <SearchIcon sx={{ fontSize: 20, color: "#9aa0a6" }} />
+        <InputBase
+          placeholder="Search Doctor..."
+          sx={{
+            ml: 1,
+            fontSize: '14px',
+            flex: 1
+          }}
+        />
+      </Paper>
 
-    <InputBase
-      placeholder="Search Doctor..."
-      sx={{
-        ml: 1,
-        fontSize: "14px",
-        flex: 1
-      }}
-    />
-  </Paper>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px'
+        }}
+      >
+        {/* Fullscreen Button */}
+        <IconButton onClick={toggleFullscreen} style={{ background: '#f5f7fa' }}>
+          {isFullscreen ? <FullscreenExitIcon style={{ color: '#6c757d' }} /> : <FullscreenIcon style={{ color: '#6c757d' }} />}
+        </IconButton>
 
-  <div
-  style={{
-    display: "flex",
-    alignItems: "center",
-    gap: "10px"
-  }}
->
-  {/* Fullscreen Button */}
-  <IconButton
-    onClick={toggleFullscreen}
-    style={{ background: "#f5f7fa" }}
-  >
-    {isFullscreen ? (
-      <FullscreenExitIcon style={{ color: "#6c757d" }} />
-    ) : (
-      <FullscreenIcon style={{ color: "#6c757d" }} />
-    )}
-  </IconButton>
+        <IconButton onClick={handleRefresh} style={{ background: '#f5f7fa' }}>
+          <RefreshIcon style={{ color: '#6c757d' }} />
+        </IconButton>
 
-  {/* Profile */}
-  <ProfileSection />
-</div>
-    </div >
+        {/* Profile */}
+        <ProfileSection />
+      </div>
+    </div>
   );
 };
 

@@ -42,7 +42,7 @@ function ManageDoctors() {
   const [sortConfig, setSortConfig] = useState(null);
 
   const [showEmailModal, setShowEmailModal] = useState(false);
-  // const [emailDoctorId, setEmailDoctorId] = useState('');
+  const [emailDoctorId, setEmailDoctorId] = useState('');
   const [newEmail, setNewEmail] = useState('');
   const [emailError, setEmailError] = useState('');
 
@@ -273,7 +273,7 @@ function ManageDoctors() {
   };
 
   const handleEditEmail = (doctor_id, currentEmail) => {
-    // setEmailDoctorId(doctor_id);
+    setEmailDoctorId(doctor_id);
     setNewEmail(currentEmail || '');
     setEmailError('');
     setShowEmailModal(true);
@@ -289,8 +289,7 @@ function ManageDoctors() {
   //     return;
   //   }
 
-  //   axios
-  //     .post(`${API_URL}update_doctor_email`, { doctor_id: emailDoctorId, email: newEmail })
+  //   axios.post(`${API_URL}edit_docter_email`, { doctor_id: emailDoctorId, email: newEmail })
   //     .then((response) => {
   //       if (response.data.success) {
   //         Swal.fire({ title: '', text: 'Email updated successfully', icon: 'success', timer: 2000 });
@@ -306,6 +305,45 @@ function ManageDoctors() {
   // const handleSearchChange = (event) => {
   //   setSearchQuery(event.target.value);
   // };
+
+  const handleUpdateEmail = async () => {
+  if (!newEmail) {
+    setEmailError('Please enter email');
+    return;
+  }
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
+    setEmailError('Please enter a valid email');
+    return;
+  }
+
+  try {
+    const response = await axios.post(`${API_URL}edit_docter_email`, {
+      doctor_id: emailDoctorId,
+      email: newEmail
+    });
+
+    if (response.data.success) {
+      Swal.fire({
+        title: 'Success',
+        text: 'Email updated successfully',
+        icon: 'success',
+        timer: 2000
+      });
+
+      setShowEmailModal(false);
+      setNewEmail('');
+      setEmailDoctorId('');
+
+      getDoctors(); // refresh table
+    } else {
+      setEmailError(response.data.msg || 'Failed to update email');
+    }
+  } catch (error) {
+    console.error(error);
+    setEmailError('Server error, try again');
+  }
+};
 
   const filteredUsers = doctorData.filter(
     (user) =>
@@ -878,7 +916,7 @@ function ManageDoctors() {
             <Button variant="secondary" style={{ fontSize: '12px' }} onClick={() => setShowEmailModal(false)}>
               Close
             </Button>
-            <Button variant="primary" style={{ fontSize: '12px' }} >
+            <Button variant="primary" style={{ fontSize: '12px' }} onClick={handleUpdateEmail}  >
               Update
             </Button>
           </Modal.Footer>
