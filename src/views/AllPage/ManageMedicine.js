@@ -35,7 +35,6 @@ function ManageMedicine() {
 
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [sortConfig, setSortConfig] = useState(null);
-  const [activeLang, setActiveLang] = useState('en');
 
   //   const medicinesPerPage = 50;
 
@@ -67,42 +66,42 @@ function ManageMedicine() {
     setSelectAll(!selectAll);
   };
 
-  const deleteSelectedMedicines = () => {
-    if (selectedMedicines.length === 0) {
-      Swal.fire('Please select at least one medicine');
-      return;
-    }
-
-    Swal.fire({
-      title: 'Are you sure?',
-      text: 'You want to delete selected medicines?',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Yes, delete!'
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          const response = await axios.post(`${API_URL}delete_medicine_bulk`, {
-            medicine_ids: selectedMedicines
-          });
-          // const response = await axios.post("http://localhost:3001/meditrek/server/adminAPI/delete_medicine_bulk", {
-          //   medicine_ids: selectedMedicines
-          // });
-
-          if (response.data.success) {
-            Swal.fire('Deleted!', response.data.msg, 'success');
-            setSelectedMedicines([]);
-            setSelectAll(false);
-            fetchData();
-          } else {
-            Swal.fire('Error', response.data.msg, 'error');
-          }
-        } catch (error) {
-          console.error(error);
-        }
+    const deleteSelectedMedicines = () => {
+      if (selectedMedicines.length === 0) {
+        Swal.fire('Please select at least one medicine');
+        return;
       }
-    });
-  };
+
+      Swal.fire({
+        title: 'Are you sure?',
+        text: 'You want to delete selected medicines?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete!'
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          try {
+            const response = await axios.post(`${API_URL}delete_medicine_bulk`, {
+              medicine_ids: selectedMedicines
+            });
+            // const response = await axios.post("http://localhost:3001/meditrek/server/adminAPI/delete_medicine_bulk", {
+            //   medicine_ids: selectedMedicines
+            // });
+
+            if (response.data.success) {
+              Swal.fire('Deleted!', response.data.msg, 'success');
+              setSelectedMedicines([]);
+              setSelectAll(false);
+              fetchData();
+            } else {
+              Swal.fire('Error', response.data.msg, 'error');
+            }
+          } catch (error) {
+            console.error(error);
+          }
+        }
+      });
+    };
 
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
@@ -328,16 +327,6 @@ function ManageMedicine() {
     }
   ];
 
-  const languages = [
-    { id: 'en', name: 'English', default: true },
-    { id: 'fr', name: 'Français' },
-    { id: 'es', name: 'Español' },
-    { id: 'ar', name: 'العربية' },
-    { id: 'it', name: 'Italiano' },
-    { id: 'de', name: 'Deutsch' },
-    { id: 'pt', name: 'Português' }
-  ];
-
   return (
     <>
       {/* <Typography style={{ marginTop: '15px', marginBottom: '30px' }} variant="h4" gutterBottom>
@@ -354,37 +343,32 @@ function ManageMedicine() {
         >
           {/* HEADER */}
           <div className="d-flex justify-content-between align-items-center flex-wrap">
-            <Heading heading="Manage Medicine" />
+            <Heading heading='Manage Medicine' />
             <div className="d-flex gap-2">
-              <input
-                className="custom-search form-control"
-                style={{ width: '250px', fontSize: '13px' }}
-                placeholder="Search..."
-                onChange={handleSearchChange}
-              />
-              <Button
-                className="btn btn-primary"
-                style={{ fontSize: '12px', borderRadius: '10px', padding: '4px 8px' }}
-                onClick={handleShowModal2}
-              >
-                <AddIcon style={{ fontSize: '13px' }} /> Add Medicine
+               <input
+              className="custom-search form-control"
+              style={{ width: '250px', fontSize: '13px' }}
+              placeholder="Search..."
+              onChange={handleSearchChange}
+            />
+              <Button className="btn btn-primary" style={{ fontSize: '12px', borderRadius: '10px',padding:'4px 8px' }} onClick={handleShowModal2}>
+                <AddIcon style={{fontSize:'13px'}} /> Add Medicine
               </Button>
 
               <Button
                 className="btn btn-primary"
-                style={{ fontSize: '12px', borderRadius: '10px', padding: '4px 8px' }}
+                style={{ fontSize: '12px', borderRadius: '10px',padding:'4px 8px' }}
                 onClick={() => navigate(APP_PREFIX_PATH + '/bulk_upload_medicine')}
               >
-                <CloudUploadIcon style={{ fontSize: '13px' }} /> Bulk Upload
+                <CloudUploadIcon style={{fontSize:'13px'}} /> Bulk Upload
               </Button>
-              <Button
-                className="btn btn-danger"
-                style={{ fontSize: '12px', borderRadius: '10px', padding: '4px 8px' }}
-                onClick={deleteSelectedMedicines}
-              >
-                <DeleteIcon style={{ fontSize: '13px' }} /> Delete Selected
+
+              <Button className="btn btn-danger" style={{ fontSize: '12px', borderRadius: '10px',padding:'4px 8px' }} onClick={deleteSelectedMedicines}>
+                <DeleteIcon style={{fontSize:'13px'}} /> Delete Selected
               </Button>
             </div>
+
+           
           </div>
 
           {/* TABLE */}
@@ -412,39 +396,16 @@ function ManageMedicine() {
         </div>
 
         {/* Add Modal */}
-        <Modal show={showModal2} centered onHide={handleCloseModal2} style={{ zIndex: '99999' }} className="custom-modal"  dialogClassName="custom-modal-width">
-          <Modal.Header closeButton style={{ borderBottom: 0, paddingBottom: 0 }}>
+        <Modal show={showModal2} centered onHide={handleCloseModal2} style={{ zIndex: '99999' }} className="custom-modal">
+          <Modal.Header closeButton>
             <Modal.Title style={{ fontSize: '17px' }}>Add medicine</Modal.Title>
           </Modal.Header>
-          <Modal.Body style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: 0, paddingBottom: 0 }}>
+          <Modal.Body style={{paddingTop:0}}>
             <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={handleSubmitAddVideo}>
               {({ handleSubmit, isSubmitting, errors, touched }) => (
                 <FormikForm noValidate onSubmit={handleSubmit}>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', margin: '16px 0' }}>
-                    {languages.map((lang) => (
-                      <button
-                        type="button"
-                        key={lang.id}
-                        onClick={() => setActiveLang(lang.id)}
-                        style={{
-                          borderRadius: '999px',
-                          padding: '2px 12px',
-                          fontSize: '12px',
-                          border: activeLang === lang.id ? '1px solid #1ddec4' : '1px solid #e5e7eb',
-                          background: activeLang === lang.id ? '#1ddec4' : '#f8fafc',
-                          color: activeLang === lang.id ? '#fff' : '#64748b',
-                          fontWeight: activeLang === lang.id ? '500' : '400',
-                          transition: '0.2s'
-                        }}
-                      >
-                        {lang.name}
-                      </button>
-                    ))}
-                  </div>
-                  <Form.Group style={{ display: 'flex', flexDirection: 'column' }}>
-                    <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>Medicine Name
-                       ({languages.find((l) => l.id === activeLang)?.name})
-                    </Form.Label>
+                     <Form.Group style={{ display: 'flex', flexDirection: 'column' }}>
+                    <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>Medicine Name</Form.Label>
                     <Field
                       type="text"
                       name="title"
@@ -453,21 +414,19 @@ function ManageMedicine() {
                       style={{ fontSize: '13px' }}
                     />
                     <ErrorMessage name="title" component="div" className="text-danger" />
-                  </Form.Group>
-                  <div className="mb-3 mt-2" style={{ display: 'flex', flexDirection: 'column' }}>
-                    <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>Description
-                       ({languages.find((l) => l.id === activeLang)?.name})
-                    </Form.Label>
+                  </Form.Group >
+                     <div className="mb-3 mt-2" style={{ display: 'flex', flexDirection: 'column' }}>
+                    <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>Description</Form.Label>
                     <Field
                       type="text"
                       name="description"
                       className={`custom-input custom-search form-control${errors.description && touched.description ? ' is-invalid' : ''}`}
                       placeholder="Enter description"
-                      style={{ fontSize: '13px' }}
+                       style={{ fontSize: '13px' }}
                     />
                     <ErrorMessage name="description" component="div" className="text-danger" />
                   </div>
-                  <Modal.Footer style={{ borderTop: 'none', paddingTop: 0, paddingRight: 0 }}>
+                  <Modal.Footer style={{ borderTop: 'none',paddingTop:0,paddingRight:0 }}>
                     <Button variant="primary" type="submit" disabled={isSubmitting} style={{ fontSize: '12px' }}>
                       {isSubmitting ? 'Adding...' : 'Add'}
                     </Button>
@@ -479,11 +438,11 @@ function ManageMedicine() {
         </Modal>
 
         {/* Edit Modal */}
-        <Modal show={showModal} centered onHide={handleCloseModal} style={{ zIndex: '99999' }} className="custom-modal"  dialogClassName="custom-modal-width">
-          <Modal.Header closeButton style={{ borderBottom: 0, paddingBottom: 0 }}>
+        <Modal show={showModal} centered onHide={handleCloseModal} style={{ zIndex: '99999' }} className="custom-modal">
+          <Modal.Header closeButton>
             <Modal.Title>Edit Medicine</Modal.Title>
           </Modal.Header>
-          <Modal.Body style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: 0, paddingBottom: 0 }}>
+          <Modal.Body style={{paddingTop:0}}>
             <Formik
               initialValues={initialValues2}
               validationSchema={validationSchema}
@@ -492,31 +451,8 @@ function ManageMedicine() {
             >
               {({ handleSubmit, isSubmitting, errors, touched }) => (
                 <FormikForm noValidate onSubmit={handleSubmit}>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', margin: '16px 0' }}>
-                    {languages.map((lang) => (
-                      <button
-                        type="button"
-                        key={lang.id}
-                        onClick={() => setActiveLang(lang.id)}
-                        style={{
-                          borderRadius: '999px',
-                          padding: '2px 12px',
-                          fontSize: '12px',
-                          border: activeLang === lang.id ? '1px solid #1ddec4' : '1px solid #e5e7eb',
-                          background: activeLang === lang.id ? '#1ddec4' : '#f8fafc',
-                          color: activeLang === lang.id ? '#fff' : '#64748b',
-                          fontWeight: activeLang === lang.id ? '500' : '400',
-                          transition: '0.2s'
-                        }}
-                      >
-                        {lang.name}
-                      </button>
-                    ))}
-                  </div>
                   <Form.Group style={{ display: 'flex', flexDirection: 'column' }}>
-                    <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>Medicine Name
-                       ({languages.find((l) => l.id === activeLang)?.name})
-                    </Form.Label>
+                    <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>Medicine Name</Form.Label>
                     <Field
                       type="text"
                       name="title"
@@ -528,9 +464,7 @@ function ManageMedicine() {
                   </Form.Group>
                   {/* </div> */}
                   <div className="mb-3 mt-2">
-                    <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>Description
-                       ({languages.find((l) => l.id === activeLang)?.name})
-                    </Form.Label>
+                    <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>Description</Form.Label>
 
                     <Field
                       type="text"
@@ -541,7 +475,7 @@ function ManageMedicine() {
                     />
                     <ErrorMessage name="description" component="div" className="text-danger" />
                   </div>
-                  <Modal.Footer style={{ borderTop: 'none', paddingTop: 0, paddingRight: 0 }}>
+                  <Modal.Footer style={{ borderTop: 'none',paddingTop:0,paddingRight:0 }}>
                     <Button variant="primary" type="submit" disabled={isSubmitting} style={{ fontSize: '12px' }}>
                       {isSubmitting ? 'Saving...' : 'Save Changes'}
                     </Button>
