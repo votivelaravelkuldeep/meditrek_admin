@@ -6,6 +6,7 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import './managecontent.css';
 import { Button } from 'react-bootstrap';
 import './managecontent.css';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 // import Typography from '@mui/material/Typography';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -164,48 +165,7 @@ function ManageUser() {
     { label: 'Full Name', sortable: true, key: 'name' },
     { label: 'Mobile No.', sortable: true, key: 'mobile' },
     { label: 'Email', sortable: true, key: 'email' },
-    {
-      label: 'Action',
-      sortable: true,
-      key: 'action',
-      render: (user, index) => (
-        <div className="dropdown text-center">
-          <Button
-            className="btn btn-primary dropdown-toggle action-btn"
-            type="button"
-            data-bs-toggle="dropdown"
-            style={{
-              display: 'inline-block',
-              padding: '2px 8px',
-              fontSize: '11px'
-            }}
-          >
-            Action
-          </Button>
 
-          <ul className="dropdown-menu" style={{ fontSize: '12px' }}>
-            <li>
-              <Link to={`${APP_PREFIX_PATH}/manage-user/userlist/view_user/${user.user_id}/${user.user_id}`} className="dropdown-item">
-                <VisibilityIcon style={{ marginRight: '2px' }} /> View
-              </Link>
-            </li>
-
-            <li>
-              <Link className="dropdown-item" onClick={() => handleActionChange(index, 'Activate/Deactivate', user)}>
-                {user.active_flag == 1 ? <ToggleOffIcon style={{ marginRight: '2px' }} /> : <ToggleOnIcon style={{ marginRight: '2px' }} />}
-                Activate/Deactivate
-              </Link>
-            </li>
-
-            <li>
-              <Link className="dropdown-item" onClick={() => handleDeleteUser(user.user_id)} style={{ color: 'red' }}>
-                🗑 Delete
-              </Link>
-            </li>
-          </ul>
-        </div>
-      )
-    },
     {
       label: 'Status',
       key: 'active_flag',
@@ -228,7 +188,63 @@ function ManageUser() {
       )
     },
 
-    { label: 'Create Date & Time', sortable: true, key: 'createtime' }
+    { label: 'Create Date & Time', sortable: true, key: 'createtime' },
+    {
+      label: 'Action',
+      sortable: true,
+      key: 'action',
+      render: (user, index) => (
+        <div className="dropdown text-center">
+          <Button
+            className="btn btn-primary dropdown-toggle action-btn"
+            type="button"
+            data-bs-toggle="dropdown"
+            style={{
+              display: 'inline-block',
+              padding: '2px 8px',
+              fontSize: '11px'
+            }}
+          >
+            Action
+          </Button>
+
+          <ul className="dropdown-menu" style={{ fontSize: '12px' }}>
+            <li>
+              <Link
+                to={`${APP_PREFIX_PATH}/manage-user/userlist/view_user/${user.user_id}/${user.user_id}`}
+                className="dropdown-item d-flex align-items-center"
+              >
+                <VisibilityIcon style={{ fontSize: '16px' }} className="me-1" /> View
+              </Link>
+            </li>
+
+            <li>
+              <Link
+                className="dropdown-item d-flex align-items-center"
+                onClick={() => handleActionChange(index, 'Activate/Deactivate', user)}
+              >
+                {user.active_flag == 1 ? (
+                  <ToggleOffIcon style={{ fontSize: '16px' }} className="me-1" />
+                ) : (
+                  <ToggleOnIcon style={{ fontSize: '16px' }} className="me-1" />
+                )}
+                Activate/Deactivate
+              </Link>
+            </li>
+
+            <li>
+              <Link
+                className="dropdown-item d-flex align-items-center"
+                onClick={() => handleDeleteUser(user.user_id)}
+                style={{ color: 'red' }}
+              >
+                <DeleteIcon style={{ fontSize: '16px' }} className="me-1" /> Delete
+              </Link>
+            </li>
+          </ul>
+        </div>
+      )
+    }
   ];
 
   // ================= UI =================
@@ -244,7 +260,7 @@ function ManageUser() {
           {/* <h5 className="fw-bold mb-0" style={{ color: '#1e293b' }}>
             User List
           </h5> */}
-          <Heading heading='User List' />
+          <Heading heading="User List" />
           <div>
             <input
               className="custom-search form-control"
