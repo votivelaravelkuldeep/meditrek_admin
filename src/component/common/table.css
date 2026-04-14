@@ -29,3 +29,44 @@
   border-bottom-color: #1ddec4;
   border-top-color: #1ddec4;
 }
+
+body{
+  overflow-x: hidden;
+}
+
+.table-container {
+    /* max-height: 500px; */
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    max-width: 1040px;
+}
+.table-responsive {
+    overflow-x: visible;
+    -webkit-overflow-scrolling: touch;
+}
+
+
+
+/* Scrollbar overall size */
+.table-container::-webkit-scrollbar {
+  height: 4px;        /* ✅ reduce height of horizontal scrollbar */
+  /* width: 4px; */
+}
+
+/* Scrollbar track (background) */
+.table-container::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 30px;
+}
+
+/* Scrollbar thumb (the draggable part) */
+.table-container::-webkit-scrollbar-thumb {
+  /* background: #1ddec426; */
+  background: #1ddec4;
+  border-radius: 10px;
+}
+
+/* Scrollbar thumb on hover */
+/* .table-container::-webkit-scrollbar-thumb:hover {
+  background: #1ddec426;   
+} */
