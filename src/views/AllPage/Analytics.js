@@ -1059,6 +1059,7 @@ function Demographics({ selectedDoctorIds = [] }) {
               rowsPerPage={rowsPerPage}
               onPageChange={newPage => setPage(newPage)}
               onRowsPerPageChange={val => { setRowsPerPage(val); setPage(1); }}
+              hideRowsPerPage={true}
             />
           </>
         ) : (

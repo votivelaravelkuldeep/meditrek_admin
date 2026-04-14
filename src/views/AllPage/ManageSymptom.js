@@ -25,17 +25,28 @@ function ManageSymptom() {
   const [showModal, setShowModal] = useState(false);
   const [showModal2, setShowModal2] = useState(false);
   const [symptomData, setsymptomData] = useState([]);
-  const [selectedActions, setSelectedActions] = useState({});
+  // const [selectedActions, setSelectedActions] = useState({});
+  // eslint-disable-next-line no-unused-vars
   const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
+  // const [description, setDescription] = useState('');
   const [syptomId, setsymptomId] = useState('');
   const [error, setError] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
+  const [translations, setTranslations] = useState({
+    en: { symptom_name: "", description: "" }
+  });
 
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [sortConfig, setSortConfig] = useState(null);
-   const [activeLang, setActiveLang] = useState('en');
-
+  const [activeLang, setActiveLang] = useState('en');
+  useEffect(() => {
+    if (!translations[activeLang]) {
+      setTranslations(prev => ({
+        ...prev,
+        [activeLang]: { symptom_name: "", description: "" }
+      }));
+    }
+  }, [activeLang]);
   const handleSort = (key) => {
     setSortConfig((prev) => {
       if (!prev) return { key, direction: 'asc' };
@@ -47,22 +58,22 @@ function ManageSymptom() {
     });
   };
 
-  //   const symptomsPerPage = 5; // Show 5 rows per page
-  //   console.log(description);
-
-  //   const handleActionChange = (index, action, symptom_id, name, description) => {
-  const handleActionChange = (index, action, symptom_id, name) => {
-    setSelectedActions({ ...selectedActions, [index]: action });
-    if (action === 'Delete') {
+  const handleActionChange = (index, action, symptom_id, name, description, translationsData) => {
+    if (action === "Delete") {
       deletesymptom(symptom_id);
-      setSelectedActions({ ...selectedActions, [index]: null });
-    } else if (action === 'Edit') {
+      return;
+    }
+
+    if (action === "Edit") {
       setsymptomId(symptom_id);
+
+      setTranslations({
+        en: { symptom_name: name, description: description },
+        ...translationsData
+      });
+
       setName(name);
-      setDescription(description);
       handleShowModal();
-      // Add your view logic here, e.g., navigate to the symptom's profile page
-      setSelectedActions({ ...selectedActions, [index]: null });
     }
   };
 
@@ -89,10 +100,29 @@ function ManageSymptom() {
   //   };
 
   const handleShowModal = () => setShowModal(true);
-  const handleCloseModal = () => setShowModal(false);
+  const handleCloseModal = () => {
+    setShowModal(false);
+
+    setTranslations({
+      en: { symptom_name: "", description: "" }
+    });
+    setName("");
+    setsymptomId("");
+    setError({});
+    setActiveLang("en");
+  };
 
   const handleShowModal2 = () => setShowModal2(true);
-  const handleCloseModal2 = () => setShowModal2(false);
+  const handleCloseModal2 = () => {
+    setShowModal2(false);
+
+    setTranslations({
+      en: { symptom_name: "", description: "" }
+    });
+    setName("");
+    setError({});
+    setActiveLang("en");
+  };
 
   const getsymptom = async () => {
     axios
@@ -158,9 +188,11 @@ function ManageSymptom() {
     e.preventDefault();
     let errors = {};
 
-    if (!name) {
-      errors.name = 'Please enter name';
-    }
+    if (!translations.en?.symptom_name) {
+  setActiveLang('en');
+
+  errors.name = 'English name required';
+}
     // if (!description) {
     //   errors.description = 'Please enter description'
     // }
@@ -172,7 +204,8 @@ function ManageSymptom() {
     setError({});
 
     let add_data = {
-      symptom_name: name
+      symptom_name: translations.en?.symptom_name,
+      translations: translations
     };
     axios
       .post(`${API_URL}add_symptom`, add_data)
@@ -187,6 +220,9 @@ function ManageSymptom() {
             timer: 3000
           });
           handleCloseModal2();
+          setTranslations({
+            en: { symptom_name: "", description: "" }
+          });
           setName('');
           getsymptom();
         } else {
@@ -205,9 +241,11 @@ function ManageSymptom() {
     e.preventDefault();
     let errors = {};
 
-    if (!name) {
-      errors.name = 'Please enter name';
-    }
+    if (!translations.en?.symptom_name) {
+  setActiveLang('en');
+
+  errors.name = 'English name required';
+}
     // if (!description) {
     //   errors.description = 'Please enter description'
     // }
@@ -220,7 +258,8 @@ function ManageSymptom() {
 
     let add_data = {
       symptom_id: syptomId,
-      symptom_name: name
+      symptom_name: translations.en?.symptom_name,
+      translations: translations
     };
     axios
       .post(`${API_URL}edit_symptom`, add_data)
@@ -289,7 +328,16 @@ function ManageSymptom() {
         <div className="d-flex gap-2">
           {/* EDIT */}
           <button
-            onClick={() => handleActionChange(index, 'Edit', symptom.symptom_id, symptom.symptom_name, symptom.description)}
+            onClick={() =>
+              handleActionChange(
+                index,
+                'Edit',
+                symptom.symptom_id,
+                symptom.symptom_name,
+                symptom.description,
+                symptom.translations
+              )
+            }
             style={{
               background: 'rgba(29, 222, 196, 0.13)',
               color: '#1ddec4',
@@ -319,7 +367,7 @@ function ManageSymptom() {
     }
   ];
 
-   const languages = [
+  const languages = [
     { id: 'en', name: 'English', default: true },
     { id: 'fr', name: 'Français' },
     { id: 'es', name: 'Español' },
@@ -346,16 +394,16 @@ function ManageSymptom() {
         <div className="d-flex justify-content-between align-items-center flex-wrap">
           <Heading heading='Manage Symptom' />
           <div className="d-flex gap-2 flex-wrap">
-             <div>
-            <input
-              className="search-input custom-search form-control"
-              type="text"
-              placeholder="Search..."
-              onChange={handleSearchChange}
-              //   className="custom-search form-control"
-              style={{ width: '250px', fontSize: '13px' }}
-            />
-          </div>
+            <div>
+              <input
+                className="search-input custom-search form-control"
+                type="text"
+                placeholder="Search..."
+                onChange={handleSearchChange}
+                //   className="custom-search form-control"
+                style={{ width: '250px', fontSize: '13px' }}
+              />
+            </div>
             <Button className="btn btn-primary" style={{ fontSize: '12px', borderRadius: '10px' }} onClick={handleShowModal2}>
               <AddIcon style={{ fontSize: '16px' }} /> Add Symptom
             </Button>
@@ -365,7 +413,7 @@ function ManageSymptom() {
             </Button>
           </div>
 
-         
+
         </div>
 
         <div
@@ -400,26 +448,26 @@ function ManageSymptom() {
               {/* Add your form fields here */}
               {/* <div className="mb-3"> */}
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '16px' }}>
-                    {languages.map((lang) => (
-                      <button
-                        type="button"
-                        key={lang.id}
-                        onClick={() => setActiveLang(lang.id)}
-                        style={{
-                          borderRadius: '999px',
-                          padding: '2px 12px',
-                          fontSize: '12px',
-                          border: activeLang === lang.id ? '1px solid #1ddec4' : '1px solid #e5e7eb',
-                          background: activeLang === lang.id ? '#1ddec4' : '#f8fafc',
-                          color: activeLang === lang.id ? '#fff' : '#64748b',
-                          fontWeight: activeLang === lang.id ? '500' : '400',
-                          transition: '0.2s'
-                        }}
-                      >
-                        {lang.name}
-                      </button>
-                    ))}
-                  </div>
+                {languages.map((lang) => (
+                  <button
+                    type="button"
+                    key={lang.id}
+                    onClick={() => setActiveLang(lang.id)}
+                    style={{
+                      borderRadius: '999px',
+                      padding: '2px 12px',
+                      fontSize: '12px',
+                      border: activeLang === lang.id ? '1px solid #1ddec4' : '1px solid #e5e7eb',
+                      background: activeLang === lang.id ? '#1ddec4' : '#f8fafc',
+                      color: activeLang === lang.id ? '#fff' : '#64748b',
+                      fontWeight: activeLang === lang.id ? '500' : '400',
+                      transition: '0.2s'
+                    }}
+                  >
+                    {lang.name}
+                  </button>
+                ))}
+              </div>
               <Form.Group style={{ display: 'flex', flexDirection: 'column' }}>
                 {/* <label htmlFor="categoryDescription" className="form-label">
                   Symptom Name
@@ -430,14 +478,29 @@ function ManageSymptom() {
 
                 <Form.Control
                   type="text"
-                  placeholder="Enter name"
-                  onChange={(e) => {
-                    setName(e.target.value);
-                    setError((prev) => ({ ...prev, name: '' }));
-                  }}
-                  isInvalid={error.name}
+                  placeholder={`Enter name (${activeLang})`}
                   className="custom-input custom-search"
-                  style={{ fontSize: '13px' }}
+                  value={translations[activeLang]?.symptom_name || ""}
+                  onChange={(e) => {
+                    const value = e.target.value;
+
+                    setTranslations(prev => ({
+                      ...prev,
+                      [activeLang]: {
+                        ...prev[activeLang],
+                        symptom_name: value
+                      }
+                    }));
+
+                    if (activeLang === "en") {
+                      setName(value);
+                    }
+
+                    if (activeLang === 'en') {
+  setError((prev) => ({ ...prev, name: '' }));
+}
+                  }}
+                  isInvalid={activeLang === 'en' && error.name}
                 />
                 <Form.Control.Feedback type="invalid">{error.name}</Form.Control.Feedback>
               </Form.Group>
@@ -460,7 +523,7 @@ function ManageSymptom() {
               </div> */}
               {error.general && <span className="text-danger">{error.general}</span>}
             </Modal.Body>
-            <Modal.Footer style={{ borderTop: 'none', paddingTop: 0, paddingRight: 0 }}>
+            <Modal.Footer style={{ borderTop: 'none', paddingTop: 0, paddingRight: 0, marginTop: "10px" }}>
               <Button variant="secondary" onClick={handleCloseModal2} style={{ fontSize: '12px' }}>
                 Close
               </Button>
@@ -479,26 +542,26 @@ function ManageSymptom() {
           <form onSubmit={editSymptom}>
             <Modal.Body style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: 0, paddingBottom: 0 }}>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '16px' }}>
-                    {languages.map((lang) => (
-                      <button
-                        type="button"
-                        key={lang.id}
-                        onClick={() => setActiveLang(lang.id)}
-                        style={{
-                          borderRadius: '999px',
-                          padding: '2px 12px',
-                          fontSize: '12px',
-                          border: activeLang === lang.id ? '1px solid #1ddec4' : '1px solid #e5e7eb',
-                          background: activeLang === lang.id ? '#1ddec4' : '#f8fafc',
-                          color: activeLang === lang.id ? '#fff' : '#64748b',
-                          fontWeight: activeLang === lang.id ? '500' : '400',
-                          transition: '0.2s'
-                        }}
-                      >
-                        {lang.name}
-                      </button>
-                    ))}
-                  </div>
+                {languages.map((lang) => (
+                  <button
+                    type="button"
+                    key={lang.id}
+                    onClick={() => setActiveLang(lang.id)}
+                    style={{
+                      borderRadius: '999px',
+                      padding: '2px 12px',
+                      fontSize: '12px',
+                      border: activeLang === lang.id ? '1px solid #1ddec4' : '1px solid #e5e7eb',
+                      background: activeLang === lang.id ? '#1ddec4' : '#f8fafc',
+                      color: activeLang === lang.id ? '#fff' : '#64748b',
+                      fontWeight: activeLang === lang.id ? '500' : '400',
+                      transition: '0.2s'
+                    }}
+                  >
+                    {lang.name}
+                  </button>
+                ))}
+              </div>
               {/* Add your form fields here */}
               <Form.Group style={{ display: 'flex', flexDirection: 'column' }}>
                 {/* <label htmlFor="categoryDescription" className="form-label">
@@ -510,15 +573,29 @@ function ManageSymptom() {
 
                 <Form.Control
                   type="text"
-                  placeholder="Please enter name"
-                  value={name}
-                  onChange={(e) => {
-                    setName(e.target.value);
-                    setError((prev) => ({ ...prev, name: '' }));
-                  }}
-                  isInvalid={error.name}
+                  value={translations[activeLang]?.symptom_name || ""}
+                  placeholder={`Enter name (${activeLang})`}
                   className="custom-input custom-search"
-                  style={{ fontSize: '13px' }}
+                  onChange={(e) => {
+                    const value = e.target.value;
+
+                    setTranslations(prev => ({
+                      ...prev,
+                      [activeLang]: {
+                        ...prev[activeLang],
+                        symptom_name: value
+                      }
+                    }));
+
+                    if (activeLang === "en") {
+                      setName(value);
+                    }
+
+                    if (activeLang === 'en') {
+  setError((prev) => ({ ...prev, name: '' }));
+}
+                  }}
+                  isInvalid={activeLang === 'en' && error.name}
                 />
                 <Form.Control.Feedback type="invalid">{error.name}</Form.Control.Feedback>
               </Form.Group>
@@ -542,7 +619,7 @@ function ManageSymptom() {
               </div> */}
               {error.general && <span className="text-danger">{error.general}</span>}
             </Modal.Body>
-            <Modal.Footer style={{ borderTop: 'none', paddingTop: 0, paddingRight: 0 }}>
+            <Modal.Footer style={{ borderTop: 'none', paddingTop: 0, paddingRight: 0, marginTop: "10px" }}>
               <Button variant="secondary" onClick={handleCloseModal} style={{ fontSize: '12px' }}>
                 Close
               </Button>
