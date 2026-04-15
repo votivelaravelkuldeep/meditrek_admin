@@ -128,7 +128,30 @@ function ManageDisease() {
   //   setEditingFaq(disease);
   //   setShowModal(true);
   // };
-  const handleShowModal = (disease) => {
+//   const handleShowModal = (disease) => {
+//   setEditingFaq(disease);
+
+//   const tempTranslations = {};
+
+//   if (disease.translations && typeof disease.translations === "object") {
+//     Object.keys(disease.translations).forEach((lang) => {
+//       tempTranslations[lang] = {
+//         disease_name: disease.translations[lang]?.disease_name || "",
+//         description: disease.translations[lang]?.description || ""
+//       };
+//     });
+//   } else {
+//     tempTranslations["en"] = {
+//       disease_name: disease.disease_name || "",
+//       description: disease.description || ""
+//     };
+//   }
+
+//   setTranslations(tempTranslations);   
+//   setError({});
+//   setShowModal(true);
+// };
+const handleShowModal = (disease) => {
   setEditingFaq(disease);
 
   const tempTranslations = {};
@@ -147,25 +170,40 @@ function ManageDisease() {
     };
   }
 
-  setTranslations(tempTranslations);   
+  setTranslations(tempTranslations);
   setError({});
+  setActiveLang("en");   
   setShowModal(true);
 };
-  const handleCloseModal = () => setShowModal(false);
+  // const handleCloseModal = () => setShowModal(false);
+  const handleCloseModal = () => {
+  setShowModal(false);
+  setActiveLang("en");   
+};
 
   // const handleShowModal2 = () => setShowModal2(true);
   // const handleCloseModal2 = () => setShowModal2(false);
-  const handleShowModal2 = () => {
-  setTranslations({});   
-  setError({});
-  setShowModal2(true);
-};
+//   const handleShowModal2 = () => {
+//   setTranslations({});   
+//   setError({});
+//   setShowModal2(true);
+// };
+    const handleShowModal2 = () => {
+      setTranslations({});
+      setError({});
+      setActiveLang("en");   
+      setShowModal2(true);
+    };
 
-const handleCloseModal2 = () => {
-  setShowModal2(false);
-  setTranslations({});   
-  setError({});
-};
+  // const handleCloseModal2 = () => {
+  //   setShowModal2(false);
+  //   setTranslations({});   
+  //   setError({});
+  // };
+  const handleCloseModal2 = () => {
+      setShowModal2(false);
+      setActiveLang("en");   
+    };
 
   const fetchData = async () => {
     try {
