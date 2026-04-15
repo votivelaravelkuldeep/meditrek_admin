@@ -1,48 +1,50 @@
 import { API_URL } from "config/constant";
 
-let diseaseCache = {};
-let medicineCache = {};
+let diseaseCache = null;
+let medicineCache = null;
 export const symptomCache = {};
 let doctorCache = null;
 
-export const fetchDiseases = async (doctor_id) => {
-  if (diseaseCache[doctor_id]) return diseaseCache[doctor_id];
+export const fetchDiseases = async () => {
+  if (diseaseCache) return diseaseCache;
 
-  const res = await fetch(
-    `${API_URL}subadmin/docterwise/diseases?doctor_id=${doctor_id}`
-  );
+  try {
+    const res = await fetch(`${API_URL}subadmin/diseases`);
+    const data = await res.json();
 
-  const data = await res.json();
-
-  if (data.success) {
-    diseaseCache[doctor_id] = data.diseases.map(d => ({
-      label: d.disease_name,
-      value: d.disease_id,
-    }));
-    return diseaseCache[doctor_id];
+    if (data.success) {
+      diseaseCache = data.diseases.map(d => ({
+        label: d.disease_name,
+        value: d.disease_id,
+      }));
+      return diseaseCache;
+    }
+    return [];
+  } catch (error) {
+    console.error("Error fetching diseases:", error);
+    return [];
   }
-
-  return [];
 };
 
-export const fetchMedicines = async (doctor_id) => {
-  if (medicineCache[doctor_id]) return medicineCache[doctor_id];
+export const fetchMedicines = async () => {
+  if (medicineCache) return medicineCache;
 
-  const res = await fetch(
-    `${API_URL}subadmin/docterwise/medicines?doctor_id=${doctor_id}`
-  );
+  try {
+    const res = await fetch(`${API_URL}subadmin/medicines`);
+    const data = await res.json();
 
-  const data = await res.json();
-
-  if (data.success) {
-    medicineCache[doctor_id] = data.medicines.map(m => ({
-      label: m.medicine_name,
-      value: m.medicine_id,
-    }));
-    return medicineCache[doctor_id];
+    if (data.success) {
+      medicineCache = data.medicines.map(m => ({
+        label: m.medicine_name,
+        value: m.medicine_id,
+      }));
+      return medicineCache;
+    }
+    return [];
+  } catch (error) {
+    console.error("Error fetching medicines:", error);
+    return [];
   }
-
-  return [];
 };
 
 export const fetchSymptoms = async (doctor_id) => {
@@ -166,6 +168,91 @@ export const fetchAdminPatientDemographicsDetails = async (payload) => {
       matched_patients: 0,
       page: 1,
       limit: 10,
+    };
+  }
+};
+
+export const fetchDoctorAnalytics = async (payload) => {
+  try {
+    const res = await fetch(`${API_URL}admin-doctor-analytics`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await res.json();
+    console.log("Doctor Analytics:", data);
+
+    if (data.success) return data;
+
+    return {
+      success: false,
+      total_doctors: 0,
+      total_patients: 0,
+      avg_patients_per_doctor: 0,
+      total_new_patients: 0,
+      doctors: [],
+      page: 1,
+      limit: 10,
+      has_more: false,
+    };
+  } catch (err) {
+    console.error("Error fetching doctor analytics:", err);
+    return {
+      success: false,
+      total_doctors: 0,
+      total_patients: 0,
+      avg_patients_per_doctor: 0,
+      total_new_patients: 0,
+      doctors: [],
+      page: 1,
+      limit: 10,
+      has_more: false,
+    };
+  }
+};
+
+export const fetchAdminDiseaseDashboard = async (payload) => {
+  try {
+    const requestPayload = {
+      ...payload,
+      doctor_ids: payload.doctor_ids || [],
+    };
+    
+    console.log("📤 Sending to backend:", requestPayload);
+    
+    const res = await fetch(`${API_URL}admin-disease-dashboard`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(requestPayload),
+    });
+
+    const data = await res.json();
+    console.log("Disease Dashboard Response:", data);
+
+    if (data.success) return data;
+
+    return {
+      success: false,
+      total_patients: 0,
+      matched_patients: 0,
+      disease_distribution: [],
+      age_breakdown: [],
+      sex_breakdown: [],
+      patients: [],
+    };
+  } catch (err) {
+    console.error("Error fetching disease dashboard:", err);
+    return {
+      success: false,
+      total_patients: 0,
+      matched_patients: 0,
+      disease_distribution: [],
+      age_breakdown: [],
+      sex_breakdown: [],
+      patients: [],
     };
   }
 };

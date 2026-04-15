@@ -174,7 +174,7 @@ function GenderFilter({ value, onChange }) {
   return (
     <>
       <style>{DROPDOWN_STYLES}</style>
-      <div style={{ marginBottom: 14, width: "100%" }}>
+      <div style={{ width: "100%" }}>
         <span style={styles.label}>Gender</span>
         
         <div className="gender-dropdown-container" ref={ref}>

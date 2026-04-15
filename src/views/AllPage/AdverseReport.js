@@ -100,7 +100,7 @@ function AdverseReport() {
     const ws = XLSX.utils.json_to_sheet(
       adverseReactions.map((reaction, index) => ({
         'S. No.': index + 1,
-        'Patient Name': reaction.patient_name,
+        // 'Patient Name': reaction.patient_name,
         'Medicine Name': reaction.medicine_name,
         Dosage: reaction.dosage,
         'Medicine Category': reaction.medicine_category,
@@ -125,7 +125,7 @@ function AdverseReport() {
       render: (_, index) => index + 1
     },
 
-    { label: 'Patient Name', key: 'patient_name', sortable: true },
+    // { label: 'Patient Name', key: 'patient_name', sortable: true },
     { label: 'Medicine Name', key: 'medicine_name', sortable: true },
     { label: 'Dosage', key: 'dosage', sortable: true },
     { label: 'Medicine Category', key: 'medicine_category', sortable: true },
