@@ -42,7 +42,7 @@ function MeasurementReport() {
   const filteredMeasurements = measurements.filter((measurement) => {
     const lowercasedTerm = searchQuery.toLowerCase();
     return (
-      measurement.patient_name?.toLowerCase().includes(lowercasedTerm) ||
+      // measurement.patient_name?.toLowerCase().includes(lowercasedTerm) ||
       measurement.systolic_bp?.toString().includes(lowercasedTerm) ||
       measurement.diastolic_bp?.toString().includes(lowercasedTerm) ||
       measurement.type?.toString().includes(lowercasedTerm)
@@ -100,7 +100,7 @@ function MeasurementReport() {
     const ws = XLSX.utils.json_to_sheet(
       measurements.map((measurement, index) => ({
         'S. No.': index + 1,
-        'Patient Name': measurement.patient_name,
+        // 'Patient Name': measurement.patient_name,
         Type: measurement.type === 0 ? 'Blood Pressure' : measurement.type === 1 ? 'Glucose' : 'Weight',
         'Systolic BP': measurement.systolic_bp,
         'Diastolic BP': measurement.diastolic_bp,
@@ -130,7 +130,7 @@ function MeasurementReport() {
       render: (_, index) => index + 1
     },
 
-    { label: 'Patient Name', key: 'patient_name', sortable: true },
+    // { label: 'Patient Name', key: 'patient_name', sortable: true },
 
     {
       label: 'Type',
