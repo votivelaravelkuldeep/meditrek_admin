@@ -155,15 +155,28 @@ const handleShowModal = (disease) => {
   setEditingFaq(disease);
 
   const tempTranslations = {};
+  
+  if (Array.isArray(disease.translations)) {
+    disease.translations.forEach((item) => {
+      tempTranslations[item.language_code] = {
+        disease_name: item.disease_name || "",
+        description: item.description || ""
+      };
+    });
+  }
 
-  if (disease.translations && typeof disease.translations === "object") {
+  
+  else if (disease.translations && typeof disease.translations === "object") {
     Object.keys(disease.translations).forEach((lang) => {
       tempTranslations[lang] = {
         disease_name: disease.translations[lang]?.disease_name || "",
         description: disease.translations[lang]?.description || ""
       };
     });
-  } else {
+  }
+
+  // fallback
+  else {
     tempTranslations["en"] = {
       disease_name: disease.disease_name || "",
       description: disease.description || ""
@@ -172,7 +185,7 @@ const handleShowModal = (disease) => {
 
   setTranslations(tempTranslations);
   setError({});
-  setActiveLang("en");   
+  setActiveLang("en");
   setShowModal(true);
 };
   // const handleCloseModal = () => setShowModal(false);
