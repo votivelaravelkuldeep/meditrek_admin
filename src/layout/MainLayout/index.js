@@ -120,6 +120,7 @@ import { useTheme } from '@mui/material/styles';
 
 import Header from "./Header";
 import Sidebar from "./Sidebar";
+import { SidebarProvider } from "component/context/SidebarContext";
 
 const drawerWidth = 232;
 const collapsedWidth = 72;
@@ -174,12 +175,14 @@ const MainLayout = () => {
       <Sidebar drawerOpen={drawerOpen} drawerToggle={handleDrawerToggle} />
 
       {/* CONTENT */}
+      <SidebarProvider isOpen={drawerOpen}>
       <Main open={drawerOpen}>
         <Toolbar />
         <Box sx={{ p: 3 }}>
           <Outlet />
         </Box>
       </Main>
+      </SidebarProvider>
     </Box>
   );
 };
