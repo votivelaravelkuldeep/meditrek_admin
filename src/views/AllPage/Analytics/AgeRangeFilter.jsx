@@ -178,7 +178,7 @@ function AgeRangeFilter({ value, onChange }) {
   return (
     <>
       <style>{DROPDOWN_STYLES}</style>
-      <div style={{ marginBottom: 14, width: "100%" }}>
+      <div style={{ width: "100%" }}>
         <span style={styles.label}>Age Group</span>
         
         <div className="age-dropdown-container" ref={ref}>
