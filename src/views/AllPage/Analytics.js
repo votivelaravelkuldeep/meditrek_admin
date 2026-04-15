@@ -825,7 +825,7 @@ function Demographics({ selectedDoctorIds = [] }) {
           <>
             <DataTable
               cols={[
-                { key: "name", label: "Patient Name", sortable: true },
+                // { key: "user_id", label: "Patient Ref", sortable: true },
                 { key: "age", label: "Age", sortable: true },
                 {
                   key: "gender", label: "Gender", sortable: true,
@@ -1155,7 +1155,7 @@ function DiseaseDemo({ diseases, selectedDoctorIds = [] }) {
           <>
             <DataTable
               cols={[
-                { key: "name", label: "Patient Name", sortable: true },
+                // { key: "name", label: "Patient Name", sortable: true },
                 { key: "age", label: "Age", sortable: true },
                 {
                   key: "gender", label: "Gender", sortable: true,
