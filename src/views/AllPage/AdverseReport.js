@@ -42,7 +42,7 @@ function AdverseReport() {
   const filteredReactions = adverseReactions.filter((reaction) => {
     const lowercasedTerm = searchQuery.toLowerCase();
     return (
-      reaction.patient_name?.toLowerCase().includes(lowercasedTerm) ||
+      // reaction.patient_name?.toLowerCase().includes(lowercasedTerm) ||
       reaction.medicine_name?.toLowerCase().includes(lowercasedTerm) ||
       reaction.symptom_name?.toLowerCase().includes(lowercasedTerm) ||
       reaction.instruction?.toLowerCase().includes(lowercasedTerm)

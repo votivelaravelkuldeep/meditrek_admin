@@ -45,26 +45,73 @@ function BulkUploadDesease() {
   useEffect(() => {
     getsymptom();
   }, []);
+  console.log(symptomData);
 
   const handleFileChange = (e) => {
     setSymptomDataFile(e.target.files[0]);
   };
 
+  // const handlebulkupload = () => {
+  //   const ws = XLSX.utils.json_to_sheet(
+  //     symptomData.map((item) => ({
+  //       // 'S. No.': index + 1,
+  //       disease_name: item.disease_name,
+  //       disease_description: item.description
+  //       // 'Create Date & Time': item.createtime
+  //     }))
+  //   );
+  //   const wb = XLSX.utils.book_new();
+  //   XLSX.utils.book_append_sheet(wb, ws, 'DiseasReport');
+  //   const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+  //   const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
+  //   saveAs(blob, 'DiseaseReport.xlsx');
+  // };
+
   const handlebulkupload = () => {
-    const ws = XLSX.utils.json_to_sheet(
-      symptomData.map((item) => ({
-        // 'S. No.': index + 1,
-        disease_name: item.disease_name,
-        disease_description: item.description
-        // 'Create Date & Time': item.createtime
-      }))
-    );
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'DiseasReport');
-    const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-    const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
-    saveAs(blob, 'DiseaseReport.xlsx');
-  };
+  const numberOfRows = 150;
+  const templateData = [];
+
+  for (let i = 0; i < numberOfRows; i++) {
+    templateData.push({
+      disease_name_en: '',
+      description_en: '',
+      disease_name_fr: '',
+      description_fr: '',
+      disease_name_es: '',
+      description_es: '',
+      disease_name_ar: '',
+      description_ar: '',
+      disease_name_it: '',
+      description_it: '',
+      disease_name_de: '',
+      description_de: '',
+      disease_name_pt: ''
+      ,
+      description_pt: ''
+    });
+  }
+
+  const ws = XLSX.utils.json_to_sheet(templateData);
+
+  // Column width set (clean UI)
+  ws['!cols'] = [
+    { wch: 25 }, { wch: 40 }, // en
+    { wch: 25 }, { wch: 40 }, // fr
+    { wch: 25 }, { wch: 40 }, // es
+    { wch: 25 }, { wch: 40 }, // ar
+    { wch: 25 }, { wch: 40 }, // it
+    { wch: 25 }, { wch: 40 }, // de
+    { wch: 25 }, { wch: 40 }  // pt
+  ];
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'DiseaseTemplate');
+
+  const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+  const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
+
+  saveAs(blob, 'Disease_Template.xlsx');
+};
 
   const UploadbulkFile = async () => {
     if (!symptomDataFile) {

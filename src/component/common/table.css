@@ -38,7 +38,7 @@ body{
     /* max-height: 500px; */
     overflow-y: auto;
     border: 1px solid #ddd;
-    max-width: 1040px;
+    /* max-width: 1040px; */
 }
 .table-responsive {
     overflow-x: visible;

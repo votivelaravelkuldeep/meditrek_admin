@@ -45,27 +45,95 @@ function BuldUploadSymptom() {
   useEffect(() => {
     getsymptom();
   }, []);
-
+    console.log(symptomData);
   const handleFileChange = (e) => {
     setSymptomDataFile(e.target.files[0]);
   };
+// old 
+  // const handlebulkupload = () => {
+  //   const ws = XLSX.utils.json_to_sheet(
+  //     symptomData.map((item) => ({
+  //       // 'S. No.': index + 1,
+  //       symptoms_name: item.symptom_name,
+  //       symptoms_description: item.description
+  //       // 'Create Date & Time': item.createtime
+  //     }))
+  //   );
+  //   const wb = XLSX.utils.book_new();
+  //   XLSX.utils.book_append_sheet(wb, ws, 'SymptomReport');
+  //   const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+  //   const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
+  //   saveAs(blob, 'SymptomReport.xlsx');
+  // };
 
-  const handlebulkupload = () => {
-    const ws = XLSX.utils.json_to_sheet(
-      symptomData.map((item) => ({
-        // 'S. No.': index + 1,
-        symptoms_name: item.symptom_name,
-        symptoms_description: item.description
-        // 'Create Date & Time': item.createtime
-      }))
-    );
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'SymptomReport');
-    const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-    const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
-    saveAs(blob, 'SymptomReport.xlsx');
-  };
+// new 
+  //   const handlebulkupload = () => {
+//   const ws = XLSX.utils.json_to_sheet(
+//     symptomData.map((item) => ({
+//       symptoms_name_en: item.symptom_name || '',
+//       symptoms_name_fr: '',
+//       symptoms_name_es: '',
+//       symptoms_name_ar: '',
+//       symptoms_name_it: '',
+//       symptoms_name_de: '',
+//       symptoms_name_pt: ''
+//     }))
+//   );
 
+//   // column width
+//   ws['!cols'] = [
+//     { wch: 25 },
+//     { wch: 25 },
+//     { wch: 25 },
+//     { wch: 25 },
+//     { wch: 25 },
+//     { wch: 25 },
+//     { wch: 25 }
+//   ];
+
+//   const wb = XLSX.utils.book_new();
+//   XLSX.utils.book_append_sheet(wb, ws, 'SymptomTemplate');
+
+//   const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+//   const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
+//   saveAs(blob, 'Symptom_Template.xlsx');
+// };
+const handlebulkupload = () => {
+  // Create a template with 150 blank rows (you can adjust the number)
+  const numberOfRows = 150;
+  const templateData = [];
+  
+  for (let i = 0; i < numberOfRows; i++) {
+    templateData.push({
+      'symptoms_name_en': '',
+      'symptoms_name_fr': '',
+      'symptoms_name_es': '',
+      'symptoms_name_ar': '',
+      'symptoms_name_it': '',
+      'symptoms_name_de': '',
+      'symptoms_name_pt': ''
+    });
+  }
+  
+  const ws = XLSX.utils.json_to_sheet(templateData);
+  
+  // Set column widths for better readability
+  ws['!cols'] = [
+    { wch: 25 }, // en
+    { wch: 25 }, // fr
+    { wch: 25 }, // es
+    { wch: 25 }, // ar
+    { wch: 25 }, // it
+    { wch: 25 }, // de
+    { wch: 25 }  // pt
+  ];
+  
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'SymptomTemplate');
+  const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+  const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
+  saveAs(blob, 'Symptom_Template.xlsx');
+};
   const UploadbulkFile = async () => {
     if (!symptomDataFile) {
       Swal.fire({

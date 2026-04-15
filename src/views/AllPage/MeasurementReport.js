@@ -42,7 +42,7 @@ function MeasurementReport() {
   const filteredMeasurements = measurements.filter((measurement) => {
     const lowercasedTerm = searchQuery.toLowerCase();
     return (
-      measurement.patient_name?.toLowerCase().includes(lowercasedTerm) ||
+      // measurement.patient_name?.toLowerCase().includes(lowercasedTerm) ||
       measurement.systolic_bp?.toString().includes(lowercasedTerm) ||
       measurement.diastolic_bp?.toString().includes(lowercasedTerm) ||
       measurement.type?.toString().includes(lowercasedTerm)

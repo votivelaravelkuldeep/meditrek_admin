@@ -2,6 +2,7 @@ import React from "react";
 import { Table } from "react-bootstrap";
 import CustomPagination from "./Pagination";
 import "./table.css";
+import { useSidebar } from "component/context/SidebarContext";
 
 const CustomTable = ({
     columns,
@@ -9,11 +10,12 @@ const CustomTable = ({
     sortConfig,
     onSort,
     currentPage,
-    rowsPerPage,
+    rowsPerPage,    
     onPageChange,
     onRowsPerPageChange,
     hideRowsPerPage = false,
-    hidePagination = false
+    hidePagination = false,
+    // isSidebarCollapsed = false  // 👈 Add this prop
 }) => {
 
     const indexOfLast = currentPage * rowsPerPage;
@@ -32,9 +34,11 @@ const CustomTable = ({
 
     const currentData = sortedData.slice(indexOfFirst, indexOfLast);
 
+    const { isSidebarCollapsed } = useSidebar(); // 
+
     return (
         <div style={{ background: "#fff", borderRadius: 16 }}>
-            <div className="table-container">
+            <div className="table-container" style={{ maxWidth: isSidebarCollapsed ? '100%' : '1040px' }}>
                 <Table responsive hover style={{marginBottom:0,borderRadius:'16px'}}>
                     <thead>
                         <tr style={{ background: "#f1f5f9" }}>
