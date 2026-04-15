@@ -752,14 +752,13 @@ function Demographics({ selectedDoctorIds = [] }) {
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  // ─── FIXED: always use doctor_ids array, never single doctor_id ───
-  const buildPayload = () => ({
-    doctor_ids: selectedDoctorIds.length > 0 ? selectedDoctorIds : null,
-    gender: gender === "All" ? "" : gender === "Male" ? 1 : gender === "Female" ? 2 : 3,
-    age_group: ageGroup === "All" ? "" : ageGroup,
-    page,
-    limit: rowsPerPage,
-  });
+const buildPayload = () => ({
+  doctor_ids: selectedDoctorIds.length > 0 ? selectedDoctorIds : [], // Changed: empty array instead of null
+  gender: gender === "All" ? "" : gender === "Male" ? 1 : gender === "Female" ? 2 : 3,
+  age_group: ageGroup === "All" ? "" : ageGroup,
+  page,
+  limit: rowsPerPage,
+});
 
   // ─── Load SUMMARY (charts + cross-table) ───
   const loadSummary = async () => {
@@ -779,21 +778,30 @@ function Demographics({ selectedDoctorIds = [] }) {
     }
   };
 
-  // ─── Load PATIENT DETAILS (table) ───
-  const loadPatients = async () => {
-    setLoadingPatients(true);
-    try {
-      const payload = buildPayload();
-      const res = await fetchAdminPatientDemographicsDetails(payload);
-      if (res?.success) {
-        setPatients(res.patients || []);
+const loadPatients = async () => {
+  setLoadingPatients(true);
+  try {
+    const payload = buildPayload();
+    console.log("🔍 Request Payload:", payload); // Debug
+    
+    const res = await fetchAdminPatientDemographicsDetails(payload);
+    console.log("📊 API Response:", res); // Debug
+    
+    if (res?.success) {
+      console.log(`✅ Received ${res.patients?.length || 0} patients out of ${res.total} total`); // Debug
+      setPatients(res.patients || []);
+      
+      // Also check if total matches what we expect
+      if (res.total !== res.matched_patients) {
+        console.warn(`⚠️ Total (${res.total}) doesn't match matched_patients (${res.matched_patients})`);
       }
-    } catch (err) {
-      console.error("Error loading patient details:", err);
-    } finally {
-      setLoadingPatients(false);
     }
-  };
+  } catch (err) {
+    console.error("Error loading patient details:", err);
+  } finally {
+    setLoadingPatients(false);
+  }
+};
 
   // ─── Reload summary + details when filters/doctors change ───
   useEffect(() => {
@@ -1702,11 +1710,9 @@ useEffect(() => {
   const loadDoctors = async () => {
     const data = await fetchDoctors();
     setDoctors(data);
-
-    const allDoctorNames = data.map(d => d.label);
-    setSelectedDoctors(allDoctorNames);
+    setSelectedDoctors(data.map(d => d.label));
+    setSelectedDoctorValues(data.map(d => d.value));
   };
-
   loadDoctors();
 }, []);
 
