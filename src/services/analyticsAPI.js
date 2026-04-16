@@ -612,12 +612,22 @@ export const fetchAdminCrossAnalytics = async (payload) => {
 
 export const fetchMeasurementOptions = async (payload) => {
   try {
-    const res = await fetch(`${API_URL}measurment-list`, {
-      method: "POST",
+    // Build query parameters for GET request
+    const queryParams = new URLSearchParams();
+    if (payload.doctor_ids && payload.doctor_ids.length > 0) {
+      payload.doctor_ids.forEach(id => {
+        queryParams.append('doctor_ids', id);
+      });
+    }
+    
+    const url = `${API_URL}measurment-list${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    console.log("Fetching measurement options from:", url);
+    
+    const res = await fetch(url, {
+      method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(payload),
     });
 
     const data = await res.json();
