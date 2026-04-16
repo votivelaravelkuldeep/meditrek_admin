@@ -1197,7 +1197,7 @@ function DiseaseDemo({ diseases, selectedDoctorIds = [] }) {
 }
 
 /* ============================================================
-   3. DISEASE / MEDICATION
+   3. DISEASE / MEDICATION (now has Medication Distribution)
    ============================================================ */
 function DiseaseMedication({ diseases }) {
   const allDiseases = diseases?.length > 0 ? diseases.map(d => d.label) : [];
@@ -1215,6 +1215,7 @@ function DiseaseMedication({ diseases }) {
     return p;
   }, [selDiseases, ageGroup, gender]);
 
+  // Medication Distribution (moved from MedicationDemo)
   const medicationStats = useMemo(() => {
     const map = {};
     filteredPatients.forEach(p => p.medications.forEach(m => { map[m.name] = (map[m.name] || 0) + 1; }));
@@ -1244,7 +1245,7 @@ function DiseaseMedication({ diseases }) {
         <StatCard label="Top Drug" value={topDrug} />
       </div>
       <div style={S.card}>
-        <p style={S.cardTitle}>Drug Distribution</p>
+        <p style={S.cardTitle}>Medication Distribution</p>
         {medicationStats.length === 0 ? <div style={S.noData}>No data found</div> : (
           <DataTable cols={[
             { key: "medicine_name", label: "Medication", sortable: true, render: r => <Chip label={r.medicine_name} teal={true} /> },
@@ -1262,7 +1263,7 @@ function DiseaseMedication({ diseases }) {
 }
 
 /* ============================================================
-   4. MEDICATION / DEMOGRAPHICS
+   4. MEDICATION / DEMOGRAPHICS (now has Drug Distribution)
    ============================================================ */
 function MedicationDemo({ medicines }) {
   const allMeds = medicines?.length > 0 ? medicines.map(m => m.label) : [];
@@ -1280,7 +1281,8 @@ function MedicationDemo({ medicines }) {
     return p;
   }, [selMeds, ageGroup, gender]);
 
-  const medicationDist = useMemo(() => {
+  // Drug Distribution (moved from DiseaseMedication)
+  const drugDistribution = useMemo(() => {
     const map = {};
     filteredPatients.forEach(p => p.medications.forEach(m => {
       if (selMeds.length === 0 || selMeds.includes(m.name)) map[m.name] = (map[m.name] || 0) + 1;
@@ -1317,8 +1319,8 @@ function MedicationDemo({ medicines }) {
       </div>
       <div style={S.grid2}>
         <div style={S.card}>
-          <p style={S.cardTitle}>Medication Distribution</p>
-          <div style={S.barWrap}>{medicationDist.map((d, i) => <HBar key={i} label={d.label} value={d.value} total={filteredPatients.length} pctVal={d.pct} />)}</div>
+          <p style={S.cardTitle}>Drug Distribution</p>
+          <div style={S.barWrap}>{drugDistribution.map((d, i) => <HBar key={i} label={d.label} value={d.value} total={filteredPatients.length} pctVal={d.pct} />)}</div>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <div style={S.card}>
@@ -1332,9 +1334,7 @@ function MedicationDemo({ medicines }) {
         </div>
       </div>
       <div style={S.card}>
-        <p style={S.cardTitle}>Records
-          {/* <span style={{fontSize:11,color:"#94a3b8",fontWeight:400}}>Expand to verify analytics data</span> */}
-        </p>
+        <p style={S.cardTitle}>Records</p>
         <AnonExpandPanel patients={filteredPatients} />
       </div>
     </div>
