@@ -1600,12 +1600,12 @@ function DiseaseMedication({ diseases, selectedDoctorIds = [] }) {
               ) : (
                 <DataTable
                   cols={[
-                    {
-                      key: "name",
-                      label: "Patient Name",
-                      sortable: true,
-                      render: r => <span>{r.name || "—"}</span>
-                    },
+                    // {
+                    //   key: "name",
+                    //   label: "Patient Name",
+                    //   sortable: true,
+                    //   render: r => <span>{r.name || "—"}</span>
+                    // },
                     {
                       key: "age",
                       label: "Age",
@@ -2085,12 +2085,12 @@ function MedicationDemo({ medicines, selectedDoctorIds = [] }) {
             ) : (
               <DataTable
                 cols={[
-                  {
-                    key: "name",
-                    label: "Patient Name",
-                    sortable: true,
-                    render: r => <span>{r.name || "—"}</span>
-                  },
+                  // {
+                  //   key: "name",
+                  //   label: "Patient Name",
+                  //   sortable: true,
+                  //   render: r => <span>{r.name || "—"}</span>
+                  // },
                   {
                     key: "age",
                     label: "Age",
@@ -2454,12 +2454,12 @@ function MedicationDisease({ medicines, selectedDoctorIds = [] }) {
             ) : (
               <DataTable
                 cols={[
-                  {
-                    key: "name",
-                    label: "Patient Name",
-                    sortable: true,
-                    render: r => <span>{r.name || "—"}</span>
-                  },
+                  // {
+                  //   key: "name",
+                  //   label: "Patient Name",
+                  //   sortable: true,
+                  //   render: r => <span>{r.name || "—"}</span>
+                  // },
                   {
                     key: "age",
                     label: "Age",
@@ -2728,12 +2728,12 @@ function MedicationHealth({ medicines, selectedDoctorIds = [] }) {
                     </p>
                     <DataTable
                       cols={[
-                        {
-                          key: "patient_name",
-                          label: "Patient Name",
-                          sortable: true,
-                          render: r => <span>{r.patient_name || "—"}</span>
-                        },
+                        // {
+                        //   key: "patient_name",
+                        //   label: "Patient Name",
+                        //   sortable: true,
+                        //   render: r => <span>{r.patient_name || "—"}</span>
+                        // },
                         {
                           key: "age",
                           label: "Age",
@@ -3124,7 +3124,7 @@ function CrossAnalysis({ diseases, medicines, selectedDoctorIds = [] }) {
                 <>
                   <DataTable
                     cols={[
-                      { key: "patient_ref", label: "Patient Ref", sortable: true },
+                      // { key: "patient_ref", label: "Patient Ref", sortable: true },
                       { key: "age_group", label: "Age Group", sortable: true },
                       { key: "gender", label: "Gender", sortable: true },
                       ...selMeasurements.map(m => {
@@ -3184,7 +3184,7 @@ function CrossAnalysis({ diseases, medicines, selectedDoctorIds = [] }) {
               <>
                 <DataTable
                   cols={[
-                    { key: "patient_ref", label: "Patient Ref", sortable: true },
+                    // { key: "patient_ref", label: "Patient Ref", sortable: true },
                     { key: "age_group", label: "Age Group", sortable: true },
                     { key: "gender", label: "Gender", sortable: true },
                     { key: "diseases", label: "Diseases", sortable: true },
@@ -3218,7 +3218,7 @@ function CrossAnalysis({ diseases, medicines, selectedDoctorIds = [] }) {
 }
 
 const FIELD_DEFS = [
-  { key: "ref", label: "Patient Ref" },
+  // { key: "ref", label: "Patient Ref" },
   { key: "ageGroup", label: "Age Group" },
   { key: "gender", label: "Gender" },
   { key: "conditions", label: "Diseases", isArr: true },
