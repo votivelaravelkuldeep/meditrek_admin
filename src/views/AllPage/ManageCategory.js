@@ -12,8 +12,8 @@ import CustomTable from 'component/common/CustomTable';
 
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import { Formik, Field, Form as FormikForm } from 'formik';
-import * as Yup from 'yup';
+// import { Formik, Field, Form as FormikForm } from 'formik';
+// import * as Yup from 'yup';
 
 import { API_URL } from 'config/constant';
 import { Link } from 'react-router-dom';
@@ -30,7 +30,9 @@ function ManageCategory() {
   const [showModal2, setShowModal2] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [activeLang, setActiveLang] = useState('en');
-
+  const [translations, setTranslations] = useState({
+    en: { category_name: "" }
+  });
   // ================= FETCH =================
   const fetchData = async () => {
     try {
@@ -92,34 +94,179 @@ function ManageCategory() {
   };
 
   // ================= FORM =================
-  const validationSchema = Yup.object({
-    categoryName: Yup.string().required('Required')
-  });
+  // const validationSchema = Yup.object({
+  //   categoryName: Yup.string().required('Required')
+  // });
+const handleShowModal2 = (item) => {
+      setEditingCategory(item);
 
-  const handleAdd = async (values) => {
-    const res = await axios.post(`${API_URL}add_doctor_specialization`, {
-      category_name: values.categoryName
-    });
+      const tempTranslations = {};
 
-    if (res.data.success) {
-      fetchData();
-      setShowModal(false);
-    }
+      if (item.translations && Object.keys(item.translations).length > 0) {
+        Object.keys(item.translations).forEach((lang) => {
+          tempTranslations[lang] = {
+            category_name: item.translations[lang] || ""
+          };
+        });
+      } else {
+        tempTranslations["en"] = {
+          category_name: item.doctor_specialization_name || ""
+        };
+      }
+
+      setTranslations(tempTranslations);
+      setActiveLang("en");
+      setShowModal2(true);
+    };
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setTranslations({});
+    setActiveLang("en");
   };
 
-  const handleEdit = async (values) => {
-    const res = await axios.post(`${API_URL}edit_doctor_specialization`, {
-      doctor_specialization_id: editingCategory.doctor_specialization_id,
-      category_name: values.categoryName
-    });
-
-    if (res.data.success) {
-      fetchData();
-      setShowModal2(false);
-    }
+  const handleCloseModal2 = () => {
+    setShowModal2(false);
+    setTranslations({});
+    setActiveLang("en");
   };
+  // const handleAdd = async (values) => {
+  //   const res = await axios.post(`${API_URL}add_doctor_specialization`, {
+  //     category_name: values.categoryName
+  //   });
+
+  //   if (res.data.success) {
+  //     fetchData();
+  //     setShowModal(false);
+  //   }
+  // };
+
+  // const handleEdit = async (values) => {
+  //   const res = await axios.post(`${API_URL}edit_doctor_specialization`, {
+  //     doctor_specialization_id: editingCategory.doctor_specialization_id,
+  //     category_name: values.categoryName
+  //   });
+
+  //   if (res.data.success) {
+  //     fetchData();
+  //     setShowModal2(false);
+  //   }
+  // };
+
+  //   const handleSubmitAddCategory = async () => {
+  //   if (!translations.en?.category_name) {
+  //     Swal.fire({
+  //       text: "English required",
+  //       icon: "error"
+  //     });
+  //     setActiveLang("en");
+  //     return;
+  //   }
+
+  //   const res = await axios.post(`${API_URL}add_doctor_specialization`, {
+  //     translations: translations
+  //   });
+
+  //   if (res.data.success) {
+  //     fetchData();
+  //     handleCloseModal();
+  //   }
+  // };
+  const handleSubmitAddCategory = async () => {
+      try {
+        if (!translations.en?.category_name) {
+          Swal.fire({
+            text: "English required",
+            icon: "error"
+          });
+          setActiveLang("en");
+          return;
+        }
+
+        const res = await axios.post(`${API_URL}add_doctor_specialization`, {
+          translations: translations
+        });
+
+        if (res.data.success) {
+          fetchData();
+          handleCloseModal();
+
+          Swal.fire({
+            text: res.data.msg,
+            icon: 'success',
+            timer: 2000
+          });
+
+        } else {
+          Swal.fire({
+            text: res.data.msg,
+            icon: 'error'
+          });
+        }
+
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+// const handleSubmitEditCategory = async () => {
+//   if (!translations.en?.category_name) {
+//     Swal.fire({
+//       text: "English required",
+//       icon: "error"
+//     });
+//     setActiveLang("en");
+//     return;
+//   }
+
+//   const res = await axios.post(`${API_URL}edit_doctor_specialization`, {
+//     doctor_specialization_id: editingCategory.doctor_specialization_id,
+//     translations: translations
+//   });
+
+//   if (res.data.success) {
+//     fetchData();
+//     handleCloseModal2();
+//   }
+// };
 
   // ================= COLUMNS =================
+  const handleSubmitEditCategory = async () => {
+      try {
+        if (!translations.en?.category_name) {
+          Swal.fire({
+            text: "English required",
+            icon: "error"
+          });
+          setActiveLang("en");
+          return;
+        }
+
+        const res = await axios.post(`${API_URL}edit_doctor_specialization`, {
+          doctor_specialization_id: editingCategory.doctor_specialization_id,
+          translations: translations
+        });
+
+        if (res.data.success) {
+          fetchData();
+          handleCloseModal2();
+
+          Swal.fire({
+            text: res.data.msg,
+            icon: 'success',
+            timer: 2000
+          });
+
+        } else {
+          Swal.fire({
+            text: res.data.msg,
+            icon: 'error'
+          });
+        }
+
+      } catch (error) {
+        console.error(error);
+      }
+    };
   const columns = [
     {
       label: 'S. No',
@@ -150,10 +297,11 @@ function ManageCategory() {
               border: '1px solid rgba(29, 222, 196, 0.25)',
               lineHeight: '20px'
             }}
-            onClick={() => {
-              setEditingCategory(item);
-              setShowModal2(true);
-            }}
+            onClick={() => handleShowModal2(item)}
+            // onClick={() => {
+            //   setEditingCategory(item);
+            //   setShowModal2(true);
+            // }}
           >
             <EditIcon style={{ fontSize: '16px' }} />
           </Link>
@@ -258,7 +406,7 @@ function ManageCategory() {
           )}
         </Formik>
       </Modal> */} 
-      <Modal show={showModal} onHide={() => setShowModal(false)} centered className="custom-modal" dialogClassName="custom-modal-width">
+      {/* <Modal show={showModal} onHide={() => setShowModal(false)} centered className="custom-modal" dialogClassName="custom-modal-width">
         <Modal.Header closeButton style={{ borderBottom: 0, paddingBottom: 0 }}>
           <Modal.Title>Add Specialization</Modal.Title>
         </Modal.Header>
@@ -317,6 +465,83 @@ function ManageCategory() {
             </FormikForm>
           )}
         </Formik>
+      </Modal> */}
+
+      <Modal
+        show={showModal}
+        onHide={handleCloseModal}
+        centered
+        className="custom-modal"
+        dialogClassName="custom-modal-width"
+      >
+        <Modal.Header closeButton style={{ borderBottom: 0, paddingBottom: 0 }}>
+          <Modal.Title>Add Specialization</Modal.Title>
+        </Modal.Header>
+
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSubmitAddCategory();
+          }}
+        >
+          <Modal.Body style={{ padding: '10px' }}>
+
+            {/* Language Tabs */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', margin: '16px 0' }}>
+              {languages.map((lang) => (
+                <button
+                  type="button"
+                  key={lang.id}
+                  onClick={() => setActiveLang(lang.id)}
+                  style={{
+                    borderRadius: '999px',
+                    padding: '2px 12px',
+                    fontSize: '12px',
+                    border: activeLang === lang.id ? '1px solid #1ddec4' : '1px solid #e5e7eb',
+                    background: activeLang === lang.id ? '#1ddec4' : '#f8fafc',
+                    color: activeLang === lang.id ? '#fff' : '#64748b'
+                  }}
+                >
+                  {lang.name}
+                </button>
+              ))}
+            </div>
+
+            {/* Category Name */}
+            <Form.Group>
+              <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>
+                Specialization Name ({languages.find((l) => l.id === activeLang)?.name})
+              </Form.Label>
+
+              <Form.Control
+                type="text"
+                value={translations[activeLang]?.category_name || ""}
+                onChange={(e) => {
+                  const value = e.target.value;
+
+                  setTranslations((prev) => ({
+                    ...prev,
+                    [activeLang]: {
+                      ...prev[activeLang],
+                      category_name: value
+                    }
+                  }));
+                }}
+              />
+            </Form.Group>
+
+          </Modal.Body>
+
+          <Modal.Footer>
+            <Button variant="light" onClick={handleCloseModal}>
+              Cancel
+            </Button>
+
+            <Button type="submit">
+              Add
+            </Button>
+          </Modal.Footer>
+        </form>
       </Modal>
 
       {/* EDIT MODAL */}
@@ -353,7 +578,7 @@ function ManageCategory() {
           )}
         </Formik>
       </Modal> */}
-      <Modal show={showModal2} onHide={() => setShowModal2(false)} centered className="custom-modal" dialogClassName="custom-modal-width">
+      {/* <Modal show={showModal2} onHide={() => setShowModal2(false)} centered className="custom-modal" dialogClassName="custom-modal-width">
         <Modal.Header closeButton style={{ borderBottom: 0, paddingBottom: 0 }}>
           <Modal.Title>Edit Specialization</Modal.Title>
         </Modal.Header>
@@ -417,7 +642,83 @@ function ManageCategory() {
             </FormikForm>
           )}
         </Formik>
-      </Modal>
+      </Modal> */}
+       <Modal
+          show={showModal2}
+          onHide={handleCloseModal2}
+          centered
+          className="custom-modal"
+          dialogClassName="custom-modal-width"
+        >
+          <Modal.Header closeButton style={{ borderBottom: 0, paddingBottom: 0 }}>
+            <Modal.Title>Edit Specialization</Modal.Title>
+          </Modal.Header>
+
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSubmitEditCategory();
+            }}
+          >
+            <Modal.Body style={{ padding: '10px' }}>
+
+              {/* Language Tabs */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', margin: '16px 0' }}>
+                {languages.map((lang) => (
+                  <button
+                    type="button"
+                    key={lang.id}
+                    onClick={() => setActiveLang(lang.id)}
+                    style={{
+                      borderRadius: '999px',
+                      padding: '2px 12px',
+                      fontSize: '12px',
+                      border: activeLang === lang.id ? '1px solid #1ddec4' : '1px solid #e5e7eb',
+                      background: activeLang === lang.id ? '#1ddec4' : '#f8fafc',
+                      color: activeLang === lang.id ? '#fff' : '#64748b'
+                    }}
+                  >
+                    {lang.name}
+                  </button>
+                ))}
+              </div>
+
+              {/* Category Name */}
+              <Form.Group>
+                <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>
+                  Specialization Name ({languages.find((l) => l.id === activeLang)?.name})
+                </Form.Label>
+
+                <Form.Control
+                  type="text"
+                  value={translations[activeLang]?.category_name || ""}
+                  onChange={(e) => {
+                    const value = e.target.value;
+
+                    setTranslations((prev) => ({
+                      ...prev,
+                      [activeLang]: {
+                        ...prev[activeLang],
+                        category_name: value
+                      }
+                    }));
+                  }}
+                />
+              </Form.Group>
+
+            </Modal.Body>
+
+            <Modal.Footer>
+              <Button variant="light" onClick={handleCloseModal2}>
+                Cancel
+              </Button>
+
+              <Button type="submit">
+                Update
+              </Button>
+            </Modal.Footer>
+          </form>
+        </Modal>
     </div>
   );
 }
