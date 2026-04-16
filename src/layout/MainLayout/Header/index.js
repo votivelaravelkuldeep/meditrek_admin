@@ -74,13 +74,63 @@ import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
 import MenuTwoToneIcon from '@mui/icons-material/MenuTwoTone';
 import SearchIcon from '@mui/icons-material/Search';
 import RefreshIcon from "@mui/icons-material/Refresh";
-
+import { useNavigate } from 'react-router-dom';           
+import axios from 'axios';   
 import ProfileSection from './ProfileSection';
 import logo from 'assets/images/logo1.png';
+import { API_URL, APP_PREFIX_PATH } from '../../../config/constant'; 
+       
 
 const Header = ({ drawerOpen, drawerToggle }) => {
   const [isFullscreen, setIsFullscreen] = React.useState(false);
+  const [search, setSearch] = React.useState("");           // search input value
+  const [doctors, setDoctors] = React.useState([]);         // all doctors list
+  const [filtered, setFiltered] = React.useState([]);       // filtered doctors for dropdown
+  const [showDropdown, setShowDropdown] = React.useState(false); 
+  const navigate = useNavigate();    
 
+   const base64_encode = (data) => {
+    return btoa(data);
+  };
+   React.useEffect(() => {
+    const token = sessionStorage.getItem("token");
+
+    axios.get(`${API_URL}doctor-list`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => {
+        if (res.data.success && res.data.data !== "NA") {
+          setDoctors(res.data.data);
+        }
+      })
+      .catch(err => console.error("Error fetching doctors:", err));
+  }, []);
+
+   React.useEffect(() => {
+    if (!search) {
+      setFiltered([]);
+      return;
+    }
+
+    const result = doctors.filter(doctor =>
+      doctor.label?.toLowerCase().includes(search.toLowerCase())
+    );
+
+    setFiltered(result);
+  }, [search, doctors]);
+
+
+   const handleSelectDoctor = (doctor) => {
+    setSearch("");
+    setShowDropdown(false);
+
+    sessionStorage.setItem("selectedDoctorId", doctor.value);
+     const encoded_doctor_id = base64_encode(doctor.value.toString());
+    window.dispatchEvent(new Event("doctorChanged"));
+    
+    // Change this route as per your admin panel
+      navigate(`${APP_PREFIX_PATH}/view-doctor/${encoded_doctor_id}`);
+  };
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen();
@@ -148,7 +198,7 @@ const Header = ({ drawerOpen, drawerToggle }) => {
           </span>
         </div>
       </div>
-
+ <div style={{ position: "relative" }}>
       {/* SEARCH */}
       <Paper
         sx={{
@@ -165,7 +215,12 @@ const Header = ({ drawerOpen, drawerToggle }) => {
         <SearchIcon sx={{ fontSize: 20, color: '#9aa0a6' }} />
 
         <InputBase
-          placeholder="Search Doctor..."
+          placeholder="Search Doctors..."
+          value={search}                                    
+            onChange={(e) => {                               
+              setSearch(e.target.value);
+              setShowDropdown(true);
+            }}
           sx={{
             ml: 1,
             fontSize: '14px',
@@ -173,15 +228,46 @@ const Header = ({ drawerOpen, drawerToggle }) => {
           }}
         />
       </Paper>
+        {showDropdown && filtered.length > 0 && (
+          <div
+            style={{
+              position: "absolute",
+              top: "100%",
+              left: 0,
+              right: 0,
+              background: "#fff",
+              border: "1px solid #e5e7eb",
+              borderRadius: "10px",
+              maxHeight: "250px",
+              overflowY: "auto",
+              zIndex: 1000,
+              boxShadow: "0 6px 16px rgba(148, 37, 37, 0.08)",
+              marginTop: "4px"
+            }}
+          >
+            {filtered.map((doctor) => (
+              <button
+                key={doctor.value}
+                onClick={() => handleSelectDoctor(doctor)}
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  cursor: "pointer",
+                  border: "none",
+                  background: "#fff",
+                  textAlign: "left",
+                  borderBottom: "1px solid #f1f5f9"
+                }}
+              >
+                {doctor.label}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
 
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px'
-        }}
-      >
-        {/* Fullscreen Button */}
+      {/* RIGHT SECTION - Fullscreen, Refresh, Profile */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
         <IconButton onClick={toggleFullscreen} style={{ background: '#f5f7fa' }}>
           {isFullscreen ? <FullscreenExitIcon style={{ color: '#6c757d' }} /> : <FullscreenIcon style={{ color: '#6c757d' }} />}
         </IconButton>
@@ -190,7 +276,6 @@ const Header = ({ drawerOpen, drawerToggle }) => {
           <RefreshIcon style={{ color: '#6c757d' }} />
         </IconButton>
 
-        {/* Profile */}
         <ProfileSection />
       </div>
     </div>
