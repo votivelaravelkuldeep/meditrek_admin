@@ -157,12 +157,23 @@ function Chip({ label, teal }) { return <span style={S.chip(teal)}>{label}</span
 function DChips({ arr }) { return <>{(arr || []).map((c, i) => <Chip key={i} label={c} teal={false} />)}</>; }
 function MChips({ arr }) { return <>{(arr || []).map((m, i) => <Chip key={i} label={m} teal={true} />)}</>; }
 
-function StatCard({ label, value, sub, accent }) {
+function StatCard({ label, value, sub, accent, highlightSub }) {
   return (
     <div style={S.statCard}>
       <div style={S.statLbl}>{label}</div>
       <div style={{ ...S.statVal, color: accent || ACCENT }}>{value}</div>
-      {sub && <div style={S.statSub}>{sub}</div>}
+      {sub && (
+        <div
+          style={{
+            ...S.statSub,
+            fontSize: highlightSub ? 14 : 11,
+            fontWeight: highlightSub ? 600 : 400,
+            color: highlightSub ? "#000000" : "#b0b8c9",
+          }}
+        >
+          {sub}
+        </div>
+      )}
     </div>
   );
 }
@@ -321,18 +332,27 @@ function DoctorAnalytics({ selectedDoctorIds = [] }) {
   const [doctorsData, setDoctorsData] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Separate pagination states for each section
   const [patientsPerDoctorPage, setPatientsPerDoctorPage] = useState(1);
   const [patientGrowthPage, setPatientGrowthPage] = useState(1);
   const [sessionActivityPage, setSessionActivityPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
+  // Add this back - import useSelector from react-redux
   const timezone = useSelector((state) => state.timezone.value);
 
+  // Create a local formatDate function that uses the timezone from Redux
   const formatDate = (date) => {
-    if (!date) return "-";
+    if (!date || date === 'NULL' || date === 'null') return "-";
 
-    const d = dayjs.utc(date).tz(timezone);
+    // Handle different date formats
+    const dateStr = (date.includes('Z') || date.includes('+') || date.includes('-', 10))
+      ? date
+      : date + 'Z';
+
+    const d = dayjs.utc(dateStr).tz(timezone);
+
+    if (!d.isValid()) return "-";
+
     const now = dayjs().tz(timezone);
 
     if (d.isSame(now, 'day')) {
@@ -358,7 +378,7 @@ function DoctorAnalytics({ selectedDoctorIds = [] }) {
         doctor_ids: selectedDoctorIds.length > 0 ? selectedDoctorIds : [],
         period,
         page: 1,
-        limit: 100, // Fetch enough data to handle pagination on frontend
+        limit: 100,
       });
       if (res?.success) setDoctorsData(res);
     } catch (err) {
@@ -564,12 +584,29 @@ function DoctorAnalytics({ selectedDoctorIds = [] }) {
                     )
                   },
                   {
-                    key: "last_patient_added", label: "Last Patient Added", sortable: true,
-                    render: r => (
-                      <span style={{ fontSize: 12, color: "#64748b" }}>
-                        {formatDate(r.last_patient_added)}
-                      </span>
-                    )
+                    key: "last_patient_added", label: (
+                      <div style={{ whiteSpace: "normal", lineHeight: "14px" }}>
+                        Last Patient<br />Added
+                      </div>
+                    ), sortable: true,
+                    render: r => {
+                      const date = r.last_patient_added;
+
+                      if (!date) return "-";
+
+                      const d = dayjs.utc(date).tz(timezone);
+
+                      if (!d.isValid()) return "-";
+
+                      return (
+                        <div style={{ lineHeight: "16px" }}>
+                          <div>{d.format("DD-MM-YYYY")}</div>
+                          <div style={{ fontSize: 11, color: "#94a3b8" }}>
+                            {d.format("hh:mm A")}
+                          </div>
+                        </div>
+                      );
+                    }
                   },
                 ]}
                 rows={paginatedSessionData.map(d => ({
@@ -778,6 +815,7 @@ function Demographics({ selectedDoctorIds = [] }) {
               label="Patients in View"
               value={matchedPatients}
               sub={`${totalPatients > 0 ? ((matchedPatients / totalPatients) * 100).toFixed(1) : "0.0"}% of all patients`}
+              highlightSub
             />
             <StatCard label="Total Patients" value={totalPatients} />
             <StatCard label="Age Groups" value={TOTAL_AGE_GROUPS} />
@@ -1150,6 +1188,7 @@ function DiseaseDemo({ diseases, selectedDoctorIds = [] }) {
               sub={`${dashboard.total_patients > 0
                 ? ((dashboard.matched_patients / dashboard.total_patients) * 100).toFixed(1)
                 : "0.0"}% of group`}
+              highlightSub
             />
             <StatCard
               label="Group Size"
@@ -1402,11 +1441,9 @@ function DiseaseMedication({ diseases, selectedDoctorIds = [] }) {
 
   const patientData = dashboardData.patients?.data || [];
 
-  // Helper function to parse diseases from API response
   const parseDiseasesFromPatient = (diseasesData) => {
     if (!diseasesData) return [];
 
-    // If it's already an array
     if (Array.isArray(diseasesData)) {
       return diseasesData.map(d => {
         if (typeof d === 'string') return d;
@@ -1415,21 +1452,17 @@ function DiseaseMedication({ diseases, selectedDoctorIds = [] }) {
       }).filter(Boolean);
     }
 
-    // If it's a string, try to parse it
     if (typeof diseasesData === 'string') {
       try {
-        // Try JSON parse first
         const parsed = JSON.parse(diseasesData);
         if (Array.isArray(parsed)) {
           return parsed.map(d => d.name || d).filter(Boolean);
         }
       } catch (e) {
-        // If JSON parse fails, try regex for "name: value" pattern
         const matches = diseasesData.match(/name:\s*([^,}]+)/g);
         if (matches && matches.length > 0) {
           return matches.map(m => m.replace("name:", "").trim());
         }
-        // If no matches, return the string as is if it's not empty
         if (diseasesData.trim()) {
           return [diseasesData];
         }
@@ -1439,7 +1472,6 @@ function DiseaseMedication({ diseases, selectedDoctorIds = [] }) {
     return [];
   };
 
-  // Helper function to parse medications
   const parseMedicationsFromPatient = (medicationsData) => {
     if (!medicationsData) return [];
 
@@ -1547,7 +1579,8 @@ function DiseaseMedication({ diseases, selectedDoctorIds = [] }) {
             <StatCard
               label="Matched Patients"
               value={matchedPatients}
-              sub={`${percentage}% of all patients`}
+              sub={`${percentage} of all patients`}
+              highlightSub
             />
             <StatCard label="Total Patients" value={totalPatients} />
             <StatCard label="Top Drug" value={topDrug} />
@@ -1764,7 +1797,6 @@ function MedicationDemo({ medicines, selectedDoctorIds = [] }) {
     setPatientPage(1);
   };
 
-  // Reset checkboxes when medication selection changes
   useEffect(() => {
     setSingleOnly(false);
     setCombinedOnly(false);
@@ -1796,9 +1828,8 @@ function MedicationDemo({ medicines, selectedDoctorIds = [] }) {
       const res = await fetchAdminMedicationFull(payload);
       console.log("🟢 MedicationDemo - Response:", res);
       if (res && res.success) {
-        // Filter out age groups with zero count
         const filteredAgeBreakdown = (res.age_breakdown || []).filter(item => item.count > 0);
-        // Filter out gender with zero count
+
         const filteredSexBreakdown = (res.sex_breakdown || []).filter(item => item.count > 0);
 
         setDashboardData({
@@ -1859,7 +1890,6 @@ function MedicationDemo({ medicines, selectedDoctorIds = [] }) {
   const ageBreakdown = dashboardData.age_breakdown || [];
   const sexBreakdown = dashboardData.sex_breakdown || [];
 
-  // Helper function to parse diseases from string
   const parseDiseasesFromString = (diseasesStr) => {
     if (!diseasesStr) return [];
     if (Array.isArray(diseasesStr)) return diseasesStr;
@@ -1904,7 +1934,6 @@ function MedicationDemo({ medicines, selectedDoctorIds = [] }) {
           </div>
         </div>
 
-        {/* Checkbox filters - only show when medications are selected */}
         {selMeds.length >= 2 && (
           <div style={{ marginTop: 12, display: 'flex', gap: 20 }}>
             <label style={S.checkLabel(combinedOnly)}>
@@ -1957,7 +1986,6 @@ function MedicationDemo({ medicines, selectedDoctorIds = [] }) {
         )}
       </div>
 
-      {/* Statistics Cards */}
       <div style={S.statRow}>
         {loading ? (
           <>
@@ -1976,6 +2004,7 @@ function MedicationDemo({ medicines, selectedDoctorIds = [] }) {
               label="Matched Patients"
               value={matchedPatients}
               sub={`${percentage} of all patients`}
+              highlightSub
             />
             <StatCard label="Total Patients" value={totalPatients} />
             <StatCard label="Selected Meds" value={selMeds.length || "All"} />
@@ -2415,6 +2444,7 @@ function MedicationDisease({ medicines, selectedDoctorIds = [] }) {
               label="Matched Patients"
               value={matchedPatients}
               sub={`${percentage}% of all patients`}
+              highlightSub
             />
             <StatCard label="Unique Diseases" value={uniqueDiseases} />
             <StatCard label="Top Disease" value={topDisease} />
@@ -2828,6 +2858,28 @@ function MedicationHealth({ medicines, selectedDoctorIds = [] }) {
                               ? medsList.slice(0, 3).map((m, idx) => <Chip key={idx} label={m} teal />)
                               : <span style={{ color: "#94a3b8" }}>—</span>;
                           }
+                        },
+                        {
+                          key: "medication_start_date",
+                          label: "Medication Start Date",
+                          render: r => (
+                            <span>
+                              {r.medication_start_date
+                                ? dayjs(r.medication_start_date).format("DD-MM-YYYY")
+                                : "—"}
+                            </span>
+                          )
+                        },
+                        {
+                          key: "reaction_date",
+                          label: "Reaction Date",
+                          render: r => (
+                            <span>
+                              {r.reaction_date
+                                ? dayjs(r.reaction_date).format("DD-MM-YYYY")
+                                : "—"}
+                            </span>
+                          )
                         }
                       ]}
                       rows={item.patients || []}
@@ -3077,6 +3129,7 @@ function CrossAnalysis({ diseases, medicines, selectedDoctorIds = [] }) {
               label="Matched Patients"
               value={matchedPatients}
               sub={`${matchedPatients} patients match selected criteria`}
+              highlightSub
             />
             <StatCard label="Diseases Selected" value={selDiseases.length || "All"} />
             <StatCard label="Measurements" value={selMeasurements.length || "None"} />
@@ -3679,6 +3732,7 @@ function CustomizeTable({ diseases, medicines, symptoms = [], selectedDoctorIds 
           label="Matching Records"
           value={matchedPatients}
           sub={`${totalPatients > 0 ? ((matchedPatients / totalPatients) * 100).toFixed(1) : "0.0"}% of total patients`}
+          highlightSub
         />
         <StatCard label="Total Patients" value={totalPatients} />
         <StatCard label="Active Filters" value={activeFilters} />
