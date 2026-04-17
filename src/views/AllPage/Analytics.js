@@ -10,6 +10,8 @@ import { BiSolidCustomize } from "react-icons/bi";
 import { fetchAdminCrossAnalytics, fetchAdminCustomTable, fetchAdminDiseaseDashboard, fetchAdminDiseaseMedication, fetchAdminMedicationDiseaseDashboard, fetchAdminMedicationFull, fetchAdminMedicationReportedHealth, fetchAdminPatientDemographics, fetchAdminPatientDemographicsDetails, fetchDiseases, fetchDoctorAnalytics, fetchDoctors, fetchMeasurementOptions, fetchMedicines, fetchSymptoms } from "services/analyticsAPI";
 import CustomPagination from "component/common/Pagination";
 import { CircularProgress } from "@mui/material";
+import { useSelector } from "react-redux";
+import dayjs from "utils/dayjs";
 
 // const MOCK_PATIENTS = [
 //   { id: 1, age: 45, gender: "Male", diseases: [{ name: "Hypertension" }, { name: "Type 2 Diabetes" }], medications: [{ name: "Lisinopril" }, { name: "Metformin" }], symptoms: "headache, fatigue" },
@@ -318,8 +320,29 @@ function DoctorAnalytics({ selectedDoctorIds = [] }) {
   const [period, setPeriod] = useState("last_30_days");
   const [doctorsData, setDoctorsData] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(1);
+
+  // Separate pagination states for each section
+  const [patientsPerDoctorPage, setPatientsPerDoctorPage] = useState(1);
+  const [patientGrowthPage, setPatientGrowthPage] = useState(1);
+  const [sessionActivityPage, setSessionActivityPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  const timezone = useSelector((state) => state.timezone.value);
+
+  const formatDate = (date) => {
+    if (!date) return "-";
+
+    const d = dayjs.utc(date).tz(timezone);
+    const now = dayjs().tz(timezone);
+
+    if (d.isSame(now, 'day')) {
+      return `Today, ${d.format("hh:mm A")}`;
+    }
+    if (d.isSame(now.subtract(1, 'day'), 'day')) {
+      return `Yesterday, ${d.format("hh:mm A")}`;
+    }
+    return d.format("DD-MM-YYYY hh:mm A");
+  };
 
   const PERIOD_OPTIONS = [
     { value: "last_30_days", label: "Last 30 days" },
@@ -334,8 +357,8 @@ function DoctorAnalytics({ selectedDoctorIds = [] }) {
       const res = await fetchDoctorAnalytics({
         doctor_ids: selectedDoctorIds.length > 0 ? selectedDoctorIds : [],
         period,
-        page,
-        limit: rowsPerPage,
+        page: 1,
+        limit: 100, // Fetch enough data to handle pagination on frontend
       });
       if (res?.success) setDoctorsData(res);
     } catch (err) {
@@ -345,8 +368,14 @@ function DoctorAnalytics({ selectedDoctorIds = [] }) {
     }
   };
 
-  useEffect(() => { loadDoctorAnalytics(); }, [period, selectedDoctorIds, page, rowsPerPage]);
-  useEffect(() => { setPage(1); }, [period, selectedDoctorIds]);
+  useEffect(() => { loadDoctorAnalytics(); }, [period, selectedDoctorIds]);
+
+  // Helper function to get paginated data
+  const getPaginatedData = (data, page, itemsPerPage) => {
+    const start = (page - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    return data?.slice(start, end) || [];
+  };
 
   const getPeriodLabel = () =>
     PERIOD_OPTIONS.find(o => o.value === period)?.label ?? "Last 30 days";
@@ -370,8 +399,20 @@ function DoctorAnalytics({ selectedDoctorIds = [] }) {
   const doctors = doctorsData?.doctors || [];
   const totalDoctors = doctorsData?.total_doctors || 0;
   const totalPatients = doctorsData?.total_patients || 0;
-  // const avgPatients      = doctorsData?.avg_patients_per_doctor || 0;
   const totalNewPatients = doctorsData?.total_new_patients || 0;
+
+  // Get paginated data for each section
+  const paginatedPatientsPerDoctor = getPaginatedData(doctors, patientsPerDoctorPage, rowsPerPage);
+  const paginatedGrowthData = getPaginatedData(doctors, patientGrowthPage, rowsPerPage);
+  const paginatedSessionData = getPaginatedData(doctors, sessionActivityPage, rowsPerPage);
+
+  // Reset all pages to 1 when rowsPerPage changes
+  const handleRowsPerPageChange = (val) => {
+    setRowsPerPage(val);
+    setPatientsPerDoctorPage(1);
+    setPatientGrowthPage(1);
+    setSessionActivityPage(1);
+  };
 
   return (
     <div>
@@ -402,7 +443,7 @@ function DoctorAnalytics({ selectedDoctorIds = [] }) {
         </div>
       </div>
 
-      {/* Stat cards — always reflect ALL doctors, not just current page */}
+      {/* Stat cards */}
       <div style={S.statRow}>
         {loading ? (
           ["Total Doctors", "Total Patients", `New Patients (${getPeriodLabel()})`].map(lbl => (
@@ -417,54 +458,53 @@ function DoctorAnalytics({ selectedDoctorIds = [] }) {
           <>
             <StatCard label="Total Doctors" value={totalDoctors} />
             <StatCard label="Total Patients" value={totalPatients} />
-            {/* <StatCard label="Avg Patients / Doctor"                value={avgPatients}     /> */}
             <StatCard label={`New Patients (${getPeriodLabel()})`} value={totalNewPatients} />
           </>
         )}
       </div>
 
-      {/* Patients per doctor — paginated bar chart */}
+      {/* Patients per doctor - with pagination */}
       <div style={S.card}>
         <p style={S.cardTitle}>Patients per doctor</p>
         {loading ? (
           <div style={{ display: "flex", justifyContent: "center", padding: 20 }}>
             <CircularProgress size={24} />
           </div>
-        ) : doctors.length > 0 ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {doctors.map((d, i) => (
-              <div key={i}>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                  <span style={{ fontSize: 13, fontWeight: 500, color: "#374151" }}>{d.doctor_name}</span>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: ACCENT }}>{d.total_patients} patients</span>
+        ) : paginatedPatientsPerDoctor.length > 0 ? (
+          <>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {paginatedPatientsPerDoctor.map((d, i) => (
+                <div key={i}>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                    <span style={{ fontSize: 13, fontWeight: 500, color: "#374151" }}>{d.doctor_name}</span>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: ACCENT }}>{d.total_patients} patients</span>
+                  </div>
+                  <div style={S.barTrack}>
+                    <div style={{
+                      ...S.barFill(totalPatients > 0 ? (d.total_patients / totalPatients) * 100 : 0, ACCENT),
+                    }} />
+                  </div>
                 </div>
-                <div style={S.barTrack}>
-                  <div style={{
-                    ...S.barFill(totalPatients > 0 ? (d.total_patients / totalPatients) * 100 : 0, ACCENT),
-                  }} />
-                </div>
+              ))}
+            </div>
+            {doctors.length > rowsPerPage && (
+              <div style={{ marginTop: 20, display: "flex", justifyContent: "flex-end" }}>
+                <CustomPagination
+                  count={doctors.length}
+                  page={patientsPerDoctorPage}
+                  rowsPerPage={rowsPerPage}
+                  onPageChange={setPatientsPerDoctorPage}
+                  onRowsPerPageChange={handleRowsPerPageChange}
+                  hideRowsPerPage={true}
+                />
               </div>
-            ))}
-          </div>
+            )}
+          </>
         ) : (
           <div style={S.noData}>No doctors found</div>
         )}
-
-        {/* Pagination sits inside this card, only controls the rows above */}
-        {totalDoctors > 0 && (
-          <div style={{ marginTop: 20, display: "flex", justifyContent: "flex-end" }}>
-            <CustomPagination
-              count={totalDoctors}
-              page={page}
-              rowsPerPage={rowsPerPage}
-              onPageChange={setPage}
-              onRowsPerPageChange={val => { setRowsPerPage(val); setPage(1); }}
-            />
-          </div>
-        )}
       </div>
 
-      {/* New patient growth — separate pagination would go here if needed */}
       <div style={S.grid2}>
         <div style={S.card}>
           <p style={S.cardTitle}>New patient growth</p>
@@ -473,42 +513,37 @@ function DoctorAnalytics({ selectedDoctorIds = [] }) {
               <CircularProgress size={24} />
             </div>
           ) : (
-            <DataTable
-              cols={[
-                { key: "doctor_name", label: "Doctor", sortable: true },
-                {
-                  key: "new_patients", label: "New Patients", sortable: true,
-                  render: r => <span style={{ fontWeight: 700, color: ACCENT }}>{r.new_patients}</span>
-                },
-                // { key:"growth_percent",label:"vs Last Period", sortable:true,
-                //   render: r => (
-                //     <span style={{
-                //       display:"inline-flex", alignItems:"center", gap:4,
-                //       padding:"3px 10px", borderRadius:20, fontSize:11, fontWeight:600,
-                //       background: r.trend==="up"   ? "rgba(34,197,94,0.1)"
-                //                 : r.trend==="down" ? "rgba(239,68,68,0.1)"
-                //                 :                    "rgba(107,114,128,0.1)",
-                //       color:      r.trend==="up"   ? "#22c55e"
-                //                 : r.trend==="down" ? "#ef4444"
-                //                 :                    "#6b7280",
-                //     }}>
-                //       {r.trend==="up" ? "↑" : r.trend==="down" ? "↓" : "→"} {r.growth_percent}%
-                //     </span>
-                //   )
-                // },
-              ]}
-              rows={doctors.map(d => ({
-                doctor_name: d.doctor_name,
-                new_patients: d.new_patients,
-                growth_percent: d.growth_percent,
-                trend: d.trend,
-              }))}
-              empty="No data available"
-            />
+            <>
+              <DataTable
+                cols={[
+                  { key: "doctor_name", label: "Doctor", sortable: true },
+                  {
+                    key: "new_patients", label: "New Patients", sortable: true,
+                    render: r => <span style={{ fontWeight: 700, color: ACCENT }}>{r.new_patients}</span>
+                  },
+                ]}
+                rows={paginatedGrowthData.map(d => ({
+                  doctor_name: d.doctor_name,
+                  new_patients: d.new_patients,
+                }))}
+                empty="No data available"
+              />
+              {doctors.length > rowsPerPage && (
+                <div style={{ marginTop: 20, display: "flex", justifyContent: "flex-end" }}>
+                  <CustomPagination
+                    count={doctors.length}
+                    page={patientGrowthPage}
+                    rowsPerPage={rowsPerPage}
+                    onPageChange={setPatientGrowthPage}
+                    onRowsPerPageChange={handleRowsPerPageChange}
+                    hideRowsPerPage={true}
+                  />
+                </div>
+              )}
+            </>
           )}
         </div>
 
-        {/* Session activity — active patients column removed */}
         <div style={S.card}>
           <p style={S.cardTitle}>Session activity</p>
           {loading ? (
@@ -516,29 +551,47 @@ function DoctorAnalytics({ selectedDoctorIds = [] }) {
               <CircularProgress size={24} />
             </div>
           ) : (
-            <DataTable
-              cols={[
-                { key: "doctor_name", label: "Doctor", sortable: true },
-                {
-                  key: "last_login", label: "Last Login", sortable: true,
-                  render: r => (
-                    <span style={{ fontSize: 12, color: "#64748b" }}>{r.last_login}</span>
-                  )
-                },
-                {
-                  key: "last_patient_added", label: "Last Patient Added", sortable: true,
-                  render: r => (
-                    <span style={{ fontSize: 12, color: "#64748b" }}>{r.last_patient_added}</span>
-                  )
-                },
-              ]}
-              rows={doctors.map(d => ({
-                doctor_name: d.doctor_name,
-                last_login: d.last_login,
-                last_patient_added: d.last_patient_added,
-              }))}
-              empty="No data available"
-            />
+            <>
+              <DataTable
+                cols={[
+                  { key: "doctor_name", label: "Doctor", sortable: true },
+                  {
+                    key: "last_login", label: "Last Login", sortable: true,
+                    render: r => (
+                      <span style={{ fontSize: 12, color: "#64748b" }}>
+                        {formatDate(r.last_login)}
+                      </span>
+                    )
+                  },
+                  {
+                    key: "last_patient_added", label: "Last Patient Added", sortable: true,
+                    render: r => (
+                      <span style={{ fontSize: 12, color: "#64748b" }}>
+                        {formatDate(r.last_patient_added)}
+                      </span>
+                    )
+                  },
+                ]}
+                rows={paginatedSessionData.map(d => ({
+                  doctor_name: d.doctor_name,
+                  last_login: d.last_login,
+                  last_patient_added: d.last_patient_added,
+                }))}
+                empty="No data available"
+              />
+              {doctors.length > rowsPerPage && (
+                <div style={{ marginTop: 20, display: "flex", justifyContent: "flex-end" }}>
+                  <CustomPagination
+                    count={doctors.length}
+                    page={sessionActivityPage}
+                    rowsPerPage={rowsPerPage}
+                    onPageChange={setSessionActivityPage}
+                    onRowsPerPageChange={handleRowsPerPageChange}
+                    hideRowsPerPage={true}
+                  />
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -1670,8 +1723,8 @@ function DiseaseMedication({ diseases, selectedDoctorIds = [] }) {
 }
 
 function MedicationDemo({ medicines, selectedDoctorIds = [] }) {
-  const allMeds = medicines?.length > 0 
-    ? medicines.map(m => m.label) 
+  const allMeds = medicines?.length > 0
+    ? medicines.map(m => m.label)
     : [];
 
   const [selMeds, setSelMeds] = useState([]);
@@ -1680,7 +1733,7 @@ function MedicationDemo({ medicines, selectedDoctorIds = [] }) {
   const [singleOnly, setSingleOnly] = useState(false);
   const [combinedOnly, setCombinedOnly] = useState(false);
   const [includeExtra, setIncludeExtra] = useState(false);
-  
+
   const [loading, setLoading] = useState(false);
   const [dashboardData, setDashboardData] = useState({
     total_patients: 0,
@@ -1694,7 +1747,7 @@ function MedicationDemo({ medicines, selectedDoctorIds = [] }) {
     age_breakdown: [],
     sex_breakdown: [],
   });
-  
+
   const [summaryPage, setSummaryPage] = useState(1);
   const [summaryRowsPerPage, setSummaryRowsPerPage] = useState(10);
   const [patientPage, setPatientPage] = useState(1);
@@ -1747,7 +1800,7 @@ function MedicationDemo({ medicines, selectedDoctorIds = [] }) {
         const filteredAgeBreakdown = (res.age_breakdown || []).filter(item => item.count > 0);
         // Filter out gender with zero count
         const filteredSexBreakdown = (res.sex_breakdown || []).filter(item => item.count > 0);
-        
+
         setDashboardData({
           total_patients: res.total_patients || 0,
           matched_patients: res.matched_patients || 0,
@@ -2060,7 +2113,7 @@ function MedicationDemo({ medicines, selectedDoctorIds = [] }) {
             showing {patientData.length} of {dashboardData.patient_total || 0} patients
           </span>
         </p>
-        
+
         {matchedPatients > 0 && patientData.length > 0 && (
           <button
             style={S.expandBtn}
@@ -2158,8 +2211,8 @@ function MedicationDemo({ medicines, selectedDoctorIds = [] }) {
 }
 
 function MedicationDisease({ medicines, selectedDoctorIds = [] }) {
-  const allMeds = medicines?.length > 0 
-    ? medicines.map(m => m.label) 
+  const allMeds = medicines?.length > 0
+    ? medicines.map(m => m.label)
     : [];
 
   const [selMeds, setSelMeds] = useState([]);
@@ -2168,7 +2221,7 @@ function MedicationDisease({ medicines, selectedDoctorIds = [] }) {
   const [singleOnly, setSingleOnly] = useState(false);
   const [combinedOnly, setCombinedOnly] = useState(false);
   const [includeExtra, setIncludeExtra] = useState(false);
-  
+
   const [loading, setLoading] = useState(false);
   const [dashboardData, setDashboardData] = useState({
     total_patients: 0,
@@ -2178,7 +2231,7 @@ function MedicationDisease({ medicines, selectedDoctorIds = [] }) {
     disease_distribution: [],
     patients: [],
   });
-  
+
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [showPatients, setShowPatients] = useState(false);
@@ -2429,7 +2482,7 @@ function MedicationDisease({ medicines, selectedDoctorIds = [] }) {
       {/* Patient Records Section */}
       <div style={S.card}>
         <p style={S.cardTitle}>Patient Records</p>
-        
+
         {matchedPatients > 0 && (
           <button
             style={S.expandBtn}
@@ -2536,8 +2589,8 @@ function MedicationDisease({ medicines, selectedDoctorIds = [] }) {
 }
 
 function MedicationHealth({ medicines, selectedDoctorIds = [] }) {
-  const allMeds = medicines?.length > 0 
-    ? medicines.map(m => m.label) 
+  const allMeds = medicines?.length > 0
+    ? medicines.map(m => m.label)
     : [];
 
   const [selMeds, setSelMeds] = useState([]);
@@ -2552,7 +2605,7 @@ function MedicationHealth({ medicines, selectedDoctorIds = [] }) {
     patient_limit: 5,
     data: [],
   });
-  
+
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [expandedMedication, setExpandedMedication] = useState(null);
@@ -2690,7 +2743,7 @@ function MedicationHealth({ medicines, selectedDoctorIds = [] }) {
                 </span>
               </span>
             </p>
-            
+
             {/* Symptoms Bar Chart */}
             <div style={S.barWrap}>
               {item.symptoms && item.symptoms.length > 0 ? (
@@ -2716,8 +2769,8 @@ function MedicationHealth({ medicines, selectedDoctorIds = [] }) {
                   style={S.expandBtn}
                   onClick={() => toggleExpand(item.medication.name)}
                 >
-                  {expandedMedication === item.medication.name 
-                    ? "▲ Collapse patients" 
+                  {expandedMedication === item.medication.name
+                    ? "▲ Collapse patients"
                     : `▼ Expand patients (${item.total_patients_in_medication || item.patients.length} total)`}
                 </button>
 
@@ -2811,14 +2864,14 @@ function MedicationHealth({ medicines, selectedDoctorIds = [] }) {
 function CrossAnalysis({ diseases, medicines, selectedDoctorIds = [] }) {
   const allDiseases = diseases?.length > 0 ? diseases.map(d => d.label) : [];
   const allMeds = medicines?.length > 0 ? medicines.map(m => m.label) : [];
-  
+
   const [measurementOptions, setMeasurementOptions] = useState([]);
   const [selDiseases, setSelDiseases] = useState([]);
   const [selMeasurements, setSelMeasurements] = useState([]);
   const [selMeds, setSelMeds] = useState([]);
   const [ageGroup, setAgeGroup] = useState("All");
   const [gender, setGender] = useState("All");
-  
+
   const [loading, setLoading] = useState(false);
   const [dashboardData, setDashboardData] = useState({
     matched_patients: 0,
@@ -2830,7 +2883,7 @@ function CrossAnalysis({ diseases, medicines, selectedDoctorIds = [] }) {
     measurement_values: { data: [], total: 0, page: 1, limit: 10, total_pages: 0 },
     records: { data: [], total: 0, page: 1, limit: 10, total_pages: 0 },
   });
-  
+
   // Pagination states
   const [diseasePage, setDiseasePage] = useState(1);
   const [diseaseRowsPerPage, setDiseaseRowsPerPage] = useState(10);
@@ -2845,10 +2898,10 @@ function CrossAnalysis({ diseases, medicines, selectedDoctorIds = [] }) {
   const toggleM = (measurementLabel) => {
     const measurementObj = measurementOptions.find(opt => opt.label === measurementLabel);
     const measurementValue = measurementObj?.value || measurementLabel;
-    
-    setSelMeasurements(prev => 
-      prev.includes(measurementValue) 
-        ? prev.filter(x => x !== measurementValue) 
+
+    setSelMeasurements(prev =>
+      prev.includes(measurementValue)
+        ? prev.filter(x => x !== measurementValue)
         : [...prev, measurementValue]
     );
   };
@@ -2897,7 +2950,7 @@ function CrossAnalysis({ diseases, medicines, selectedDoctorIds = [] }) {
       records_page: recordsPage,
       records_limit: recordsRowsPerPage,
     };
-    
+
     console.log("🔵 CrossAnalysis - Sending payload:", JSON.stringify(payload, null, 2));
 
     try {
@@ -2927,9 +2980,9 @@ function CrossAnalysis({ diseases, medicines, selectedDoctorIds = [] }) {
 
   useEffect(() => {
     fetchData();
-  }, [selDiseases, selMeasurements, selMeds, ageGroup, gender, selectedDoctorIds, 
-      diseasePage, diseaseRowsPerPage, medicationPage, medicationRowsPerPage, 
-      measurementPage, measurementRowsPerPage, recordsPage, recordsRowsPerPage]);
+  }, [selDiseases, selMeasurements, selMeds, ageGroup, gender, selectedDoctorIds,
+    diseasePage, diseaseRowsPerPage, medicationPage, medicationRowsPerPage,
+    measurementPage, measurementRowsPerPage, recordsPage, recordsRowsPerPage]);
 
   const matchedPatients = dashboardData.matched_patients || 0;
   const diseaseOverlapData = dashboardData.disease_overlap?.data || [];
@@ -2977,7 +3030,7 @@ function CrossAnalysis({ diseases, medicines, selectedDoctorIds = [] }) {
             <TagSearch
               label="Measurement"
               all={measurementOptions.map(opt => opt.label)}
-              selected={selMeasurements.map(val => 
+              selected={selMeasurements.map(val =>
                 measurementOptions.find(opt => opt.value === val)?.label || val
               )}
               onToggle={toggleM}
@@ -3020,10 +3073,10 @@ function CrossAnalysis({ diseases, medicines, selectedDoctorIds = [] }) {
           </>
         ) : (
           <>
-            <StatCard 
-              label="Matched Patients" 
-              value={matchedPatients} 
-              sub={`${matchedPatients} patients match selected criteria`} 
+            <StatCard
+              label="Matched Patients"
+              value={matchedPatients}
+              sub={`${matchedPatients} patients match selected criteria`}
             />
             <StatCard label="Diseases Selected" value={selDiseases.length || "All"} />
             <StatCard label="Measurements" value={selMeasurements.length || "None"} />
@@ -3160,9 +3213,9 @@ function CrossAnalysis({ diseases, medicines, selectedDoctorIds = [] }) {
                         if (m === 'weight') label = 'Weight';
                         if (m === 'temperature') label = 'Temperature';
                         return {
-                          key: m === 'bp' ? 'blood_pressure' : 
-                                m === 'fasting_glucose' ? 'blood_glucose' :
-                                m === 'ppbgs' ? 'postprandial_glucose' : m,
+                          key: m === 'bp' ? 'blood_pressure' :
+                            m === 'fasting_glucose' ? 'blood_glucose' :
+                              m === 'ppbgs' ? 'postprandial_glucose' : m,
                           label: label,
                           sortable: true,
                         };
@@ -3211,9 +3264,9 @@ function CrossAnalysis({ diseases, medicines, selectedDoctorIds = [] }) {
                   cols={[
                     { key: "age_group", label: "Age Group", sortable: true },
                     { key: "gender", label: "Gender", sortable: true },
-                    { 
-                      key: "diseases", 
-                      label: "Diseases", 
+                    {
+                      key: "diseases",
+                      label: "Diseases",
                       sortable: true,
                       render: (r) => {
                         const diseasesList = parseStringToArray(r.diseases);
@@ -3228,9 +3281,9 @@ function CrossAnalysis({ diseases, medicines, selectedDoctorIds = [] }) {
                         );
                       }
                     },
-                    { 
-                      key: "medications", 
-                      label: "Medications", 
+                    {
+                      key: "medications",
+                      label: "Medications",
                       sortable: true,
                       render: (r) => {
                         const medicationsList = parseStringToArray(r.medications);
@@ -3296,7 +3349,7 @@ function CustomizeTable({ diseases, medicines, symptoms = [], selectedDoctorIds 
   const [singleOnly, setSingleOnly] = useState(false);
   const [combinedOnly, setCombinedOnly] = useState(false);
   const [includeExtra, setIncludeExtra] = useState(false);
-  
+
   const [loading, setLoading] = useState(false);
   const [tableData, setTableData] = useState({
     total: 0,
@@ -3305,7 +3358,7 @@ function CustomizeTable({ diseases, medicines, symptoms = [], selectedDoctorIds 
     limit: 10,
     patients: [],
   });
-  
+
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -3427,30 +3480,30 @@ function CustomizeTable({ diseases, medicines, symptoms = [], selectedDoctorIds 
 
         <div style={{ ...S.filterRow, alignItems: "flex-start" }}>
           <div style={{ flex: 1, minWidth: 160 }}>
-            <TagSearch 
-              label="Disease" 
-              all={allDiseases} 
-              selected={filterDis} 
-              onToggle={toggleD} 
-              searchPlaceholder="Filter by disease…" 
+            <TagSearch
+              label="Disease"
+              all={allDiseases}
+              selected={filterDis}
+              onToggle={toggleD}
+              searchPlaceholder="Filter by disease…"
             />
           </div>
           <div style={{ flex: 1, minWidth: 160 }}>
-            <TagSearch 
-              label="Medication" 
-              all={allMeds} 
-              selected={filterMed} 
-              onToggle={toggleM} 
-              searchPlaceholder="Filter by medication…" 
+            <TagSearch
+              label="Medication"
+              all={allMeds}
+              selected={filterMed}
+              onToggle={toggleM}
+              searchPlaceholder="Filter by medication…"
             />
           </div>
           <div style={{ flex: 1, minWidth: 160 }}>
-            <TagSearch 
-              label="Reported Symptoms" 
-              all={allSymptoms} 
-              selected={filterSymptoms} 
-              onToggle={toggleH} 
-              searchPlaceholder="Filter by symptom…" 
+            <TagSearch
+              label="Reported Symptoms"
+              all={allSymptoms}
+              selected={filterSymptoms}
+              onToggle={toggleH}
+              searchPlaceholder="Filter by symptom…"
             />
           </div>
           <div style={{ flex: 1, minWidth: 140 }}>
@@ -3622,10 +3675,10 @@ function CustomizeTable({ diseases, medicines, symptoms = [], selectedDoctorIds 
       </div>
 
       <div style={S.statRow}>
-        <StatCard 
-          label="Matching Records" 
-          value={matchedPatients} 
-          sub={`${totalPatients > 0 ? ((matchedPatients / totalPatients) * 100).toFixed(1) : "0.0"}% of total patients`} 
+        <StatCard
+          label="Matching Records"
+          value={matchedPatients}
+          sub={`${totalPatients > 0 ? ((matchedPatients / totalPatients) * 100).toFixed(1) : "0.0"}% of total patients`}
         />
         <StatCard label="Total Patients" value={totalPatients} />
         <StatCard label="Active Filters" value={activeFilters} />
@@ -3643,7 +3696,7 @@ function CustomizeTable({ diseases, medicines, symptoms = [], selectedDoctorIds 
         ) : (
           <>
             <DataTable cols={cols} rows={rows} empty="No records match the selected filters" />
-            
+
             {/* Pagination */}
             {matchedPatients > rowsPerPage && (
               <div style={{ marginTop: 20, display: "flex", justifyContent: "flex-end" }}>
@@ -3717,7 +3770,7 @@ export default function AdminAnalytics() {
 
         setDiseases(diseaseRes || []);
         setMedicines(medicineRes || []);
-        setSymptoms(symptomsRes || []); 
+        setSymptoms(symptomsRes || []);
         console.log("Loaded symptoms:", symptomsRes);
       } catch (err) {
         console.error("Error loading disease/medicine/symptoms:", err);
@@ -3727,16 +3780,20 @@ export default function AdminAnalytics() {
     loadMeta();
   }, []);
 
+  const effectiveDoctorIds = selectedDoctorValues.length > 0
+    ? selectedDoctorValues
+    : doctors.map(d => d.value);
+
   const VIEWS = {
-    doctorana: <DoctorAnalytics selectedDoctorIds={selectedDoctorValues} />,
-    demographics: <Demographics selectedDoctorIds={selectedDoctorValues} />,
-    diseasedemo: <DiseaseDemo diseases={diseases} selectedDoctorIds={selectedDoctorValues} />,
-    diseasemed: <DiseaseMedication diseases={diseases} symptoms={MOCK_SYMPTOMS} selectedDoctorIds={selectedDoctorValues} />,
-    meddemo: <MedicationDemo medicines={medicines} selectedDoctorIds={selectedDoctorValues} />,
-    meddisease: <MedicationDisease medicines={medicines} selectedDoctorIds={selectedDoctorValues} />,
-    medhealth: <MedicationHealth medicines={medicines} selectedDoctorIds={selectedDoctorValues} />,
-    crossana: <CrossAnalysis diseases={diseases} medicines={medicines} selectedDoctorIds={selectedDoctorValues} />,
-    customize: <CustomizeTable diseases={diseases} medicines={medicines} symptoms={symptoms} selectedDoctorIds={selectedDoctorValues} />,
+    doctorana: <DoctorAnalytics selectedDoctorIds={effectiveDoctorIds} />,
+    demographics: <Demographics selectedDoctorIds={effectiveDoctorIds} />,
+    diseasedemo: <DiseaseDemo diseases={diseases} selectedDoctorIds={effectiveDoctorIds} />,
+    diseasemed: <DiseaseMedication diseases={diseases} symptoms={MOCK_SYMPTOMS} selectedDoctorIds={effectiveDoctorIds} />,
+    meddemo: <MedicationDemo medicines={medicines} selectedDoctorIds={effectiveDoctorIds} />,
+    meddisease: <MedicationDisease medicines={medicines} selectedDoctorIds={effectiveDoctorIds} />,
+    medhealth: <MedicationHealth medicines={medicines} selectedDoctorIds={effectiveDoctorIds} />,
+    crossana: <CrossAnalysis diseases={diseases} medicines={medicines} selectedDoctorIds={effectiveDoctorIds} />,
+    customize: <CustomizeTable diseases={diseases} medicines={medicines} symptoms={symptoms} selectedDoctorIds={effectiveDoctorIds} />,
   };
 
   const toggleDoctor = (doctorName, doctorValue) => {
@@ -3751,6 +3808,7 @@ export default function AdminAnalytics() {
         : [...prev, doctorValue]
     );
   };
+
 
   return (
     <div style={S.wrap}>
