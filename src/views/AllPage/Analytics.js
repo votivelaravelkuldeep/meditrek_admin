@@ -2842,7 +2842,16 @@ function CrossAnalysis({ diseases, medicines, selectedDoctorIds = [] }) {
   const [recordsRowsPerPage, setRecordsRowsPerPage] = useState(10);
 
   const toggleD = d => setSelDiseases(prev => prev.includes(d) ? prev.filter(x => x !== d) : [...prev, d]);
-  const toggleM = m => setSelMeasurements(prev => prev.includes(m) ? prev.filter(x => x !== m) : [...prev, m]);
+  const toggleM = (measurementLabel) => {
+    const measurementObj = measurementOptions.find(opt => opt.label === measurementLabel);
+    const measurementValue = measurementObj?.value || measurementLabel;
+    
+    setSelMeasurements(prev => 
+      prev.includes(measurementValue) 
+        ? prev.filter(x => x !== measurementValue) 
+        : [...prev, measurementValue]
+    );
+  };
   const toggleMed = m => setSelMeds(prev => prev.includes(m) ? prev.filter(x => x !== m) : [...prev, m]);
 
   // Load measurement options
@@ -2888,7 +2897,7 @@ function CrossAnalysis({ diseases, medicines, selectedDoctorIds = [] }) {
       records_page: recordsPage,
       records_limit: recordsRowsPerPage,
     };
-
+    
     console.log("🔵 CrossAnalysis - Sending payload:", JSON.stringify(payload, null, 2));
 
     try {
@@ -2930,6 +2939,21 @@ function CrossAnalysis({ diseases, medicines, selectedDoctorIds = [] }) {
 
   const anyFilter = selDiseases.length > 0 || selMeds.length > 0 || selMeasurements.length > 0;
 
+  // Helper function to parse comma-separated strings into arrays for pill display
+  const parseStringToArray = (str) => {
+    if (!str) return [];
+    if (Array.isArray(str)) return str;
+    if (typeof str === 'string') {
+      // If it's a comma-separated string
+      if (str.includes(',')) {
+        return str.split(',').map(item => item.trim()).filter(Boolean);
+      }
+      // If it's a single value
+      return [str];
+    }
+    return [];
+  };
+
   return (
     <div>
       <div style={S.pageHead}>
@@ -2953,7 +2977,9 @@ function CrossAnalysis({ diseases, medicines, selectedDoctorIds = [] }) {
             <TagSearch
               label="Measurement"
               all={measurementOptions.map(opt => opt.label)}
-              selected={selMeasurements}
+              selected={selMeasurements.map(val => 
+                measurementOptions.find(opt => opt.value === val)?.label || val
+              )}
               onToggle={toggleM}
               searchPlaceholder="Search measurements..."
             />
@@ -3124,7 +3150,6 @@ function CrossAnalysis({ diseases, medicines, selectedDoctorIds = [] }) {
                 <>
                   <DataTable
                     cols={[
-                      // { key: "patient_ref", label: "Patient Ref", sortable: true },
                       { key: "age_group", label: "Age Group", sortable: true },
                       { key: "gender", label: "Gender", sortable: true },
                       ...selMeasurements.map(m => {
@@ -3166,7 +3191,7 @@ function CrossAnalysis({ diseases, medicines, selectedDoctorIds = [] }) {
             </div>
           )}
 
-          {/* Records Section */}
+          {/* Records Section with Pill Designs */}
           <div style={S.card}>
             <p style={S.cardTitle}>
               Records
@@ -3184,11 +3209,42 @@ function CrossAnalysis({ diseases, medicines, selectedDoctorIds = [] }) {
               <>
                 <DataTable
                   cols={[
-                    // { key: "patient_ref", label: "Patient Ref", sortable: true },
                     { key: "age_group", label: "Age Group", sortable: true },
                     { key: "gender", label: "Gender", sortable: true },
-                    { key: "diseases", label: "Diseases", sortable: true },
-                    { key: "medications", label: "Medications", sortable: true },
+                    { 
+                      key: "diseases", 
+                      label: "Diseases", 
+                      sortable: true,
+                      render: (r) => {
+                        const diseasesList = parseStringToArray(r.diseases);
+                        return diseasesList.length > 0 ? (
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
+                            {diseasesList.map((d, idx) => (
+                              <Chip key={idx} label={d} teal={false} />
+                            ))}
+                          </div>
+                        ) : (
+                          <span style={{ color: "#94a3b8" }}>—</span>
+                        );
+                      }
+                    },
+                    { 
+                      key: "medications", 
+                      label: "Medications", 
+                      sortable: true,
+                      render: (r) => {
+                        const medicationsList = parseStringToArray(r.medications);
+                        return medicationsList.length > 0 ? (
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
+                            {medicationsList.map((m, idx) => (
+                              <Chip key={idx} label={m} teal={true} />
+                            ))}
+                          </div>
+                        ) : (
+                          <span style={{ color: "#94a3b8" }}>—</span>
+                        );
+                      }
+                    },
                   ]}
                   rows={recordsData}
                   empty="No records found"
