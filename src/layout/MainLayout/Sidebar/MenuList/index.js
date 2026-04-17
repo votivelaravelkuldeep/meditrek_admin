@@ -329,8 +329,24 @@ const MenuList = ({ collapsed }) => {
     flex: 1,
     overflowY: 'auto',
     overflowX: 'hidden',
-    paddingBottom:'100px'
-  }}>
+    paddingBottom:'100px',
+    '&::-webkit-scrollbar': {
+            width: '4px'
+          },
+          '&::-webkit-scrollbar-track': {
+            background: '#f1f5f9',
+            borderRadius: '30px'
+          },
+          '&::-webkit-scrollbar-thumb': {
+            background: '#1ddec4',
+            borderRadius: '10px'
+          },
+          '&::-webkit-scrollbar-thumb:hover': {
+            background: '#1ddec4',
+            opacity: 0.8
+          }
+        }}
+>
         {menu.map((item) => (
           <React.Fragment key={item.title}>
             <ListItemButton

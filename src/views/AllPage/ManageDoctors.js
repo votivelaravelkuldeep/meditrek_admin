@@ -531,7 +531,23 @@ function ManageDoctors() {
     { label: 'Name', key: 'doctor_name', sortable: true },
     { label: 'Specialization', key: 'category_name', sortable: true },
     { label: 'Mobile', key: 'mobile', sortable: true },
-    { label: 'Email', key: 'email', sortable: true },
+    {
+  label: 'Email',
+  key: 'email',
+  sortable: true,
+  render: (doctor) => (
+    <div
+      style={{
+        maxWidth: '300px',
+        whiteSpace: 'normal',
+        wordBreak: 'break-word',
+        lineHeight: '1.2'
+      }}
+    >
+      {doctor.email || '-'}
+    </div>
+  )
+},
 
     {
       label: 'Approve Status',

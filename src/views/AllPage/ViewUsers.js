@@ -409,8 +409,38 @@ function ViewUser() {
           style={{ width: 40, height: 40, borderRadius: '50%' }}
         />
       )
-    }
-  ];
+    },
+    {
+    label: 'Doctor Name',
+    key: 'doctor_name',
+    sortable: true,
+    render: (row) => row?.doctor_name || '-'
+  },
+  {
+    label: 'Category Name',
+    key: 'category_name',
+    sortable: true,
+    render: (row) => row?.category_name || '-'
+  },
+  {
+    label: 'Mobile',
+    key: 'mobile',
+    sortable: true,
+    render: (row) => row?.mobile || '-'
+  },
+  {
+    label: 'Email',
+    key: 'email',
+    sortable: true,
+    render: (row) => row?.email || '-'
+  },
+  {
+    label: 'Create Time',
+    key: 'createtime',
+    sortable: true,
+    render: (row) => row?.createtime || '-'
+  }
+];
 
   const adverseColumns = [
     { label: 'S. No', key: 'sr_no', render: (_, i) => indexOfFirstAdverse + i + 1 },
@@ -680,7 +710,7 @@ function ViewUser() {
                   <div className="mb-3 d-flex justify-content-end w-100">
                     <input
                       type="text"
-                      onChange={handleSearch}
+                      onChange={handleSearchgroup}
                       placeholder="Search..."
                       className="custom-search form-control"
                       style={{ width: '250px', fontSize: '13px' }}
@@ -734,14 +764,14 @@ function ViewUser() {
               {/* ── Measurement (content == 3) ── */}
               {content === 3 && (
                 <div className="p-3">
-                  <div className="mb-3 d-flex justify-content-end">
+                  {/* <div className="mb-3 d-flex justify-content-end">
                     <input
                       onChange={handleSearchgroup}
                       placeholder="Search..."
                       className="custom-search form-control"
                       style={{ width: '250px', fontSize: '13px' }}
                     />
-                  </div>
+                  </div> */}
 
                   <CustomTable
                     columns={measurementColumns}
