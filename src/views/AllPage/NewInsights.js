@@ -17,7 +17,7 @@ import './managecontent.css';
 const NewInsights = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
-
+  const [insightsEnabled, setInsightsEnabled] = useState(true);
   const [posts, setPosts] = useState([]);
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState(null);
@@ -34,7 +34,7 @@ const NewInsights = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
-  
+
   const modalRef = useRef(null);
 
   const handleSort = (key) => {
@@ -131,7 +131,37 @@ const NewInsights = () => {
 
   useEffect(() => {
     fetchPosts();
+
+    axios.get(`${API_URL}get-settings`).then((res) => {
+      if (res.data.success) {
+        setInsightsEnabled(res.data.data.insights == 1);
+      }
+    });
   }, []);
+
+  const handleToggleInsights = async () => {
+    const newValue = insightsEnabled ? 0 : 1;
+
+    try {
+      const res = await axios.post(`${API_URL}update-setting`, {
+        key: "insights",
+        value: newValue,
+      });
+
+      if (res.data.success) {
+        setInsightsEnabled(!insightsEnabled);
+        Swal.fire({
+          icon: "success",
+          title: "Updated!",
+          text: `Insights ${newValue ? "Enabled" : "Disabled"}`,
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const handleOpen = (item = null) => {
     setOpen(true);
@@ -265,9 +295,22 @@ const NewInsights = () => {
       <Card className="border-0 shadow-lg rounded-4">
         <Card.Body className="p-4">
           <div className="d-flex justify-content-between align-items-center mb-4">
-            <h5 className="fw-bold mb-0" style={{ color: "#1e293b" }}>
-              Insights List
-            </h5>
+            <div>
+              <h5 className="fw-bold mb-0" style={{ color: "#1e293b" }}>
+                Insights List
+              </h5>
+              <div style={{ marginTop: "6px", display: "flex", alignItems: "center", gap: "8px" }}>
+                <input
+                  type="checkbox"
+                  checked={insightsEnabled}
+                  onChange={handleToggleInsights}
+                  style={{ cursor: "pointer" }}
+                />
+                <span style={{ fontSize: "13px", color: "#475569" }}>
+                  {insightsEnabled ? "Insights Enabled" : "Insights Disabled"}
+                </span>
+              </div>
+            </div>
             <Button
               onClick={() => handleOpen()}
               style={{
@@ -415,8 +458,8 @@ const NewInsights = () => {
               </button>
             </div>
 
-            <div style={{ padding: "20px",width:'100%' }}>
-              <div style={{ marginBottom: "10px",width:'100%' }}>
+            <div style={{ padding: "20px", width: '100%' }}>
+              <div style={{ marginBottom: "10px", width: '100%' }}>
                 <FormInput
                   label="Title"
                   value={title}
@@ -426,12 +469,12 @@ const NewInsights = () => {
                   error={errors.title}
                   touched={touched.title}
                   required
-                  style={{width:'100%' }}
+                  style={{ width: '100%' }}
                   className="custom-input custom-search"
                 />
               </div>
 
-              <div style={{ marginBottom: "10px",width:'100%' }}>
+              <div style={{ marginBottom: "10px", width: '100%' }}>
                 <FormTextarea
                   label="Description"
                   value={description}
@@ -442,7 +485,7 @@ const NewInsights = () => {
                 />
               </div>
 
-              <div style={{ marginBottom: "10px",width:'100%' }}>
+              <div style={{ marginBottom: "10px", width: '100%' }}>
                 <FormInput
                   label="URL"
                   value={url}
@@ -452,7 +495,7 @@ const NewInsights = () => {
                 />
               </div>
 
-              <div style={{ marginBottom: "10px",width:'100%' }}>
+              <div style={{ marginBottom: "10px", width: '100%' }}>
                 <FormInput
                   label="Upload Image"
                   type="file"
