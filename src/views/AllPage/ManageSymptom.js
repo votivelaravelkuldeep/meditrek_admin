@@ -31,6 +31,8 @@ function ManageSymptom() {
   // const [description, setDescription] = useState('');
   const [syptomId, setsymptomId] = useState('');
   const [error, setError] = useState({});
+  const [selectedSymptoms, setSelectedSymptoms] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [translations, setTranslations] = useState({
     en: { symptom_name: "", description: "" }
@@ -57,6 +59,62 @@ function ManageSymptom() {
       };
     });
   };
+
+  // single checkbox
+const handleSelectSymptom = (symptom_id) => {
+  setSelectedSymptoms((prev) => 
+    prev.includes(symptom_id) 
+      ? prev.filter((id) => id !== symptom_id) 
+      : [...prev, symptom_id]
+  );
+};
+
+// select all checkbox
+const handleSelectAll = () => {
+  if (selectAll) {
+    setSelectedSymptoms([]);
+  } else {
+    const allIds = filteredUsers.map((s) => s.symptom_id);
+    setSelectedSymptoms(allIds);
+  }
+  setSelectAll(!selectAll);
+};
+
+// bulk delete function
+const deleteSelectedSymptoms = () => {
+  if (selectedSymptoms.length === 0) {
+    Swal.fire('Please select at least one symptom');
+    return;
+  }
+
+  Swal.fire({
+    title: 'Are you sure?',
+    text: 'You want to delete selected symptoms?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, delete!'
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try {
+        const response = await axios.post(`${API_URL}delete_symptom_bulk`, {
+          symptom_ids: selectedSymptoms
+        });
+
+        if (response.data.success) {
+          Swal.fire('Deleted!', response.data.msg, 'success');
+          setSelectedSymptoms([]);
+          setSelectAll(false);
+          getsymptom();
+        } else {
+          Swal.fire('Error', response.data.msg, 'error');
+        }
+      } catch (error) {
+        console.error(error);
+        Swal.fire('Error', 'Something went wrong', 'error');
+      }
+    }
+  });
+};
 
   const handleActionChange = (index, action, symptom_id, name, description, translationsData) => {
     if (action === "Delete") {
@@ -305,6 +363,18 @@ function ManageSymptom() {
   };
 
   const columns = [
+     {
+    label: <input type="checkbox" checked={selectAll} onChange={handleSelectAll} />,
+    key: 'checkbox',
+    render: (symptom) => (
+      <input
+        className="custom-checkbox"
+        type="checkbox"
+        checked={selectedSymptoms.includes(symptom.symptom_id)}
+        onChange={() => handleSelectSymptom(symptom.symptom_id)}
+      />
+    )
+  },
     {
       label: 'S. No',
       key: 'sr_no',
@@ -410,6 +480,10 @@ function ManageSymptom() {
 
             <Button className="btn btn-primary" style={{ fontSize: '12px', borderRadius: '10px' }} onClick={handlebulkupload}>
               <CloudUploadIcon style={{ fontSize: '16px' }} /> Bulk Upload
+            </Button>
+
+            <Button className="btn btn-danger" style={{ fontSize: '12px', borderRadius: '10px' }} onClick={deleteSelectedSymptoms}>
+              <DeleteIcon style={{ fontSize: '16px' }} /> Delete Selected
             </Button>
           </div>
 

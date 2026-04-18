@@ -37,6 +37,9 @@ function ManageDisease() {
   const [activeLang, setActiveLang] = useState('en');
   const [translations, setTranslations] = useState({});
   const [error, setError] = useState({});
+
+  const [selectedDiseases, setSelectedDiseases] = useState([]);
+const [selectAll, setSelectAll] = useState(false);
   const handleSort = (key) => {
     setSortConfig((prev) => {
       if (!prev) return { key, direction: 'asc' };
@@ -47,6 +50,81 @@ function ManageDisease() {
       };
     });
   };
+
+  // single checkbox
+const handleSelectDisease = (disease_id) => {
+  setSelectedDiseases((prev) => 
+    prev.includes(disease_id) 
+      ? prev.filter((id) => id !== disease_id) 
+      : [...prev, disease_id]
+  );
+};
+
+// select all checkbox
+
+const handleSelectAll = () => {
+  if (selectAll) {
+    setSelectedDiseases([]);
+  } else {
+    const allIds = filteredUsers.map((d) => d.disease_id);
+    setSelectedDiseases(allIds);
+  }
+  setSelectAll(!selectAll);
+};
+
+// bulk delete function
+// bulk delete function
+const deleteSelectedDiseases = () => {
+  if (selectedDiseases.length === 0) {
+    Swal.fire('Please select at least one disease');
+    return;
+  }
+
+  Swal.fire({
+    title: 'Are you sure?',
+    text: 'You want to delete selected diseases?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, delete!'
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try {
+        const response = await axios.post(`${API_URL}delete_disease_bulk`, {
+          disease_ids: selectedDiseases
+        }, {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        console.log("Full Response:", response);
+        console.log("Response Data:", response.data);
+
+        if (response.data.success) {
+          Swal.fire('Deleted!', response.data.msg, 'success');
+          setSelectedDiseases([]);
+          setSelectAll(false);
+          fetchData();
+        } else {
+          Swal.fire('Error', response.data.msg, 'error');
+        }
+      } catch (error) {
+        console.error("Error Object:", error);
+        console.error("Error Response:", error.response);
+        console.error("Error Message:", error.message);
+        
+        // Show more detailed error
+        if (error.response) {
+          Swal.fire('Error', error.response.data?.msg || error.response.statusText, 'error');
+        } else if (error.request) {
+          Swal.fire('Error', 'No response from server. Check if backend is running.', 'error');
+        } else {
+          Swal.fire('Error', error.message, 'error');
+        }
+      }
+    }
+  });
+};
 
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
@@ -241,6 +319,11 @@ const handleShowModal = (disease) => {
     fetchData();
   }, []);
 
+//   React.useEffect(() => {
+//   setSelectedDiseases([]);
+//   setSelectAll(false);
+// }, [filteredUsers]);
+
   // const validationSchema = Yup.object().shape({
   //   name: Yup.string().max(50, 'Disease name cannot be more than 50 characters').required('Please enter Disease name'),
   //   description: Yup.string().max(500, 'Description cannot be more than 500 characters').required('Please enter Description')
@@ -390,7 +473,20 @@ const handleShowModal = (disease) => {
   };
 
   const columns = [
-    {
+      {
+        label: <input type="checkbox" checked={selectAll} onChange={handleSelectAll} />,
+        key: 'checkbox',
+        render: (disease) => (
+          <input
+            className="custom-checkbox"
+            type="checkbox"
+            checked={selectedDiseases.includes(disease.disease_id)}
+            onChange={() => handleSelectDisease(disease.disease_id)}
+          />
+        )
+      },
+
+      {
       label: 'S. No',
       key: 'sr_no',
       render: (_, index) => index + 1
@@ -505,6 +601,10 @@ const handleShowModal = (disease) => {
 
             <Button className="btn btn-primary" style={{ fontSize: '12px', borderRadius: '10px' }} onClick={handleBulkUpload}>
               <CloudUploadIcon style={{ fontSize: '16px' }} /> Bulk Upload
+            </Button>
+
+             <Button className="btn btn-danger" style={{ fontSize: '12px', borderRadius: '10px' }} onClick={deleteSelectedDiseases}>
+              <DeleteIcon style={{ fontSize: '16px' }} /> Delete Selected
             </Button>
           </div>
         </div>
