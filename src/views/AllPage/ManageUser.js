@@ -4,15 +4,16 @@ import { Link } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import './managecontent.css';
-import { Button } from 'react-bootstrap';
+// import { Button } from 'react-bootstrap';
 import './managecontent.css';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { Button, Form, Modal } from 'react-bootstrap';
 
 // import Typography from '@mui/material/Typography';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import ToggleOffIcon from '@mui/icons-material/ToggleOff';
 import ToggleOnIcon from '@mui/icons-material/ToggleOn';
-
+import EditIcon from '@mui/icons-material/Edit';
 import CustomTable from 'component/common/CustomTable';
 
 import { API_URL, APP_PREFIX_PATH, IMAGE_PATH } from 'config/constant';
@@ -28,6 +29,10 @@ function ManageUser() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [triggerFetch, setTriggerFetch] = useState(false);
   const [sortConfig, setSortConfig] = useState(null);
+  const [showEmailModal, setShowEmailModal] = useState(false);
+const [emailUserId, setEmailUserId] = useState('');
+const [newEmail, setNewEmail] = useState('');
+const [emailError, setEmailError] = useState('');
 
   // ================= ACTION HANDLERS =================
 
@@ -101,6 +106,51 @@ function ManageUser() {
       }
     });
   };
+
+  const handleEditEmail = (user_id, currentEmail) => {
+  setEmailUserId(user_id);
+  setNewEmail(currentEmail || '');
+  setEmailError('');
+  setShowEmailModal(true);
+};
+
+const handleUpdateEmail = async () => {
+  if (!newEmail) {
+    setEmailError('Please enter email');
+    return;
+  }
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
+    setEmailError('Please enter a valid email');
+    return;
+  }
+
+  try {
+    const response = await axios.post(`${API_URL}edit_user_email`, {
+      user_id: emailUserId,
+      email: newEmail
+    });
+
+    if (response.data.success) {
+      Swal.fire({
+        title: 'Success',
+        text: 'Email updated successfully',
+        icon: 'success',
+        timer: 2000
+      });
+
+      setShowEmailModal(false);
+      setNewEmail('');
+      setEmailUserId('');
+      setTriggerFetch(!triggerFetch); // refresh table
+    } else {
+      setEmailError(response.data.msg || 'Failed to update email');
+    }
+  } catch (error) {
+    console.error(error);
+    setEmailError('Server error, try again');
+  }
+};
 
   // ================= FETCH USERS =================
 
@@ -219,6 +269,15 @@ function ManageUser() {
             </li>
 
             <li>
+          <Link
+            className="dropdown-item d-flex align-items-center"
+            onClick={() => handleEditEmail(user.user_id, user.email)}
+          >
+            <EditIcon style={{ fontSize: '16px' }} className="me-1"/> Edit Email
+          </Link>
+        </li>
+
+            <li>
               <Link
                 className="dropdown-item d-flex align-items-center"
                 onClick={() => handleActionChange(index, 'Activate/Deactivate', user)}
@@ -294,11 +353,44 @@ function ManageUser() {
             }}
           />
         </div>
+        {/* Edit Email Modal */}
+<Modal show={showEmailModal} centered onHide={() => setShowEmailModal(false)} style={{ zIndex: '99999' }} className="custom-modal">
+  <Modal.Header closeButton>
+    <Modal.Title style={{ fontSize: '17px' }}>Edit Email</Modal.Title>
+  </Modal.Header>
+  <Modal.Body style={{ paddingTop: 0 }}>
+    <div>
+      <label htmlFor='email' className="form-label" style={{ fontWeight: '600' }}>Email Address</label>
+      <Form.Control
+        type="email"
+        placeholder="Enter new email"
+        value={newEmail}
+        onChange={(e) => {
+          setNewEmail(e.target.value);
+          setEmailError('');
+        }}
+        isInvalid={!!emailError}
+        className="custom-input form-control custom-search"
+        style={{ fontSize: '13px' }}
+      />
+      <Form.Control.Feedback type="invalid">{emailError}</Form.Control.Feedback>
+    </div>
+  </Modal.Body>
+  <Modal.Footer style={{ borderTop: 'none', paddingTop: 0, paddingRight: 0 }}>
+    <Button variant="secondary" style={{ fontSize: '12px' }} onClick={() => setShowEmailModal(false)}>
+      Close
+    </Button>
+    <Button variant="primary" style={{ fontSize: '12px' }} onClick={handleUpdateEmail}>
+      Update
+    </Button>
+  </Modal.Footer>
+</Modal>
       </div>
 
       {/* </Card.Body>
       </Card> */}
     </>
+    
   );
 }
 
