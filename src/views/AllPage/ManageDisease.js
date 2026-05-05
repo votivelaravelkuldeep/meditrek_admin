@@ -39,7 +39,7 @@ function ManageDisease() {
   const [error, setError] = useState({});
 
   const [selectedDiseases, setSelectedDiseases] = useState([]);
-const [selectAll, setSelectAll] = useState(false);
+  const [selectAll, setSelectAll] = useState(false);
   const handleSort = (key) => {
     setSortConfig((prev) => {
       if (!prev) return { key, direction: 'asc' };
@@ -52,79 +52,79 @@ const [selectAll, setSelectAll] = useState(false);
   };
 
   // single checkbox
-const handleSelectDisease = (disease_id) => {
-  setSelectedDiseases((prev) => 
-    prev.includes(disease_id) 
-      ? prev.filter((id) => id !== disease_id) 
-      : [...prev, disease_id]
-  );
-};
+  const handleSelectDisease = (disease_id) => {
+    setSelectedDiseases((prev) =>
+      prev.includes(disease_id)
+        ? prev.filter((id) => id !== disease_id)
+        : [...prev, disease_id]
+    );
+  };
 
-// select all checkbox
+  // select all checkbox
 
-const handleSelectAll = () => {
-  if (selectAll) {
-    setSelectedDiseases([]);
-  } else {
-    const allIds = filteredUsers.map((d) => d.disease_id);
-    setSelectedDiseases(allIds);
-  }
-  setSelectAll(!selectAll);
-};
+  const handleSelectAll = () => {
+    if (selectAll) {
+      setSelectedDiseases([]);
+    } else {
+      const allIds = filteredUsers.map((d) => d.disease_id);
+      setSelectedDiseases(allIds);
+    }
+    setSelectAll(!selectAll);
+  };
 
-// bulk delete function
-// bulk delete function
-const deleteSelectedDiseases = () => {
-  if (selectedDiseases.length === 0) {
-    Swal.fire('Please select at least one disease');
-    return;
-  }
+  // bulk delete function
+  // bulk delete function
+  const deleteSelectedDiseases = () => {
+    if (selectedDiseases.length === 0) {
+      Swal.fire('Please select at least one disease');
+      return;
+    }
 
-  Swal.fire({
-    title: 'Are you sure?',
-    text: 'You want to delete selected diseases?',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: 'Yes, delete!'
-  }).then(async (result) => {
-    if (result.isConfirmed) {
-      try {
-        const response = await axios.post(`${API_URL}delete_disease_bulk`, {
-          disease_ids: selectedDiseases
-        }, {
-          headers: {
-            'Content-Type': 'application/json'
+    Swal.fire({
+      title: 'Are you sure?',
+      text: 'You want to delete selected diseases?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, delete!'
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const response = await axios.post(`${API_URL}delete_disease_bulk`, {
+            disease_ids: selectedDiseases
+          }, {
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          });
+
+          console.log("Full Response:", response);
+          console.log("Response Data:", response.data);
+
+          if (response.data.success) {
+            Swal.fire('Deleted!', response.data.msg, 'success');
+            setSelectedDiseases([]);
+            setSelectAll(false);
+            fetchData();
+          } else {
+            Swal.fire('Error', response.data.msg, 'error');
           }
-        });
+        } catch (error) {
+          console.error("Error Object:", error);
+          console.error("Error Response:", error.response);
+          console.error("Error Message:", error.message);
 
-        console.log("Full Response:", response);
-        console.log("Response Data:", response.data);
-
-        if (response.data.success) {
-          Swal.fire('Deleted!', response.data.msg, 'success');
-          setSelectedDiseases([]);
-          setSelectAll(false);
-          fetchData();
-        } else {
-          Swal.fire('Error', response.data.msg, 'error');
-        }
-      } catch (error) {
-        console.error("Error Object:", error);
-        console.error("Error Response:", error.response);
-        console.error("Error Message:", error.message);
-        
-        // Show more detailed error
-        if (error.response) {
-          Swal.fire('Error', error.response.data?.msg || error.response.statusText, 'error');
-        } else if (error.request) {
-          Swal.fire('Error', 'No response from server. Check if backend is running.', 'error');
-        } else {
-          Swal.fire('Error', error.message, 'error');
+          // Show more detailed error
+          if (error.response) {
+            Swal.fire('Error', error.response.data?.msg || error.response.statusText, 'error');
+          } else if (error.request) {
+            Swal.fire('Error', 'No response from server. Check if backend is running.', 'error');
+          } else {
+            Swal.fire('Error', error.message, 'error');
+          }
         }
       }
-    }
-  });
-};
+    });
+  };
 
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
@@ -206,85 +206,85 @@ const deleteSelectedDiseases = () => {
   //   setEditingFaq(disease);
   //   setShowModal(true);
   // };
-//   const handleShowModal = (disease) => {
-//   setEditingFaq(disease);
+  //   const handleShowModal = (disease) => {
+  //   setEditingFaq(disease);
 
-//   const tempTranslations = {};
+  //   const tempTranslations = {};
 
-//   if (disease.translations && typeof disease.translations === "object") {
-//     Object.keys(disease.translations).forEach((lang) => {
-//       tempTranslations[lang] = {
-//         disease_name: disease.translations[lang]?.disease_name || "",
-//         description: disease.translations[lang]?.description || ""
-//       };
-//     });
-//   } else {
-//     tempTranslations["en"] = {
-//       disease_name: disease.disease_name || "",
-//       description: disease.description || ""
-//     };
-//   }
+  //   if (disease.translations && typeof disease.translations === "object") {
+  //     Object.keys(disease.translations).forEach((lang) => {
+  //       tempTranslations[lang] = {
+  //         disease_name: disease.translations[lang]?.disease_name || "",
+  //         description: disease.translations[lang]?.description || ""
+  //       };
+  //     });
+  //   } else {
+  //     tempTranslations["en"] = {
+  //       disease_name: disease.disease_name || "",
+  //       description: disease.description || ""
+  //     };
+  //   }
 
-//   setTranslations(tempTranslations);   
-//   setError({});
-//   setShowModal(true);
-// };
-const handleShowModal = (disease) => {
-  setEditingFaq(disease);
+  //   setTranslations(tempTranslations);   
+  //   setError({});
+  //   setShowModal(true);
+  // };
+  const handleShowModal = (disease) => {
+    setEditingFaq(disease);
 
-  const tempTranslations = {};
-  
-  if (Array.isArray(disease.translations)) {
-    disease.translations.forEach((item) => {
-      tempTranslations[item.language_code] = {
-        disease_name: item.disease_name || "",
-        description: item.description || ""
+    const tempTranslations = {};
+
+    if (Array.isArray(disease.translations)) {
+      disease.translations.forEach((item) => {
+        tempTranslations[item.language_code] = {
+          disease_name: item.disease_name || "",
+          description: item.description || ""
+        };
+      });
+    }
+
+
+    else if (disease.translations && typeof disease.translations === "object") {
+      Object.keys(disease.translations).forEach((lang) => {
+        tempTranslations[lang] = {
+          disease_name: disease.translations[lang]?.disease_name || "",
+          description: disease.translations[lang]?.description || ""
+        };
+      });
+    }
+
+    // fallback
+    else {
+      tempTranslations["en"] = {
+        disease_name: disease.disease_name || "",
+        description: disease.description || ""
       };
-    });
-  }
+    }
 
-  
-  else if (disease.translations && typeof disease.translations === "object") {
-    Object.keys(disease.translations).forEach((lang) => {
-      tempTranslations[lang] = {
-        disease_name: disease.translations[lang]?.disease_name || "",
-        description: disease.translations[lang]?.description || ""
-      };
-    });
-  }
-
-  // fallback
-  else {
-    tempTranslations["en"] = {
-      disease_name: disease.disease_name || "",
-      description: disease.description || ""
-    };
-  }
-
-  setTranslations(tempTranslations);
-  setError({});
-  setActiveLang("en");
-  setShowModal(true);
-};
+    setTranslations(tempTranslations);
+    setError({});
+    setActiveLang("en");
+    setShowModal(true);
+  };
   // const handleCloseModal = () => setShowModal(false);
   const handleCloseModal = () => {
-  setShowModal(false);
-  setActiveLang("en");   
-};
+    setShowModal(false);
+    setActiveLang("en");
+  };
 
   // const handleShowModal2 = () => setShowModal2(true);
   // const handleCloseModal2 = () => setShowModal2(false);
-//   const handleShowModal2 = () => {
-//   setTranslations({});   
-//   setError({});
-//   setShowModal2(true);
-// };
-    const handleShowModal2 = () => {
-      setTranslations({});
-      setError({});
-      setActiveLang("en");   
-      setShowModal2(true);
-    };
+  //   const handleShowModal2 = () => {
+  //   setTranslations({});   
+  //   setError({});
+  //   setShowModal2(true);
+  // };
+  const handleShowModal2 = () => {
+    setTranslations({});
+    setError({});
+    setActiveLang("en");
+    setShowModal2(true);
+  };
 
   // const handleCloseModal2 = () => {
   //   setShowModal2(false);
@@ -292,9 +292,9 @@ const handleShowModal = (disease) => {
   //   setError({});
   // };
   const handleCloseModal2 = () => {
-      setShowModal2(false);
-      setActiveLang("en");   
-    };
+    setShowModal2(false);
+    setActiveLang("en");
+  };
 
   const fetchData = async () => {
     try {
@@ -319,10 +319,10 @@ const handleShowModal = (disease) => {
     fetchData();
   }, []);
 
-//   React.useEffect(() => {
-//   setSelectedDiseases([]);
-//   setSelectAll(false);
-// }, [filteredUsers]);
+  //   React.useEffect(() => {
+  //   setSelectedDiseases([]);
+  //   setSelectAll(false);
+  // }, [filteredUsers]);
 
   // const validationSchema = Yup.object().shape({
   //   name: Yup.string().max(50, 'Disease name cannot be more than 50 characters').required('Please enter Disease name'),
@@ -406,11 +406,11 @@ const handleShowModal = (disease) => {
         });
         return;
       }
-  
+
       const response = await axios.post(`${API_URL}add_disease`, {
         translations: translations
       });
-  
+
       if (response.data.success) {
         handleCloseModal2();
         fetchData();
@@ -424,24 +424,50 @@ const handleShowModal = (disease) => {
       console.error(error);
     }
   };
-  
-    const handleSubmitEditDisease = async () => {
+
+  const handleSubmitEditDisease = async (e) => {
+    e.preventDefault();
+
     try {
       if (!translations.en?.disease_name) {
         setError({ name: "English name required" });
         return;
       }
-  
+
       if (!translations.en?.description) {
         setError({ description: "English description required" });
         return;
       }
-  
+
+      const filteredTranslations = {};
+
+      Object.keys(translations).forEach((lang) => {
+        const item = translations[lang];
+
+        if (
+          item &&
+          item.disease_name?.trim() &&
+          item.description?.trim()
+        ) {
+          filteredTranslations[lang] = {
+            disease_name: item.disease_name.trim(),
+            description: item.description.trim()
+          };
+        }
+      });
+
+      console.log("FINAL PAYLOAD:", {
+        disease_id: editingFaq.disease_id,
+        translations: filteredTranslations
+      });
+
       const response = await axios.post(`${API_URL}edit_disease`, {
         disease_id: editingFaq.disease_id,
-        translations: translations   //
+        translations: filteredTranslations
       });
-  
+
+      console.log("API RESPONSE:", response.data);
+
       if (response.data.success) {
         fetchData();
         handleCloseModal();
@@ -456,8 +482,9 @@ const handleShowModal = (disease) => {
           icon: 'error'
         });
       }
+
     } catch (error) {
-      console.error(error);
+      console.error("EDIT ERROR:", error); // 👈 YOU WILL SEE ERROR NOW
     }
   };
   const handleFullMessage = (messages) => {
@@ -473,20 +500,20 @@ const handleShowModal = (disease) => {
   };
 
   const columns = [
-      {
-        label: <input type="checkbox" checked={selectAll} onChange={handleSelectAll} />,
-        key: 'checkbox',
-        render: (disease) => (
-          <input
-            className="custom-checkbox"
-            type="checkbox"
-            checked={selectedDiseases.includes(disease.disease_id)}
-            onChange={() => handleSelectDisease(disease.disease_id)}
-          />
-        )
-      },
+    {
+      label: <input type="checkbox" checked={selectAll} onChange={handleSelectAll} />,
+      key: 'checkbox',
+      render: (disease) => (
+        <input
+          className="custom-checkbox"
+          type="checkbox"
+          checked={selectedDiseases.includes(disease.disease_id)}
+          onChange={() => handleSelectDisease(disease.disease_id)}
+        />
+      )
+    },
 
-      {
+    {
       label: 'S. No',
       key: 'sr_no',
       render: (_, index) => index + 1
@@ -603,7 +630,7 @@ const handleShowModal = (disease) => {
               <CloudUploadIcon style={{ fontSize: '16px' }} /> Bulk Upload
             </Button>
 
-             <Button className="btn btn-danger" style={{ fontSize: '12px', borderRadius: '10px' }} onClick={deleteSelectedDiseases}>
+            <Button className="btn btn-danger" style={{ fontSize: '12px', borderRadius: '10px' }} onClick={deleteSelectedDiseases}>
               <DeleteIcon style={{ fontSize: '16px' }} /> Delete Selected
             </Button>
           </div>
@@ -744,107 +771,107 @@ const handleShowModal = (disease) => {
           </Modal.Body>
         </Modal> */}
         <Modal
-            show={showModal2}
-            centered
-            onHide={handleCloseModal2}
-            className="custom-modal"
-            dialogClassName="custom-modal-width"
-          >
-            <Modal.Header closeButton>
-              <Modal.Title>Add Disease</Modal.Title>
-            </Modal.Header>
+          show={showModal2}
+          centered
+          onHide={handleCloseModal2}
+          className="custom-modal"
+          dialogClassName="custom-modal-width"
+        >
+          <Modal.Header closeButton>
+            <Modal.Title>Add Disease</Modal.Title>
+          </Modal.Header>
 
-            <Modal.Body style={{ padding: '10px' }}>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleSubmitAddDisease();
-                }}
-              >
+          <Modal.Body style={{ padding: '10px' }}>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSubmitAddDisease();
+              }}
+            >
 
-                {/* Language Tabs */}
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '16px' }}>
-                  {languages.map((lang) => (
-                    <button
-                      type="button"
-                      key={lang.id}
-                      onClick={() => setActiveLang(lang.id)}
-                      style={{
-                        borderRadius: '999px',
-                        padding: '2px 12px',
-                        fontSize: '12px',
-                        border: activeLang === lang.id ? '1px solid #1ddec4' : '1px solid #e5e7eb',
-                        background: activeLang === lang.id ? '#1ddec4' : '#f8fafc',
-                        color: activeLang === lang.id ? '#fff' : '#64748b'
-                      }}
-                    >
-                      {lang.name}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Disease Name */}
-                <Form.Group style={{ display: 'flex', flexDirection: 'column' }}>
-                  <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>
-                    Disease Name ({languages.find((l) => l.id === activeLang)?.name})
-                  </Form.Label>
-
-                  <Form.Control
-                    type="text"
-                    placeholder={`Enter name (${activeLang})`}
-                    className="custom-input custom-search"
-                    value={translations[activeLang]?.disease_name || ""}
-                    onChange={(e) => {
-                      const value = e.target.value;
-
-                      setTranslations((prev) => ({
-                        ...prev,
-                        [activeLang]: {
-                          ...prev[activeLang],
-                          disease_name: value
-                        }
-                      }));
+              {/* Language Tabs */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '16px' }}>
+                {languages.map((lang) => (
+                  <button
+                    type="button"
+                    key={lang.id}
+                    onClick={() => setActiveLang(lang.id)}
+                    style={{
+                      borderRadius: '999px',
+                      padding: '2px 12px',
+                      fontSize: '12px',
+                      border: activeLang === lang.id ? '1px solid #1ddec4' : '1px solid #e5e7eb',
+                      background: activeLang === lang.id ? '#1ddec4' : '#f8fafc',
+                      color: activeLang === lang.id ? '#fff' : '#64748b'
                     }}
-                  />
-                </Form.Group>
+                  >
+                    {lang.name}
+                  </button>
+                ))}
+              </div>
 
-                {/* Description */}
-                <Form.Group className="mt-2">
-                  <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>
-                    Description ({languages.find((l) => l.id === activeLang)?.name})
-                  </Form.Label>
+              {/* Disease Name */}
+              <Form.Group style={{ display: 'flex', flexDirection: 'column' }}>
+                <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>
+                  Disease Name ({languages.find((l) => l.id === activeLang)?.name})
+                </Form.Label>
 
-                  <Form.Control
-                    as="textarea"
-                    placeholder={`Enter description (${activeLang})`}
-                    className="custom-input custom-search"
-                    value={translations[activeLang]?.description || ""}
-                    onChange={(e) => {
-                      const value = e.target.value;
+                <Form.Control
+                  type="text"
+                  placeholder={`Enter name (${activeLang})`}
+                  className="custom-input custom-search"
+                  value={translations[activeLang]?.disease_name || ""}
+                  onChange={(e) => {
+                    const value = e.target.value;
 
-                      setTranslations((prev) => ({
-                        ...prev,
-                        [activeLang]: {
-                          ...prev[activeLang],
-                          description: value
-                        }
-                      }));
-                    }}
-                  />
-                </Form.Group>
+                    setTranslations((prev) => ({
+                      ...prev,
+                      [activeLang]: {
+                        ...prev[activeLang],
+                        disease_name: value
+                      }
+                    }));
+                  }}
+                />
+              </Form.Group>
 
-                <Modal.Footer style={{ borderTop: 'none', paddingTop: 10 }}>
-                  <Button variant="secondary" onClick={handleCloseModal2} style={{ fontSize: '12px' }}>
-                    Close
-                  </Button>
+              {/* Description */}
+              <Form.Group className="mt-2">
+                <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>
+                  Description ({languages.find((l) => l.id === activeLang)?.name})
+                </Form.Label>
 
-                  <Button variant="primary" type="submit" style={{ fontSize: '12px' }}>
-                    Add Disease
-                  </Button>
-                </Modal.Footer>
-              </form>
-            </Modal.Body>
-          </Modal>
+                <Form.Control
+                  as="textarea"
+                  placeholder={`Enter description (${activeLang})`}
+                  className="custom-input custom-search"
+                  value={translations[activeLang]?.description || ""}
+                  onChange={(e) => {
+                    const value = e.target.value;
+
+                    setTranslations((prev) => ({
+                      ...prev,
+                      [activeLang]: {
+                        ...prev[activeLang],
+                        description: value
+                      }
+                    }));
+                  }}
+                />
+              </Form.Group>
+
+              <Modal.Footer style={{ borderTop: 'none', paddingTop: 10 }}>
+                <Button variant="secondary" onClick={handleCloseModal2} style={{ fontSize: '12px' }}>
+                  Close
+                </Button>
+
+                <Button variant="primary" type="submit" style={{ fontSize: '12px' }}>
+                  Add Disease
+                </Button>
+              </Modal.Footer>
+            </form>
+          </Modal.Body>
+        </Modal>
         {/* Modal Component */}
         {/* <Modal show={showModal} onHide={handleCloseModal} style={{ zIndex: '99999' }}>
           <Modal.Header closeButton>
@@ -886,7 +913,7 @@ const handleShowModal = (disease) => {
             </Formik>
           </Modal.Body>
         </Modal> */}
-       {/* <Modal show={showModal} centered onHide={handleCloseModal} className="custom-modal" dialogClassName="custom-modal-width">
+        {/* <Modal show={showModal} centered onHide={handleCloseModal} className="custom-modal" dialogClassName="custom-modal-width">
           <Modal.Header closeButton>
             <Modal.Title>Edit Disease</Modal.Title>
           </Modal.Header>
@@ -970,121 +997,121 @@ const handleShowModal = (disease) => {
           </Modal.Body>
         </Modal> */}
         <Modal
-              show={showModal}
-              centered
-              onHide={handleCloseModal}
-              className="custom-modal"
-              dialogClassName="custom-modal-width"
-            >
-              <Modal.Header closeButton>
-                <Modal.Title>Edit Disease</Modal.Title>
-              </Modal.Header>
+          show={showModal}
+          centered
+          onHide={handleCloseModal}
+          className="custom-modal"
+          dialogClassName="custom-modal-width"
+        >
+          <Modal.Header closeButton>
+            <Modal.Title>Edit Disease</Modal.Title>
+          </Modal.Header>
 
-              <form onSubmit={handleSubmitEditDisease}>
-                <Modal.Body style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: 0, paddingBottom: 0 }}>
+          <form onSubmit={handleSubmitEditDisease}>
+            <Modal.Body style={{ paddingLeft: '10px', paddingRight: '10px', paddingTop: 0, paddingBottom: 0 }}>
 
-                  {/* Language Tabs */}
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '16px' }}>
-                    {languages.map((lang) => (
-                      <button
-                        type="button"
-                        key={lang.id}
-                        onClick={() => setActiveLang(lang.id)}
-                        style={{
-                          borderRadius: '999px',
-                          padding: '2px 12px',
-                          fontSize: '12px',
-                          border: activeLang === lang.id ? '1px solid #1ddec4' : '1px solid #e5e7eb',
-                          background: activeLang === lang.id ? '#1ddec4' : '#f8fafc',
-                          color: activeLang === lang.id ? '#fff' : '#64748b'
-                        }}
-                      >
-                        {lang.name}
-                      </button>
-                    ))}
-                  </div>
+              {/* Language Tabs */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '16px' }}>
+                {languages.map((lang) => (
+                  <button
+                    type="button"
+                    key={lang.id}
+                    onClick={() => setActiveLang(lang.id)}
+                    style={{
+                      borderRadius: '999px',
+                      padding: '2px 12px',
+                      fontSize: '12px',
+                      border: activeLang === lang.id ? '1px solid #1ddec4' : '1px solid #e5e7eb',
+                      background: activeLang === lang.id ? '#1ddec4' : '#f8fafc',
+                      color: activeLang === lang.id ? '#fff' : '#64748b'
+                    }}
+                  >
+                    {lang.name}
+                  </button>
+                ))}
+              </div>
 
-                  {/* Disease Name */}
-                  <Form.Group style={{ display: 'flex', flexDirection: 'column' }}>
-                    <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>
-                      Disease Name ({languages.find((l) => l.id === activeLang)?.name})
-                    </Form.Label>
+              {/* Disease Name */}
+              <Form.Group style={{ display: 'flex', flexDirection: 'column' }}>
+                <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>
+                  Disease Name ({languages.find((l) => l.id === activeLang)?.name})
+                </Form.Label>
 
-                    <Form.Control
-                      type="text"
-                      value={translations[activeLang]?.disease_name || ""}
-                      placeholder={`Enter name (${activeLang})`}
-                      className="custom-input custom-search"
-                      onChange={(e) => {
-                        const value = e.target.value;
+                <Form.Control
+                  type="text"
+                  value={translations[activeLang]?.disease_name || ""}
+                  placeholder={`Enter name (${activeLang})`}
+                  className="custom-input custom-search"
+                  onChange={(e) => {
+                    const value = e.target.value;
 
-                        setTranslations(prev => ({
-                          ...prev,
-                          [activeLang]: {
-                            ...prev[activeLang],
-                            disease_name: value
-                          }
-                        }));
+                    setTranslations(prev => ({
+                      ...prev,
+                      [activeLang]: {
+                        ...prev[activeLang],
+                        disease_name: value
+                      }
+                    }));
 
-                        // EN validation clear
-                        if (activeLang === "en") {
-                          setError((prev) => ({ ...prev, name: "" }));
-                        }
-                      }}
-                      isInvalid={activeLang === 'en' && error?.name}
-                    />
-                    <Form.Control.Feedback type="invalid">
-                      {error?.name}
-                    </Form.Control.Feedback>
-                  </Form.Group>
+                    // EN validation clear
+                    if (activeLang === "en") {
+                      setError((prev) => ({ ...prev, name: "" }));
+                    }
+                  }}
+                  isInvalid={activeLang === 'en' && error?.name}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {error?.name}
+                </Form.Control.Feedback>
+              </Form.Group>
 
-                  {/* Description */}
-                  <Form.Group className="mt-2">
-                    <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>
-                      Description ({languages.find((l) => l.id === activeLang)?.name})
-                    </Form.Label>
+              {/* Description */}
+              <Form.Group className="mt-2">
+                <Form.Label style={{ fontSize: '13px', fontWeight: 500 }}>
+                  Description ({languages.find((l) => l.id === activeLang)?.name})
+                </Form.Label>
 
-                    <Form.Control
-                      as="textarea"
-                      value={translations[activeLang]?.description || ""}
-                      placeholder={`Enter description (${activeLang})`}
-                      className="custom-input custom-search"
-                      onChange={(e) => {
-                        const value = e.target.value;
+                <Form.Control
+                  as="textarea"
+                  value={translations[activeLang]?.description || ""}
+                  placeholder={`Enter description (${activeLang})`}
+                  className="custom-input custom-search"
+                  onChange={(e) => {
+                    const value = e.target.value;
 
-                        setTranslations(prev => ({
-                          ...prev,
-                          [activeLang]: {
-                            ...prev[activeLang],
-                            description: value
-                          }
-                        }));
+                    setTranslations(prev => ({
+                      ...prev,
+                      [activeLang]: {
+                        ...prev[activeLang],
+                        description: value
+                      }
+                    }));
 
-                        if (activeLang === "en") {
-                          setError((prev) => ({ ...prev, description: "" }));
-                        }
-                      }}
-                      isInvalid={activeLang === 'en' && error?.description}
-                    />
-                    <Form.Control.Feedback type="invalid">
-                      {error?.description}
-                    </Form.Control.Feedback>
-                  </Form.Group>
+                    if (activeLang === "en") {
+                      setError((prev) => ({ ...prev, description: "" }));
+                    }
+                  }}
+                  isInvalid={activeLang === 'en' && error?.description}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {error?.description}
+                </Form.Control.Feedback>
+              </Form.Group>
 
-                  {error?.general && <span className="text-danger">{error.general}</span>}
+              {error?.general && <span className="text-danger">{error.general}</span>}
 
-                </Modal.Body>
+            </Modal.Body>
 
-                <Modal.Footer style={{ borderTop: 'none', paddingTop: 0, paddingRight: 0, marginTop: "10px" }}>
-                  <Button variant="secondary" onClick={handleCloseModal} style={{ fontSize: '12px' }}>
-                    Close
-                  </Button>
+            <Modal.Footer style={{ borderTop: 'none', paddingTop: 0, paddingRight: 0, marginTop: "10px" }}>
+              <Button variant="secondary" onClick={handleCloseModal} style={{ fontSize: '12px' }}>
+                Close
+              </Button>
 
-                  <Button variant="primary" type="submit" style={{ fontSize: '12px' }}>
-                    Update
-                  </Button>
-                </Modal.Footer>
-              </form>
+              <Button variant="primary" type="submit" style={{ fontSize: '12px' }}>
+                Update
+              </Button>
+            </Modal.Footer>
+          </form>
         </Modal>
       </div>
     </>
