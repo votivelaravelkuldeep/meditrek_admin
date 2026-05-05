@@ -33,6 +33,8 @@ function ManageUser() {
 const [emailUserId, setEmailUserId] = useState('');
 const [newEmail, setNewEmail] = useState('');
 const [emailError, setEmailError] = useState('');
+const [newMobile, setNewMobile] = useState('');
+const [mobileError, setMobileError] = useState('');
 
   // ================= ACTION HANDLERS =================
 
@@ -107,10 +109,12 @@ const [emailError, setEmailError] = useState('');
     });
   };
 
-  const handleEditEmail = (user_id, currentEmail) => {
-  setEmailUserId(user_id);
-  setNewEmail(currentEmail || '');
+const handleEditEmail = (user) => {
+  setEmailUserId(user.user_id);
+  setNewEmail(user.email || '');
+  setNewMobile(user.mobile || '');
   setEmailError('');
+  setMobileError('');
   setShowEmailModal(true);
 };
 
@@ -128,7 +132,8 @@ const handleUpdateEmail = async () => {
   try {
     const response = await axios.post(`${API_URL}edit_user_email`, {
       user_id: emailUserId,
-      email: newEmail
+  email: newEmail,
+  mobile: newMobile
     });
 
     if (response.data.success) {
@@ -271,9 +276,9 @@ const handleUpdateEmail = async () => {
             <li>
           <Link
             className="dropdown-item d-flex align-items-center"
-            onClick={() => handleEditEmail(user.user_id, user.email)}
+            onClick={() => handleEditEmail(user)}
           >
-            <EditIcon style={{ fontSize: '16px' }} className="me-1"/> Edit Email
+            <EditIcon style={{ fontSize: '16px' }} className="me-1"/> Edit Details
           </Link>
         </li>
 
@@ -362,6 +367,7 @@ const handleUpdateEmail = async () => {
     <div>
       <label htmlFor='email' className="form-label" style={{ fontWeight: '600' }}>Email Address</label>
       <Form.Control
+      id="email" 
         type="email"
         placeholder="Enter new email"
         value={newEmail}
@@ -374,6 +380,29 @@ const handleUpdateEmail = async () => {
         style={{ fontSize: '13px' }}
       />
       <Form.Control.Feedback type="invalid">{emailError}</Form.Control.Feedback>
+    </div>
+    <div>
+        <label htmlFor="mobile" className="form-label" style={{ fontWeight: '600' }}>
+    Mobile Number
+  </label>
+
+  <Form.Control
+  id="mobile"
+    type="text"
+    placeholder="Enter mobile number"
+    value={newMobile}
+    onChange={(e) => {
+      setNewMobile(e.target.value);
+      setMobileError('');
+    }}
+    isInvalid={!!mobileError}
+    className="custom-input form-control custom-search"
+    style={{ fontSize: '13px' }}
+  />
+
+  <Form.Control.Feedback type="invalid">
+    {mobileError}
+  </Form.Control.Feedback>
     </div>
   </Modal.Body>
   <Modal.Footer style={{ borderTop: 'none', paddingTop: 0, paddingRight: 0 }}>
