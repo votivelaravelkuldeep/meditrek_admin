@@ -110,8 +110,19 @@ function ManageFaq() {
       //   setFaqDataqa(faqItem.translations);
       // }
       if (faqItem.translations) {
-        setFaqDataqa(faqItem.translations);
-      } else {
+  setFaqDataqa({
+    en: faqItem.translations.en || {
+      question: faqItem.question || '',
+      answer: faqItem.answer || ''
+    },
+    fr: faqItem.translations.fr || { question: '', answer: '' },
+    es: faqItem.translations.es || { question: '', answer: '' },
+    ar: faqItem.translations.ar || { question: '', answer: '' },
+    it: faqItem.translations.it || { question: '', answer: '' },
+    de: faqItem.translations.de || { question: '', answer: '' },
+    pt: faqItem.translations.pt || { question: '', answer: '' }
+  });
+} else {
         setFaqDataqa({
           en: {
             question: faqItem.question || '',
